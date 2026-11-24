@@ -1,0 +1,5 @@
+{
+  "name": "EPSO AD5 2026 Competition Simulator (IRT Edition)",
+  "description": "Self-contained psychometric simulator for the EPSO AD5 2026 competition using 3PL Item Response Theory, Poisson-Binomial exact scoring, and correlated Monte Carlo simulation.",
+  "requestFramePermissions": []
+}

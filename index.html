@@ -1,0 +1,4276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPSO AD5 2026 Competition Simulator (IRT Edition)</title>
+  <meta name="description" content="Self-contained psychometric simulator for the EPSO AD5 2026 competition using 3PL Item Response Theory, Poisson-Binomial exact scoring, and correlated Monte Carlo simulation." />
+  <meta property="og:title" content="EPSO AD5 2026 Competition Simulator (IRT Edition)" />
+  <meta property="og:description" content="Interactive 3PL Item Response Theory simulator for EPSO AD5 2026 pass rates, cutoffs, and reserve list probabilities." />
+  <style>
+    :root {
+      --bg: #F6F7F9;
+      --surface: #FFFFFF;
+      --surface-subtle: #F1F4F8;
+      --border: #DCE2EA;
+      --border-strong: #C4CDD9;
+      --text: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #5A677A;
+      --accent: #1D4ED8;
+      --accent-hover: #1E40AF;
+      --accent-soft: #EFF6FF;
+      --emerald: #047857;
+      --emerald-bright: #059669;
+      --emerald-soft: #ECFDF5;
+      --emerald-border: #A7F3D0;
+      --amber: #B45309;
+      --amber-soft: #FFFBEB;
+      --amber-border: #FDE68A;
+      --crimson: #B91C1C;
+      --crimson-soft: #FEF2F2;
+      --crimson-border: #FECACA;
+      --radius-lg: 10px;
+      --radius-md: 6px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Top Header Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .topnav a {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 4px 0;
+      border-bottom: 1.5px solid transparent;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .topnav a:hover, .topnav a:focus-visible {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+      outline: none;
+    }
+
+    .btn-reset {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-reset:hover {
+      background: var(--surface-subtle);
+      border-color: var(--text-muted);
+    }
+
+    .btn-reset:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+    }
+
+    /* Editorial Hero & Presets */
+    .hero {
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px 32px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.18;
+      color: var(--text);
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .constants-line {
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .constants-line span strong {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Presets Bar */
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .presets-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .preset-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 13px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      background: var(--surface-subtle);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .preset-btn.active {
+      background: var(--text);
+      color: #FFFFFF;
+      border-color: var(--text);
+    }
+
+    /* KPI Strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .kpi-cell {
+      padding: 16px 18px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .kpi-cell:last-child {
+      border-right: none;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 23px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .kpi-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value.accent {
+      color: var(--accent);
+    }
+
+    .kpi-value.emerald {
+      color: var(--emerald);
+    }
+
+    /* Section Containers */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text);
+    }
+
+    .section-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Sliders & Controls */
+    .slider-grid-p1 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 28px;
+    }
+
+    .slider-span-2 {
+      grid-column: 1 / -1;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .control-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .control-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .control-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .control-val {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .control-val.highlight {
+      color: var(--accent);
+    }
+
+    .control-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .clamp-note {
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    .reliability-inline {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 22px;
+      background: transparent;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 5px;
+      border-radius: 3px;
+      background: #CBD5E1;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text);
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+      margin-top: -5.5px;
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+
+    input[type="range"]:hover::-webkit-slider-thumb {
+      background: var(--accent);
+      transform: scale(1.08);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 5px;
+      border-radius: 3px;
+      background: #CBD5E1;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text);
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+    }
+
+    input[type="range"].accent-slider::-webkit-slider-thumb {
+      background: var(--accent);
+    }
+
+    input[type="range"].accent-slider::-moz-range-thumb {
+      background: var(--accent);
+    }
+
+    /* Accordion */
+    details.accordion {
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    details.accordion summary {
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 0;
+    }
+
+    details.accordion summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.accordion summary::before {
+      content: "▸";
+      display: inline-block;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+
+    details.accordion[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    details.accordion summary:hover {
+      color: var(--text);
+    }
+
+    .accordion-body {
+      margin-top: 14px;
+      padding: 16px 18px;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    .readout-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px 16px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .readout-item {
+      min-width: 0;
+    }
+
+    .readout-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .readout-val {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Part 2 Cards Layout (flat columns separated by dividers, no card-in-card) */
+    .part2-top-attrition {
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .part2-tests-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .test-column {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-right: 24px;
+      border-right: 1px solid var(--border);
+    }
+
+    .test-column:last-child {
+      padding-right: 0;
+      border-right: none;
+    }
+
+    .test-col-head {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .test-col-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .test-col-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .corr-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 28px;
+    }
+
+    .psd-status {
+      margin-top: 12px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .psd-adjusted {
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    /* Chart Blocks */
+    .chart-section-block {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .chart-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 20px;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .chart-legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 18px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .swatch-sitters {
+      background: rgba(148, 163, 184, 0.28);
+      border: 1px solid #94A3B8;
+    }
+
+    .swatch-green {
+      background: #059669;
+    }
+
+    .swatch-below {
+      background: #64748B;
+    }
+
+    .swatch-elim {
+      background: #CBD5E1;
+    }
+
+    .swatch-personal {
+      width: 14px;
+      height: 2px;
+      background: #1D4ED8;
+    }
+
+    .swatch-cutoff {
+      width: 14px;
+      height: 0;
+      border-top: 2px dashed #B91C1C;
+    }
+
+    .zone-callout {
+      font-size: 12.5px;
+      color: var(--emerald);
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+    }
+
+    .zone-callout .passer-count-note {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      pointer-events: none;
+      z-index: 20;
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      line-height: 1.45;
+      min-width: 195px;
+      max-width: 265px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+    }
+
+    .chart-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tt-head {
+      font-weight: 700;
+      font-size: 12.5px;
+      margin-bottom: 5px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .tt-key {
+      color: #CBD5E1;
+    }
+
+    .tt-val {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    /* Segmented Toggle */
+    .segmented {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .seg-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Results Table */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 24px;
+    }
+
+    table.odds-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      min-width: 720px;
+    }
+
+    table.odds-table th {
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.odds-table th:first-child,
+    table.odds-table td:first-child {
+      text-align: left;
+    }
+
+    table.odds-table th:last-child,
+    table.odds-table td:last-child {
+      text-align: left;
+    }
+
+    table.odds-table td {
+      text-align: right;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+      vertical-align: middle;
+    }
+
+    table.odds-table tbody tr {
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    table.odds-table tbody tr:hover {
+      background: var(--surface-subtle);
+    }
+
+    table.odds-table tbody tr.in-green-zone {
+      background: rgba(5, 150, 105, 0.05);
+    }
+
+    table.odds-table tbody tr.in-green-zone:hover {
+      background: rgba(5, 150, 105, 0.10);
+    }
+
+    table.odds-table tbody tr.selected-row {
+      background: var(--accent-soft);
+    }
+
+    .score-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      padding: 0;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: rgba(29, 78, 216, 0.35);
+      text-underline-offset: 3px;
+    }
+
+    .score-btn:hover {
+      color: var(--accent-hover);
+      text-decoration-color: var(--accent-hover);
+    }
+
+    .zone-marker {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--emerald);
+      margin-left: 8px;
+    }
+
+    .odds-strong {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--emerald);
+    }
+
+    .odds-normal {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .sub-dim {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .target-note {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .gate-flag {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--amber);
+      display: inline-block;
+      margin-left: 6px;
+    }
+
+    /* Personal Score Tester */
+    .tester-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 28px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .tester-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tester-heading {
+      margin: 0 0 2px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tester-sub {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .tester-input-row {
+      display: grid;
+      grid-template-columns: 1fr 74px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .num-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--surface);
+      text-align: right;
+    }
+
+    .verdict-panel {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .verdict-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .verdict-status {
+      font-size: 16.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .verdict-status.pass { color: var(--emerald); }
+    .verdict-status.borderline { color: var(--amber); }
+    .verdict-status.fail { color: var(--crimson); }
+
+    .verdict-rank-summary {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .thresholds-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      font-size: 12.5px;
+    }
+
+    .thresh-item {
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .thresh-name {
+      color: var(--text-muted);
+      font-size: 11.5px;
+    }
+
+    .thresh-val {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 12.5px;
+    }
+
+    .thresh-val.ok { color: var(--emerald); }
+    .thresh-val.bad { color: var(--crimson); }
+
+    .gate-alert {
+      padding: 10px 12px;
+      background: var(--amber-soft);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--radius-md);
+      color: #78350F;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .gate-alert strong {
+      color: #78350F;
+    }
+
+    .score-compare-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .score-compare-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .sc-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .sc-main {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .sc-delta {
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sc-delta.pos { color: var(--emerald); }
+    .sc-delta.neg { color: var(--crimson); }
+    .sc-delta.neutral { color: var(--amber); }
+
+    .sc-rank {
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .exchange-rate {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .exchange-rate strong {
+      color: var(--text);
+    }
+
+    /* Section 4: Transparency & Documentation */
+    .docs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    details.doc-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    details.doc-item summary {
+      list-style: none;
+      padding: 14px 18px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    details.doc-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.doc-item summary::after {
+      content: "+";
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    details.doc-item[open] summary::after {
+      content: "−";
+    }
+
+    details.doc-item[open] summary {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-subtle);
+    }
+
+    .doc-content {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 82ch;
+    }
+
+    .doc-content p {
+      margin: 0 0 12px;
+    }
+
+    .doc-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .doc-content ul {
+      margin: 0 0 12px;
+      padding-left: 20px;
+    }
+
+    .doc-content li {
+      margin-bottom: 8px;
+    }
+
+    .formula-box {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin: 10px 0 12px;
+      color: var(--text);
+      overflow-x: auto;
+    }
+
+    .disclaimer-box {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .disclaimer-box strong {
+      color: var(--text);
+    }
+
+    footer {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 16px;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .kpi-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .kpi-cell:nth-child(3) {
+        border-right: none;
+      }
+      .kpi-cell:nth-child(n+4) {
+        border-top: 1px solid var(--border);
+      }
+      .part2-tests-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .test-column {
+        padding-right: 0;
+        padding-bottom: 20px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .test-column:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .tester-grid {
+        grid-template-columns: 1fr;
+      }
+      .readout-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        padding: 12px 16px;
+        gap: 12px;
+      }
+      .topnav {
+        display: none;
+      }
+      .container {
+        padding: 20px 14px 48px;
+      }
+      .section {
+        padding: 18px 16px;
+      }
+      .kpi-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .kpi-cell {
+        padding: 13px 14px;
+      }
+      .kpi-cell:nth-child(3) {
+        border-right: 1px solid var(--border);
+      }
+      .kpi-cell:nth-child(2n) {
+        border-right: none;
+      }
+      .kpi-cell:nth-child(n+3) {
+        border-top: 1px solid var(--border);
+      }
+      .kpi-cell:last-child {
+        grid-column: 1 / -1;
+        border-right: none;
+      }
+      .kpi-value {
+        font-size: 20px;
+      }
+      .slider-grid-p1,
+      .corr-grid,
+      .score-compare-grid {
+        grid-template-columns: 1fr;
+      }
+      .thresholds-row {
+        grid-template-columns: 1fr;
+      }
+      .readout-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .canvas-wrap {
+        height: 270px;
+      }
+      .segmented {
+        width: 100%;
+      }
+      .seg-btn {
+        flex: 1;
+        text-align: center;
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#top" class="brand">EPSO AD5 2026 Simulator</a>
+      <nav class="topnav" aria-label="Primary sections">
+        <a href="#part1">Part 1 Reasoning</a>
+        <a href="#part2">Part 2 Ranking</a>
+        <a href="#results">Odds &amp; Tester</a>
+        <a href="#methodology">Methodology</a>
+      </nav>
+      <button type="button" id="btnResetBaseline" class="btn-reset">Reset Baseline</button>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <section class="hero" aria-label="Competition overview and scenarios">
+      <div class="hero-top">
+        <div>
+          <h1>EPSO AD5 2026 Competition Simulator (IRT Edition)</h1>
+          <p class="subtitle">75,274 Part 1 Sitters · Top 2,235 Essays Marked · 1,490 Reserve List</p>
+          <div class="constants-line">
+            <span><strong>Registered:</strong> 174,382 (43.2% sat Part 1)</span>
+            <span><strong>Part 1 Pass:</strong> Verbal &ge; 10/20 &amp; Num+Abs &ge; 10/20</span>
+            <span><strong>Part 2 Pass:</strong> EUK &ge; 15/30 · Dig &ge; 20/40 · EUFTE &ge; 5.0/10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="presets-row" role="group" aria-label="Scenario presets">
+        <span class="presets-label">Scenarios:</span>
+        <button type="button" class="preset-btn active" data-preset="baseline">Revised IRT Baseline (~40% Pass)</button>
+        <button type="button" class="preset-btn" data-preset="toughPart1">Tougher Part 1 (~35% Pass)</button>
+        <button type="button" class="preset-btn" data-preset="drilledEuk">Drilled EUK + Easy Digital</button>
+        <button type="button" class="preset-btn" data-preset="highAttrition">15% Part 2 Attrition</button>
+      </div>
+    </section>
+
+    <section class="kpi-strip" aria-label="Key simulated competition metrics">
+      <div class="kpi-cell">
+        <div class="kpi-label">Est. Part 1 Passers</div>
+        <div class="kpi-value" id="kpiPart1Passers">—</div>
+        <div class="kpi-sub" id="kpiPart1PassRate">—</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-label">Est. Part 2 Sitters</div>
+        <div class="kpi-value" id="kpiPart2Sitters">—</div>
+        <div class="kpi-sub" id="kpiAttritionNote">—</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-label">Baseline Passer Odds</div>
+        <div class="kpi-value" id="kpiBaselineOdds">—</div>
+        <div class="kpi-sub" id="kpiBaselineRatio">1,490 / Part 1 Passers</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-label">Top 2,235 Prelim Cutoff</div>
+        <div class="kpi-value accent" id="kpiPrelimCutoff">—</div>
+        <div class="kpi-sub" id="kpiPrelimSub">Essay marking gate (/100)</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-label">Top 1,490 Final Cutoff</div>
+        <div class="kpi-value emerald" id="kpiFinalCutoff">—</div>
+        <div class="kpi-sub" id="kpiFinalSub">Reserve list cutoff (/100)</div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: PART 1 REASONING TESTS -->
+    <section id="part1" class="section" aria-labelledby="h-part1">
+      <div class="section-header">
+        <h2 id="h-part1" class="section-title">1. Part 1 — Reasoning Tests (3PL Item Response Theory)</h2>
+        <div class="section-meta">Verbal (20 MCQs, L1, c = 0.22) · Num+Abs (10 Num c = 0.22 + 10 speeded Abs c = 0.16)</div>
+      </div>
+
+      <div class="slider-grid-p1">
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slVMean" class="control-label">Verbal Mean (μ<sub>V</sub>)</label>
+            <span class="control-val" id="valVMean">10.50 / 20</span>
+          </div>
+          <input type="range" id="slVMean" min="7.0" max="16.0" step="0.1" value="10.5" />
+          <div class="control-meta">
+            <span>Pass mark &ge; 10/20 (40% Prelim, 35% Final)</span>
+            <span class="reliability-inline" id="relVerbal">α<sub>V</sub> = —</span>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slVSd" class="control-label">Verbal SD (σ<sub>V</sub>)</label>
+            <span class="control-val" id="valVSd">4.00</span>
+          </div>
+          <input type="range" id="slVSd" min="2.0" max="5.0" step="0.05" value="4.0" />
+          <div class="control-meta">
+            <span id="clampVSd" class="clamp-note"></span>
+            <span class="reliability-inline" id="irtParamsV">a = —, b̄ = —</span>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slNAMean" class="control-label">Num+Abs Mean (μ<sub>NA</sub>)</label>
+            <span class="control-val" id="valNAMean">10.40 / 20</span>
+          </div>
+          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.4" />
+          <div class="control-meta">
+            <span>Pass mark &ge; 10/20 combined (Eliminatory only)</span>
+            <span class="reliability-inline" id="relNA">α<sub>NA</sub> = —</span>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slNASd" class="control-label">Num+Abs SD (σ<sub>NA</sub>)</label>
+            <span class="control-val" id="valNASd">3.80</span>
+          </div>
+          <input type="range" id="slNASd" min="2.0" max="5.0" step="0.05" value="3.8" />
+          <div class="control-meta">
+            <span id="clampNASd" class="clamp-note"></span>
+            <span class="reliability-inline" id="irtParamsNA">a = —, b̄ = —</span>
+          </div>
+        </div>
+
+        <div class="control-block slider-span-2">
+          <div class="control-header">
+            <label for="slPassRate" class="control-label">Joint Part 1 Pass Rate (P<sub>pass</sub> — Bidirectional Sync)</label>
+            <span class="control-val highlight" id="valPassRate">42.5% · 31,991 passers</span>
+          </div>
+          <input type="range" id="slPassRate" class="accent-slider" min="3.0" max="100.0" step="0.5" value="42.5" />
+          <div class="control-meta">
+            <span>Dragging shifts μ<sub>V</sub> and μ<sub>NA</sub> equally (keeping σ<sub>V</sub>, σ<sub>NA</sub>, ρ<sub>VN</sub> fixed)</span>
+            <span id="passRateClampNote" class="clamp-note"></span>
+          </div>
+        </div>
+      </div>
+
+      <details class="accordion" id="accPart1">
+        <summary>Part 1 Advanced: Latent Correlation &amp; Psychometric Diagnostics</summary>
+        <div class="accordion-body">
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slRhoVN" class="control-label">Latent Correlation: Verbal ↔ Num+Abs (ρ<sub>VN</sub><sup>θ</sup>)</label>
+              <span class="control-val" id="valRhoVN">0.60</span>
+            </div>
+            <input type="range" id="slRhoVN" min="0.00" max="0.90" step="0.01" value="0.60" />
+            <div class="control-meta">
+              <span>Operates on standardized latent abilities (θ<sub>V</sub>, θ<sub>NA</sub>); observed score correlation is attenuated by IRT reliability.</span>
+            </div>
+          </div>
+
+          <div class="readout-grid">
+            <div class="readout-item">
+              <div class="readout-label">Observed Corr (r<sub>VN</sub><sup>obs</sup>)</div>
+              <div class="readout-val" id="roObsCorrVN">—</div>
+            </div>
+            <div class="readout-item">
+              <div class="readout-label">Verbal Pass Rate</div>
+              <div class="readout-val" id="roVerbalPass">—</div>
+            </div>
+            <div class="readout-item">
+              <div class="readout-label">Num+Abs Pass Rate</div>
+              <div class="readout-val" id="roNAPass">—</div>
+            </div>
+            <div class="readout-item">
+              <div class="readout-label">Verbal Reliability (α<sub>V</sub>)</div>
+              <div class="readout-val" id="roRelV">—</div>
+            </div>
+            <div class="readout-item">
+              <div class="readout-label">Num+Abs Reliability (α<sub>NA</sub>)</div>
+              <div class="readout-val" id="roRelNA">—</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="chart-section-block">
+        <div class="chart-header">
+          <h3 class="chart-title">Part 1 Verbal Score Distribution (0–20): All 75,274 Sitters vs. Part 1 Passers</h3>
+          <div class="chart-legend-row" aria-label="Part 1 chart legend">
+            <span class="legend-item"><span class="swatch swatch-sitters"></span>All Sitters</span>
+            <span class="legend-item"><span class="swatch swatch-green"></span>Above-Baseline Contenders</span>
+            <span class="legend-item"><span class="swatch swatch-below"></span>Below-Baseline Passers</span>
+            <span class="legend-item"><span class="swatch swatch-elim"></span>Eliminated (0–9)</span>
+          </div>
+        </div>
+        <div class="zone-callout">
+          <span id="greenZoneText">Green zone: Verbal &ge; —</span>
+          <span class="passer-count-note" id="p1ChartPasserSummary">Est. Part 1 Passers: —</span>
+        </div>
+        <div class="canvas-wrap" data-testid="part1-chart-wrap">
+          <canvas id="canvasPart1" aria-label="Part 1 Verbal Score Distribution bar chart"></canvas>
+          <div id="tooltipPart1" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: PART 2 RANKING TESTS -->
+    <section id="part2" class="section" aria-labelledby="h-part2">
+      <div class="section-header">
+        <h2 id="h-part2" class="section-title">2. Part 2 — Ranking Tests (Language 2)</h2>
+        <div class="section-meta">Sliders set the unselected Part 2 sitter-pool distribution · Top 2,235 selection lifts marked EUFTE scores organically</div>
+      </div>
+
+      <div class="part2-top-attrition">
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slAttrition" class="control-label">Part 2 No-Show / Attrition Rate</label>
+            <span class="control-val highlight" id="valAttrition">10% · 28,792 active Part 2 sitters</span>
+          </div>
+          <input type="range" id="slAttrition" class="accent-slider" min="0" max="40" step="1" value="10" />
+          <div class="control-meta">
+            <span>Share of Part 1 passers who do not sit Part 2 (modeled uniformly across Part 1 passers; see Methodology caveats).</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="part2-tests-grid">
+        <div class="test-column">
+          <div class="test-col-head">
+            <h3 class="test-col-title">EU Knowledge (0–30)</h3>
+            <div class="test-col-sub">Pass &ge; 15/30 · 30% Prelim / 25% Final · 3PL (c = 0.23) · <span class="reliability-inline" id="relEUK">α = —</span></div>
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slEukMean" class="control-label">Mean (μ<sub>EUK</sub>)</label>
+              <span class="control-val" id="valEukMean">17.50 / 30</span>
+            </div>
+            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="17.5" />
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slEukSd" class="control-label">SD (σ<sub>EUK</sub>)</label>
+              <span class="control-val" id="valEukSd">5.20</span>
+            </div>
+            <input type="range" id="slEukSd" min="2.5" max="10.0" step="0.1" value="5.2" />
+            <div class="control-meta">
+              <span id="clampEukSd" class="clamp-note"></span>
+              <span class="reliability-inline" id="irtParamsEUK">a = —, b̄ = —</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-column">
+          <div class="test-col-head">
+            <h3 class="test-col-title">Digital Skills (0–40)</h3>
+            <div class="test-col-sub">Pass &ge; 20/40 · 30% Prelim / 25% Final · 30 min speeded (c = 0.18) · <span class="reliability-inline" id="relDig">α = —</span></div>
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slDigMean" class="control-label">Mean (μ<sub>Dig</sub>)</label>
+              <span class="control-val" id="valDigMean">30.00 / 40</span>
+            </div>
+            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="30.0" />
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slDigSd" class="control-label">SD (σ<sub>Dig</sub>)</label>
+              <span class="control-val" id="valDigSd">4.20</span>
+            </div>
+            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="4.2" />
+            <div class="control-meta">
+              <span id="clampDigSd" class="clamp-note"></span>
+              <span class="reliability-inline" id="irtParamsDig">a = —, b̄ = —</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-column">
+          <div class="test-col-head">
+            <h3 class="test-col-title">EUFTE Essay (0–10)</h3>
+            <div class="test-col-sub">Pass &ge; 5.0/10 · 15% Final (Top 2,235 only) · Latent Rater Model (r<sub>E</sub> = 0.70)</div>
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slEssayMean" class="control-label">Pool Mean (μ<sub>E</sub>)</label>
+              <span class="control-val" id="valEssayMean">6.20 / 10</span>
+            </div>
+            <input type="range" id="slEssayMean" min="4.0" max="8.0" step="0.05" value="6.2" />
+          </div>
+          <div class="control-block">
+            <div class="control-header">
+              <label for="slEssaySd" class="control-label">Pool SD (σ<sub>E</sub>)</label>
+              <span class="control-val" id="valEssaySd">1.20</span>
+            </div>
+            <input type="range" id="slEssaySd" min="0.6" max="3.5" step="0.05" value="1.2" />
+            <div class="control-meta">
+              <span class="reliability-inline" id="markedEssayMean">Top 2,235 marked mean: —</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details class="accordion" id="accPart2">
+        <summary>Part 2 Advanced: Latent Correlations &amp; Verbal Coupling (5×5 Matrix)</summary>
+        <div class="accordion-body">
+          <div class="corr-grid">
+            <div class="control-block">
+              <div class="control-header">
+                <label for="slRhoEukDig" class="control-label">EU Knowledge ↔ Digital Skills (ρ<sub>EUK,Dig</sub><sup>θ</sup>)</label>
+                <span class="control-val" id="valRhoEukDig">0.35</span>
+              </div>
+              <input type="range" id="slRhoEukDig" min="0.00" max="0.85" step="0.01" value="0.35" />
+            </div>
+
+            <div class="control-block">
+              <div class="control-header">
+                <label for="slRhoEukEssay" class="control-label">EU Knowledge ↔ EUFTE Essay (ρ<sub>EUK,E</sub><sup>θ</sup>)</label>
+                <span class="control-val" id="valRhoEukEssay">0.40</span>
+              </div>
+              <input type="range" id="slRhoEukEssay" min="0.00" max="0.85" step="0.01" value="0.40" />
+            </div>
+
+            <div class="control-block">
+              <div class="control-header">
+                <label for="slRhoDigEssay" class="control-label">Digital Skills ↔ EUFTE Essay (ρ<sub>Dig,E</sub><sup>θ</sup>)</label>
+                <span class="control-val" id="valRhoDigEssay">0.25</span>
+              </div>
+              <input type="range" id="slRhoDigEssay" min="0.00" max="0.85" step="0.01" value="0.25" />
+            </div>
+
+            <div class="control-block">
+              <div class="control-header">
+                <label for="slRhoVP2" class="control-label">Verbal ↔ Part 2 Latent Coupling (ρ<sub>V,P2</sub><sup>θ</sup>)</label>
+                <span class="control-val" id="valRhoVP2">0.35</span>
+              </div>
+              <input type="range" id="slRhoVP2" min="0.00" max="0.75" step="0.01" value="0.35" />
+            </div>
+          </div>
+
+          <div class="psd-status">
+            <span id="psdStatusText">5×5 latent correlation matrix: Positive-definite (exact)</span>
+            <span class="mono" id="p2PassStats">Part 2 MCQ Passers (EUK &ge; 15 &amp; Dig &ge; 20): —</span>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- SECTION 3: RESULTS, PERSONAL TESTER & PART 2 CHART -->
+    <section id="results" class="section" aria-labelledby="h-results">
+      <div class="section-header">
+        <h2 id="h-results" class="section-title">3. Reserve List Odds, Personal Score Tester &amp; Part 2 Cutoffs</h2>
+        <div class="section-meta" id="targetBenchmarkMeta">Click any Verbal score row to load it into the Personal Score Tester</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="odds-table" aria-label="Reserve list odds and Part 2 targets by Verbal score">
+          <thead>
+            <tr>
+              <th>Verbal Score</th>
+              <th>Est. Part 1 Passers</th>
+              <th>P(Num+Abs &ge; 10 | V)</th>
+              <th>Conditional RL Odds</th>
+              <th>Overall Odds (Pre-NA)</th>
+              <th id="thMinTarget">Min. EUK Target (at 85th pct Dig &amp; 7.0 EUFTE)</th>
+            </tr>
+          </thead>
+          <tbody id="oddsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Personal Score Tester -->
+      <div class="tester-grid" id="personalTester">
+        <div class="tester-controls">
+          <div>
+            <h3 class="tester-heading">Test Your Personal Score</h3>
+            <p class="tester-sub">Evaluate exact Preliminary (/100) and Final (/100) scores against the simulated Top 2,235 and Top 1,490 cutoffs.</p>
+          </div>
+
+          <div class="control-block">
+            <div class="control-header">
+              <label for="psVerbal" class="control-label">Verbal Reasoning (10–20)</label>
+              <span class="control-val" id="psVerbalContrib">32.00 Prelim / 28.00 Final</span>
+            </div>
+            <div class="tester-input-row">
+              <input type="range" id="psVerbal" min="10" max="20" step="1" value="16" />
+              <input type="number" id="psVerbalNum" class="num-input" min="10" max="20" step="1" value="16" aria-label="Verbal score numeric input" />
+            </div>
+          </div>
+
+          <div class="control-block">
+            <div class="control-header">
+              <label for="psEuk" class="control-label">EU Knowledge (0–30, pass &ge; 15)</label>
+              <span class="control-val" id="psEukContrib">24.00 Prelim / 20.00 Final</span>
+            </div>
+            <div class="tester-input-row">
+              <input type="range" id="psEuk" min="0" max="30" step="1" value="24" />
+              <input type="number" id="psEukNum" class="num-input" min="0" max="30" step="1" value="24" aria-label="EU Knowledge score numeric input" />
+            </div>
+          </div>
+
+          <div class="control-block">
+            <div class="control-header">
+              <label for="psDig" class="control-label">Digital Skills (0–40, pass &ge; 20)</label>
+              <span class="control-val" id="psDigContrib">25.50 Prelim / 21.25 Final</span>
+            </div>
+            <div class="tester-input-row">
+              <input type="range" id="psDig" min="0" max="40" step="1" value="34" />
+              <input type="number" id="psDigNum" class="num-input" min="0" max="40" step="1" value="34" aria-label="Digital Skills score numeric input" />
+            </div>
+          </div>
+
+          <div class="control-block">
+            <div class="control-header">
+              <label for="psEssay" class="control-label">EUFTE Essay (0.0–10.0, pass &ge; 5.0)</label>
+              <span class="control-val" id="psEssayContrib">10.50 Final (Top 2,235 only)</span>
+            </div>
+            <div class="tester-input-row">
+              <input type="range" id="psEssay" min="0" max="10" step="0.5" value="7.0" />
+              <input type="number" id="psEssayNum" class="num-input" min="0" max="10" step="0.5" value="7.0" aria-label="EUFTE Essay score numeric input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict-panel" aria-live="polite">
+          <div class="verdict-banner">
+            <div class="verdict-status" id="verdictBadge">—</div>
+            <div class="verdict-rank-summary" id="verdictRankSummary">—</div>
+          </div>
+
+          <div class="thresholds-row">
+            <div class="thresh-item">
+              <span class="thresh-name">EU Knowledge (&ge;15)</span>
+              <span class="thresh-val" id="thEukStatus">—</span>
+            </div>
+            <div class="thresh-item">
+              <span class="thresh-name">Digital Skills (&ge;20)</span>
+              <span class="thresh-val" id="thDigStatus">—</span>
+            </div>
+            <div class="thresh-item">
+              <span class="thresh-name">EUFTE Essay (&ge;5.0)</span>
+              <span class="thresh-val" id="thEssayStatus">—</span>
+            </div>
+          </div>
+
+          <div id="gateBlockAlert" class="gate-alert" hidden></div>
+
+          <div class="score-compare-grid">
+            <div class="score-compare-cell">
+              <div class="sc-label">Preliminary Score vs. Top 2,235</div>
+              <div class="sc-main" id="scPrelimScore">—</div>
+              <div class="sc-delta" id="scPrelimDelta">—</div>
+              <div class="sc-rank" id="scPrelimRank">—</div>
+            </div>
+            <div class="score-compare-cell">
+              <div class="sc-label">Final Score vs. Top 1,490</div>
+              <div class="sc-main" id="scFinalScore">—</div>
+              <div class="sc-delta" id="scFinalDelta">—</div>
+              <div class="sc-rank" id="scFinalRank">—</div>
+            </div>
+          </div>
+
+          <div class="exchange-rate">
+            <strong>Scoring exchange rates:</strong> 3 EUK Qs = 4 Digital Qs (both stages). Once past the Top 2,235 gate, <strong>+1.0 EUFTE</strong> = <strong>+1.80 EUK Qs</strong> = <strong>+2.40 Digital Qs</strong> = <strong>+0.86 Verbal Qs</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Part 2 Distribution Chart -->
+      <div class="chart-section-block">
+        <div class="chart-header">
+          <h3 class="chart-title" id="p2ChartTitle">Part 2 Score Distribution — Preliminary Ranking (Top 2,235 Gate)</h3>
+          <div class="segmented" role="tablist" aria-label="Part 2 distribution stage">
+            <button type="button" class="seg-btn active" id="btnStagePrelim" role="tab" aria-selected="true">Preliminary Ranking (Top 2,235 Gate)</button>
+            <button type="button" class="seg-btn" id="btnStageFinal" role="tab" aria-selected="false">Final Ranking (Top 1,490 Reserve List)</button>
+          </div>
+        </div>
+        <div class="chart-legend-row" style="margin-bottom: 10px;">
+          <span class="legend-item"><span class="swatch swatch-green"></span><span id="p2QualLegend">Top 2,235 Qualifying Tail</span></span>
+          <span class="legend-item"><span class="swatch swatch-below"></span>Eligible Non-Qualifying Candidates</span>
+          <span class="legend-item"><span class="swatch swatch-cutoff"></span>Live Cutoff Line</span>
+          <span class="legend-item"><span class="swatch swatch-personal"></span>Your Personal Score</span>
+        </div>
+        <div class="canvas-wrap" data-testid="part2-chart-wrap">
+          <canvas id="canvasPart2" aria-label="Part 2 Score Distribution histogram"></canvas>
+          <div id="tooltipPart2" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: MODEL TRANSPARENCY & DISCLAIMER -->
+    <section id="methodology" class="section" aria-labelledby="h-methodology">
+      <div class="section-header">
+        <h2 id="h-methodology" class="section-title">4. Model Transparency, Psychometric Assumptions &amp; Limitations</h2>
+        <div class="section-meta">Exact mathematical architecture behind the IRT simulator</div>
+      </div>
+
+      <div class="docs-list">
+        <details class="doc-item" open>
+          <summary>1. 3-Parameter Logistic (3PL) Item Response Theory &amp; Poisson-Binomial Scoring</summary>
+          <div class="doc-content">
+            <p>Each multiple-choice test (Verbal 20 Qs, Num+Abs 20 Qs, EU Knowledge 30 Qs, Digital Skills 40 Qs) is modeled using the 3-Parameter Logistic (3PL) IRT model rather than a naive Normal or Beta-Binomial approximation. For a candidate with standardized latent ability θ<sub>k</sub> ~ N(0, 1), the probability of answering item <em>i</em> correctly is:</p>
+            <div class="formula-box">P<sub>k,i</sub>(θ<sub>k</sub>) = c<sub>k,i</sub> + (1 − c<sub>k,i</sub>) / (1 + exp(−1.702 · a<sub>k</sub> · (θ<sub>k</sub> − b<sub>k,i</sub>)))</div>
+            <p>Item difficulties are spaced heterogeneously across the item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills, and σ<sub>b,NA</sub> = 0.85 for the composite Num+Abs test. Pseudo-guessing asymptotes reflect 4-option MCQs attenuated by speededness: c = 0.22 for Verbal (L1) and Numerical (items 1–10), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge, and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
+            <p>Given your chosen observed Mean (μ<sub>k</sub>) and SD (σ<sub>k</sub>), the engine calibrates (b̄<sub>k</sub>, a<sub>k</sub>) in real time via 41-node Gauss-Hermite quadrature and the Law of Total Variance: Var(X<sub>k</sub>) = Var<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)) + E<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)(1 − P<sub>k,i</sub>(θ))). Because the binomial measurement-error term E<sub>θ</sub>[SEM(θ)<sup>2</sup>] is strictly positive even as discrimination a<sub>k</sub> → 0.05, every MCQ test has an irreducible psychometric SD floor (σ<sub>min</sub>) and finite ceiling (σ<sub>max</sub> at a<sub>k</sub> = 3.50). Exact conditional score PMFs P(X<sub>k</sub> = s | θ) are computed via exact Poisson-Binomial dynamic programming on a 101-point θ grid—naturally capturing guessing floors, ceiling compression near 20/20 or 40/40, and conditional measurement error.</p>
+          </div>
+        </details>
+
+        <details class="doc-item">
+          <summary>2. EUFTE Essay Modeling (Latent Writing Proficiency + Inter-Rater Error)</summary>
+          <div class="doc-content">
+            <p>The EUFTE written test (0–10 in 0.5-point increments, pass &ge; 5.0) is a constructed-response evaluation with no multiple-choice guessing floor. Candidate latent writing proficiency θ<sub>E</sub> ~ N(0, 1) is combined with independent inter-rater and task error ε<sub>E</sub> ~ N(0, 1) using standard structured-essay reliability r<sub>E</sub> = 0.70:</p>
+            <div class="formula-box">S<sub>E</sub>* = μ<sub>E</sub>* + σ<sub>E</sub>* · (√0.70 · θ<sub>E</sub> + √0.30 · ε<sub>E</sub>), truncated to [0, 10] and rounded to 0.5-point steps</div>
+            <p>Internal parameters (μ<sub>E</sub>*, σ<sub>E</sub>*) are calibrated so that the truncated, discretized distribution across the unselected Part 2 sitter pool matches your slider Mean and SD. Because only the Top 2,235 preliminary scorers have their essays marked—and θ<sub>E</sub> is positively correlated with Verbal, EUK, and Digital Skills—the average essay score among marked candidates rises organically above the full-pool mean.</p>
+          </div>
+        </details>
+
+        <details class="doc-item">
+          <summary>3. Latent vs. Observed Correlation Attenuation, Range Restriction &amp; Zero-Flicker CRN</summary>
+          <div class="doc-content">
+            <p>Observed test scores contain measurement error, so observed correlations are strictly lower than underlying latent correlations following Spearman's attenuation relation (r<sub>obs</sub> ≈ ρ<sub>θ</sub> · √(α<sub>1</sub> · α<sub>2</sub>)). For example, a latent Part 1 correlation of ρ<sub>VN</sub><sup>θ</sup> = 0.60 typically translates to an observed score correlation of r<sub>VN</sub><sup>obs</sup> ≈ 0.42–0.47. Part 1 pass rates and Verbal distributions are solved deterministically via 21×21 bivariate Gauss-Hermite quadrature—capturing upward range restriction (selection on Num+Abs ≥ 10 shifts the Verbal mean up and compresses Verbal SD among passers).</p>
+            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws sampled rejection-free from the exact Part 1 survivor distribution, plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
+          </div>
+        </details>
+
+        <details class="doc-item">
+          <summary>4. Known Real-World Phenomena NOT Captured by the Model (Honest Caveats)</summary>
+          <div class="doc-content">
+            <ul>
+              <li><strong>Non-random Part 2 attrition:</strong> The simulator applies the no-show rate uniformly across all Part 1 passers. In reality, because Part 1 scores are released before Part 2, candidates scoring 10–14/20 in Verbal are far more likely to drop out than 17–20/20 scorers. Consequently, real-world no-shows soften the Top 1,490 cutoff much less than uniform attrition implies.</li>
+              <li><strong>Bimodal EU Knowledge preparation:</strong> Knowing one's Part 1 Verbal score before Part 2 creates a motivation split: high-Verbal contenders aggressively drill the published EUK source list, while low-Verbal passers invest less study time. This can produce heavier upper tails or bimodal EUK scores than a single unimodal normal latent trait.</li>
+              <li><strong>Language-pair heterogeneity (L1 vs. L2):</strong> Verbal Reasoning is taken in Language 1, whereas EUK, Digital Skills, and EUFTE are taken in Language 2. Differences in L2 fluency introduce extra variance across candidates that is independent of L1 Verbal ability.</li>
+              <li><strong>Eligibility checks &amp; tie-breaking:</strong> Administrative disqualifications (diploma, citizenship, language declarations) and EPSO's exact tie-handling rule at ranks 2,235 and 1,490 are omitted from the simulation.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="disclaimer-box">
+        <strong>Data &amp; Statistical Disclaimer:</strong> EPSO has not published official AD5 2026 score distributions, pass rates, item parameters, or competition cutoffs (only the official applicant count of 174,382, Part 1 sitter count of 75,274, essay-marking multiplier of 1.5×, reserve list target of 1,490, and test weightings are fixed competition facts). All probabilities, ranks, and cutoffs displayed by this simulator are statistical estimates strictly conditioned on your chosen parameters and psychometric assumptions.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>EPSO AD5 2026 Competition Simulator · 3PL IRT + Poisson-Binomial + Correlated CRN Engine</span>
+    <span>Runs 100% client-side · Zero external dependencies</span>
+  </footer>
+
+  <script id="irt-engine">
+  (function (root) {
+    'use strict';
+
+    // =========================================================================
+    // 1. Official EPSO AD5 2026 Competition Constants
+    // =========================================================================
+    const CONSTANTS = Object.freeze({
+      REGISTERED: 174382,
+      N_SIT: 75274,
+      PARTICIPATION_RATE: 75274 / 174382,
+      N_RL: 1490,
+      N_PRELIM: 2235,
+      PRELIM_MULTIPLIER: 1.5,
+      VERBAL_N: 20,
+      VERBAL_PASS: 10,
+      NA_N: 20,
+      NA_PASS: 10,
+      EUK_N: 30,
+      EUK_PASS: 15,
+      DIG_N: 40,
+      DIG_PASS: 20,
+      ESSAY_MAX: 10,
+      ESSAY_PASS: 5.0,
+      ESSAY_RELIABILITY: 0.70,
+      IRT_D: 1.702,
+      A_MIN: 0.05,
+      A_MAX: 3.50,
+      V_MEAN_MIN: 7.0,
+      V_MEAN_MAX: 16.0,
+      NA_MEAN_MIN: 6.5,
+      NA_MEAN_MAX: 16.0
+    });
+
+    const PRESETS = Object.freeze({
+      baseline: {
+        name: 'Revised IRT Baseline (~40% Pass)',
+        vMean: 10.5, vSd: 4.0,
+        naMean: 10.4, naSd: 3.8,
+        rhoVN: 0.60,
+        attrition: 10,
+        eukMean: 17.5, eukSd: 5.2,
+        digMean: 30.0, digSd: 4.2,
+        essayMean: 6.2, essaySd: 1.2,
+        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
+      },
+      toughPart1: {
+        name: 'Tougher Part 1 (~35% Pass)',
+        vMean: 9.8, vSd: 3.9,
+        naMean: 9.7, naSd: 3.7,
+        rhoVN: 0.60,
+        attrition: 10,
+        eukMean: 17.5, eukSd: 5.2,
+        digMean: 30.0, digSd: 4.2,
+        essayMean: 6.2, essaySd: 1.2,
+        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
+      },
+      drilledEuk: {
+        name: 'Drilled EUK + Easy Digital',
+        vMean: 10.5, vSd: 4.0,
+        naMean: 10.4, naSd: 3.8,
+        rhoVN: 0.60,
+        attrition: 10,
+        eukMean: 20.5, eukSd: 5.5,
+        digMean: 32.5, digSd: 3.8,
+        essayMean: 6.4, essaySd: 1.2,
+        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
+      },
+      highAttrition: {
+        name: '15% Part 2 Attrition',
+        vMean: 10.5, vSd: 4.0,
+        naMean: 10.4, naSd: 3.8,
+        rhoVN: 0.60,
+        attrition: 15,
+        eukMean: 17.5, eukSd: 5.2,
+        digMean: 30.0, digSd: 4.2,
+        essayMean: 6.2, essaySd: 1.2,
+        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
+      }
+    });
+
+    function calcPrelimScore(v, euk, dig) {
+      return 2.0 * v + 1.0 * euk + 0.75 * dig;
+    }
+
+    function calcFinalScore(v, euk, dig, essay) {
+      return 1.75 * v + (5.0 / 6.0) * euk + 0.625 * dig + 1.5 * essay;
+    }
+
+    // =========================================================================
+    // 2. Mathematical Primitives (Normal Inverse, Gauss-Hermite, Linear Algebra)
+    // =========================================================================
+    function normInv(p) {
+      if (p <= 0) return -8.0;
+      if (p >= 1) return 8.0;
+      const a1 = -3.969683028665376e+01, a2 = 2.209460984245205e+02,
+            a3 = -2.759285104469687e+02, a4 = 1.383577518672690e+02,
+            a5 = -3.066479806614716e+01, a6 = 2.506628277459239e+00;
+      const b1 = -5.447609879822406e+01, b2 = 1.615858368580409e+02,
+            b3 = -1.556989798598866e+02, b4 = 6.680131188771972e+01,
+            b5 = -1.328068155288572e+01;
+      const c1 = -7.784894002430293e-03, c2 = -3.223964580411365e-01,
+            c3 = -2.400758277161838e+00, c4 = -2.549732539343734e+00,
+            c5 = 4.374664141464968e+00,  c6 = 2.938163982698783e+00;
+      const d1 = 7.784695709041462e-03,  d2 = 3.224671290700398e-01,
+            d3 = 2.445134137142996e+00,  d4 = 3.754408661907416e+00;
+      const pLow = 0.02425;
+      const pHigh = 1 - pLow;
+      let q, r;
+      if (p < pLow) {
+        q = Math.sqrt(-2 * Math.log(p));
+        return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+               ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+      }
+      if (p <= pHigh) {
+        q = p - 0.5;
+        r = q * q;
+        return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+               (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+      }
+      q = Math.sqrt(-2 * Math.log(1 - p));
+      return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+              ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+    }
+
+    function normPdf(z) {
+      return 0.3989422804014327 * Math.exp(-0.5 * z * z);
+    }
+
+    // Jacobi eigendecomposition for symmetric n x n matrices
+    function jacobiEigen(mat) {
+      const n = mat.length;
+      const A = mat.map(row => row.slice());
+      const V = Array.from({ length: n }, (_, i) => {
+        const r = new Array(n).fill(0);
+        r[i] = 1;
+        return r;
+      });
+      const maxSweeps = 40;
+      for (let sweep = 0; sweep < maxSweeps; sweep++) {
+        let maxOff = 0;
+        for (let p = 0; p < n - 1; p++) {
+          for (let q = p + 1; q < n; q++) {
+            const apq = Math.abs(A[p][q]);
+            if (apq > maxOff) maxOff = apq;
+          }
+        }
+        if (maxOff < 1e-13) break;
+        for (let p = 0; p < n - 1; p++) {
+          for (let q = p + 1; q < n; q++) {
+            const apq = A[p][q];
+            if (Math.abs(apq) < 1e-14) continue;
+            const app = A[p][p];
+            const aqq = A[q][q];
+            const tau = (aqq - app) / (2 * apq);
+            const t = (tau >= 0 ? 1 : -1) / (Math.abs(tau) + Math.sqrt(1 + tau * tau));
+            const c = 1 / Math.sqrt(1 + t * t);
+            const s = t * c;
+            A[p][p] = app - t * apq;
+            A[q][q] = aqq + t * apq;
+            A[p][q] = 0;
+            A[q][p] = 0;
+            for (let k = 0; k < n; k++) {
+              if (k !== p && k !== q) {
+                const akp = A[k][p];
+                const akq = A[k][q];
+                A[k][p] = A[p][k] = c * akp - s * akq;
+                A[k][q] = A[q][k] = s * akp + c * akq;
+              }
+              const vkp = V[k][p];
+              const vkq = V[k][q];
+              V[k][p] = c * vkp - s * vkq;
+              V[k][q] = s * vkp + c * vkq;
+            }
+          }
+        }
+      }
+      const values = new Array(n);
+      for (let i = 0; i < n; i++) values[i] = A[i][i];
+      return { values, vectors: V };
+    }
+
+    // Gauss-Hermite nodes & weights for standard Normal N(0, 1) via Golub-Welsch
+    function buildGaussHermiteStandardNormal(n) {
+      // Tridiagonal matrix for physicists' Hermite polynomials; J[i][i+1] = sqrt((i+1)/2)
+      // For N(0,1): x = sqrt(2)*t => eigenvalues of tridiagonal with off-diagonal sqrt(i+1) directly!
+      const J = Array.from({ length: n }, () => new Array(n).fill(0));
+      for (let i = 0; i < n - 1; i++) {
+        const off = Math.sqrt(i + 1);
+        J[i][i + 1] = off;
+        J[i + 1][i] = off;
+      }
+      const eig = jacobiEigen(J);
+      const pairs = eig.values.map((val, idx) => ({
+        x: val,
+        w: eig.vectors[0][idx] * eig.vectors[0][idx]
+      }));
+      pairs.sort((a, b) => a.x - b.x);
+      let wSum = 0;
+      for (let i = 0; i < n; i++) wSum += pairs[i].w;
+      const x = new Float64Array(n);
+      const w = new Float64Array(n);
+      for (let i = 0; i < n; i++) {
+        x[i] = pairs[i].x;
+        w[i] = pairs[i].w / wSum;
+      }
+      return { x, w, n };
+    }
+
+    const GH41 = buildGaussHermiteStandardNormal(41);
+    const GH21 = buildGaussHermiteStandardNormal(21);
+
+    // 101-point theta grid in [-4.2, +4.2] for Poisson-Binomial DP tables
+    const THETA_GRID_N = 101;
+    const THETA_MIN = -4.2;
+    const THETA_MAX = 4.2;
+    const THETA_STEP = (THETA_MAX - THETA_MIN) / (THETA_GRID_N - 1);
+    const THETA_GRID = new Float64Array(THETA_GRID_N);
+    for (let i = 0; i < THETA_GRID_N; i++) {
+      THETA_GRID[i] = THETA_MIN + i * THETA_STEP;
+    }
+
+    // Nearest PSD Correlation Matrix + Cholesky Factorization
+    function ensurePsdAndCholesky(rawMatrix) {
+      const n = rawMatrix.length;
+      const eig = jacobiEigen(rawMatrix);
+      let minEig = Infinity;
+      for (let i = 0; i < n; i++) {
+        if (eig.values[i] < minEig) minEig = eig.values[i];
+      }
+      let corr = rawMatrix.map(r => r.slice());
+      let wasAdjusted = false;
+      if (minEig < 1e-4) {
+        wasAdjusted = true;
+        const floored = eig.values.map(v => Math.max(v, 1e-4));
+        const rec = Array.from({ length: n }, () => new Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            let s = 0;
+            for (let k = 0; k < n; k++) {
+              s += eig.vectors[i][k] * floored[k] * eig.vectors[j][k];
+            }
+            rec[i][j] = s;
+          }
+        }
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            corr[i][j] = rec[i][j] / Math.sqrt(rec[i][i] * rec[j][j]);
+          }
+          corr[i][i] = 1.0;
+        }
+      }
+
+      // Cholesky L such that L * L^T = corr
+      const L = Array.from({ length: n }, () => new Array(n).fill(0));
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j <= i; j++) {
+          let sum = 0;
+          for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+          if (i === j) {
+            L[i][j] = Math.sqrt(Math.max(1e-12, corr[i][i] - sum));
+          } else {
+            L[i][j] = (corr[i][j] - sum) / L[j][j];
+          }
+        }
+      }
+      return { corr, L, wasAdjusted, minEig };
+    }
+
+    // =========================================================================
+    // 3. 3PL IRT Item Bank, Calibration & Exact Poisson-Binomial DP
+    // =========================================================================
+    function buildItemSpec(nItems, sigmaB, cSpec) {
+      const bOffsets = new Float64Array(nItems);
+      const c = new Float64Array(nItems);
+      for (let i = 0; i < nItems; i++) {
+        bOffsets[i] = sigmaB * normInv((i + 0.5) / nItems);
+        c[i] = typeof cSpec === 'function' ? cSpec(i) : cSpec;
+      }
+      let cSum = 0;
+      for (let i = 0; i < nItems; i++) cSum += c[i];
+      return { nItems, sigmaB, bOffsets, c, cSum };
+    }
+
+    const TEST_SPECS = {
+      verbal: buildItemSpec(CONSTANTS.VERBAL_N, 0.75, 0.22),
+      na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.22 : 0.16)),
+      euk: buildItemSpec(CONSTANTS.EUK_N, 0.75, 0.23),
+      dig: buildItemSpec(CONSTANTS.DIG_N, 0.75, 0.18)
+    };
+
+    const GH41_TVALS = new Float64Array(41);
+
+    function irtMoments(spec, a, bBar) {
+      const D = CONSTANTS.IRT_D;
+      const Da = D * a;
+      const nItems = spec.nItems;
+      const bOff = spec.bOffsets;
+      const cArr = spec.c;
+      const ghX = GH41.x;
+      const ghW = GH41.w;
+      const qN = GH41.n;
+
+      let mean = 0;
+      let errVar = 0;
+
+      for (let q = 0; q < qN; q++) {
+        const th = ghX[q];
+        let t = 0;
+        let v = 0;
+        for (let i = 0; i < nItems; i++) {
+          const z = Da * (th - (bBar + bOff[i]));
+          let logistic;
+          if (z > 30) logistic = 1.0;
+          else if (z < -30) logistic = 0.0;
+          else logistic = 1.0 / (1.0 + Math.exp(-z));
+          const ci = cArr[i];
+          const p = ci + (1.0 - ci) * logistic;
+          t += p;
+          v += p * (1.0 - p);
+        }
+        GH41_TVALS[q] = t;
+        mean += ghW[q] * t;
+        errVar += ghW[q] * v;
+      }
+
+      let trueVar = 0;
+      for (let q = 0; q < qN; q++) {
+        const d = GH41_TVALS[q] - mean;
+        trueVar += ghW[q] * d * d;
+      }
+      const obsVar = trueVar + errVar;
+      return {
+        mean,
+        trueVar,
+        errVar,
+        obsVar,
+        obsSd: Math.sqrt(Math.max(1e-12, obsVar)),
+        reliability: obsVar > 1e-12 ? trueVar / obsVar : 0
+      };
+    }
+
+    // Fast safeguarded Newton-Raphson for bBar matching targetMean (converges in ~4-5 steps)
+    function solveBBarForMean(spec, a, targetMean) {
+      const Da = CONSTANTS.IRT_D * a;
+      const nItems = spec.nItems;
+      const bOff = spec.bOffsets;
+      const cArr = spec.c;
+      // 21-node GH is accurate to <1e-7 for smooth 3PL means and 2x faster
+      const ghX = GH21.x;
+      const ghW = GH21.w;
+      const qN = GH21.n;
+
+      let lo = -12.0;
+      let hi = 12.0;
+      // Analytical initial guess from average guessing-adjusted proportion
+      const avgC = spec.cSum / nItems;
+      const pAvg = Math.min(0.99, Math.max(0.01, (targetMean / nItems - avgC) / (1.0 - avgC)));
+      let x = -Math.log(pAvg / (1.0 - pAvg)) / Math.max(0.3, Da);
+      if (x <= lo || x >= hi || !Number.isFinite(x)) x = 0.0;
+
+      for (let iter = 0; iter < 14; iter++) {
+        let mean = 0;
+        let deriv = 0;
+        for (let q = 0; q < qN; q++) {
+          const th = ghX[q];
+          const w = ghW[q];
+          let t = 0;
+          let dt = 0;
+          for (let i = 0; i < nItems; i++) {
+            const z = Da * (th - (x + bOff[i]));
+            let L;
+            if (z > 30) L = 1.0;
+            else if (z < -30) L = 0.0;
+            else L = 1.0 / (1.0 + Math.exp(-z));
+            const oneMinusC = 1.0 - cArr[i];
+            t += cArr[i] + oneMinusC * L;
+            dt += oneMinusC * L * (1.0 - L);
+          }
+          mean += w * t;
+          deriv -= w * Da * dt;
+        }
+        const diff = mean - targetMean;
+        if (Math.abs(diff) < 1e-6) return x;
+        if (diff > 0) lo = x;
+        else hi = x;
+        if (hi - lo < 1e-6) return 0.5 * (lo + hi);
+
+        let next = Math.abs(deriv) > 1e-9 ? x - diff / deriv : 0.5 * (lo + hi);
+        if (next <= lo || next >= hi) next = 0.5 * (lo + hi);
+        x = next;
+      }
+      return x;
+    }
+
+    function buildPoissonBinomialTable(spec, a, bBar, passMark) {
+      const D = CONSTANTS.IRT_D;
+      const Da = D * a;
+      const N = spec.nItems;
+      const stride = N + 1;
+      const pmf = new Float64Array(THETA_GRID_N * stride);
+      const cdf = new Float64Array(THETA_GRID_N * stride);
+      const passProb = new Float64Array(THETA_GRID_N);
+      const expScore = new Float64Array(THETA_GRID_N);
+      const dp = new Float64Array(stride);
+
+      for (let g = 0; g < THETA_GRID_N; g++) {
+        const th = THETA_GRID[g];
+        dp.fill(0);
+        dp[0] = 1.0;
+        let eScore = 0;
+        for (let i = 0; i < N; i++) {
+          const z = Da * (th - (bBar + spec.bOffsets[i]));
+          let logistic;
+          if (z > 30) logistic = 1.0;
+          else if (z < -30) logistic = 0.0;
+          else logistic = 1.0 / (1.0 + Math.exp(-z));
+          const p = spec.c[i] + (1.0 - spec.c[i]) * logistic;
+          const q = 1.0 - p;
+          eScore += p;
+          for (let s = i + 1; s >= 1; s--) {
+            dp[s] = dp[s] * q + dp[s - 1] * p;
+          }
+          dp[0] *= q;
+        }
+        expScore[g] = eScore;
+        const base = g * stride;
+        let cum = 0;
+        let pPass = 0;
+        for (let s = 0; s <= N; s++) {
+          const val = dp[s];
+          pmf[base + s] = val;
+          cum += val;
+          cdf[base + s] = cum;
+          if (s >= passMark) pPass += val;
+        }
+        cdf[base + N] = 1.0;
+        passProb[g] = Math.min(1.0, Math.max(0.0, pPass));
+      }
+      return { N, stride, pmf, cdf, passProb, expScore };
+    }
+
+    function exactPassProbAtTheta(spec, a, bBar, passMark, th, dpBuf) {
+      const Da = CONSTANTS.IRT_D * a;
+      const N = spec.nItems;
+      dpBuf.fill(0);
+      dpBuf[0] = 1.0;
+      for (let i = 0; i < N; i++) {
+        const z = Da * (th - (bBar + spec.bOffsets[i]));
+        let logistic;
+        if (z > 30) logistic = 1.0;
+        else if (z < -30) logistic = 0.0;
+        else logistic = 1.0 / (1.0 + Math.exp(-z));
+        const p = spec.c[i] + (1.0 - spec.c[i]) * logistic;
+        const q = 1.0 - p;
+        for (let s = i + 1; s >= 1; s--) {
+          dpBuf[s] = dpBuf[s] * q + dpBuf[s - 1] * p;
+        }
+        dpBuf[0] *= q;
+      }
+      let pPass = 0;
+      for (let s = passMark; s <= N; s++) pPass += dpBuf[s];
+      return Math.min(1.0, Math.max(0.0, pPass));
+    }
+
+    const calibrationCache = new Map();
+
+    function calibrate3PLParamsOnly(testKey, targetMean, targetSd) {
+      const spec = TEST_SPECS[testKey];
+      const minFeasibleMean = spec.cSum + 0.15;
+      const maxFeasibleMean = spec.nItems - 0.15;
+      const clampedMean = Math.min(maxFeasibleMean, Math.max(minFeasibleMean, targetMean));
+
+      const bAtMinA = solveBBarForMean(spec, CONSTANTS.A_MIN, clampedMean);
+      const momMin = irtMoments(spec, CONSTANTS.A_MIN, bAtMinA);
+
+      if (targetSd <= momMin.obsSd) {
+        return {
+          spec, a: CONSTANTS.A_MIN, bBar: bAtMinA, moments: momMin,
+          sdMin: momMin.obsSd, sdMax: momMin.obsSd, clampedSd: 'min'
+        };
+      }
+
+      const bAtMaxA = solveBBarForMean(spec, CONSTANTS.A_MAX, clampedMean);
+      const momMax = irtMoments(spec, CONSTANTS.A_MAX, bAtMaxA);
+
+      if (targetSd >= momMax.obsSd) {
+        return {
+          spec, a: CONSTANTS.A_MAX, bBar: bAtMaxA, moments: momMax,
+          sdMin: momMin.obsSd, sdMax: momMax.obsSd, clampedSd: 'max'
+        };
+      }
+
+      // Safeguarded secant / regula-falsi on a in [A_MIN, A_MAX] (converges in ~6-8 evals)
+      let loA = CONSTANTS.A_MIN, loSd = momMin.obsSd;
+      let hiA = CONSTANTS.A_MAX, hiSd = momMax.obsSd;
+      let a = 1.0;
+      let bBar = 0;
+      let moments = momMin;
+
+      for (let iter = 0; iter < 16; iter++) {
+        let nextA;
+        if (iter % 3 !== 2 && hiSd - loSd > 1e-7) {
+          const frac = (targetSd - loSd) / (hiSd - loSd);
+          nextA = loA + Math.min(0.92, Math.max(0.08, frac)) * (hiA - loA);
+        } else {
+          nextA = 0.5 * (loA + hiA);
+        }
+        const nb = solveBBarForMean(spec, nextA, clampedMean);
+        const nm = irtMoments(spec, nextA, nb);
+        a = nextA;
+        bBar = nb;
+        moments = nm;
+        if (Math.abs(nm.obsSd - targetSd) < 1e-4 || (hiA - loA) < 5e-4) break;
+        if (nm.obsSd < targetSd) {
+          loA = nextA;
+          loSd = nm.obsSd;
+        } else {
+          hiA = nextA;
+          hiSd = nm.obsSd;
+        }
+      }
+
+      return {
+        spec, a, bBar, moments,
+        sdMin: momMin.obsSd, sdMax: momMax.obsSd, clampedSd: null
+      };
+    }
+
+    function calibrate3PL(testKey, targetMean, targetSd, passMark) {
+      const cacheKey = `${testKey}|${targetMean.toFixed(4)}|${targetSd.toFixed(4)}`;
+      if (calibrationCache.has(cacheKey)) {
+        return calibrationCache.get(cacheKey);
+      }
+      const p = calibrate3PLParamsOnly(testKey, targetMean, targetSd);
+      const table = buildPoissonBinomialTable(p.spec, p.a, p.bBar, passMark);
+      const res = {
+        testKey,
+        spec: p.spec,
+        targetMean,
+        targetSd,
+        effectiveMean: p.moments.mean,
+        effectiveSd: p.moments.obsSd,
+        sdMin: p.sdMin,
+        sdMax: p.sdMax,
+        clampedSd: p.clampedSd,
+        a: p.a,
+        bBar: p.bBar,
+        reliability: p.moments.reliability,
+        trueVar: p.moments.trueVar,
+        errVar: p.moments.errVar,
+        table
+      };
+
+      if (calibrationCache.size > 400) {
+        calibrationCache.clear();
+      }
+      calibrationCache.set(cacheKey, res);
+      return res;
+    }
+
+    // Fast linear interpolation helpers on the 101-node theta grid
+    function gridPosition(theta) {
+      if (theta <= THETA_MIN) return { idx: 0, frac: 0 };
+      if (theta >= THETA_MAX) return { idx: THETA_GRID_N - 2, frac: 1 };
+      const pos = (theta - THETA_MIN) / THETA_STEP;
+      const idx = Math.floor(pos);
+      if (idx >= THETA_GRID_N - 1) return { idx: THETA_GRID_N - 2, frac: 1 };
+      return { idx, frac: pos - idx };
+    }
+
+    function interpPassProb(table, theta) {
+      const { idx, frac } = gridPosition(theta);
+      const arr = table.passProb;
+      return arr[idx] * (1 - frac) + arr[idx + 1] * frac;
+    }
+
+    function interpExpScore(table, theta) {
+      const { idx, frac } = gridPosition(theta);
+      const arr = table.expScore;
+      return arr[idx] * (1 - frac) + arr[idx + 1] * frac;
+    }
+
+    function interpPmfAtScore(table, theta, s) {
+      const { idx, frac } = gridPosition(theta);
+      const st = table.stride;
+      return table.pmf[idx * st + s] * (1 - frac) + table.pmf[(idx + 1) * st + s] * frac;
+    }
+
+    function sampleFromCdfTable(table, theta, u) {
+      const { idx, frac } = gridPosition(theta);
+      const st = table.stride;
+      const base0 = idx * st;
+      const base1 = (idx + 1) * st;
+      const omf = 1 - frac;
+      const cdf = table.cdf;
+      let lo = 0;
+      let hi = table.N;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        const cVal = cdf[base0 + mid] * omf + cdf[base1 + mid] * frac;
+        if (cVal < u) lo = mid + 1;
+        else hi = mid;
+      }
+      return lo;
+    }
+
+    function sampleVerbalGivenPass(table, theta, u) {
+      const { idx, frac } = gridPosition(theta);
+      const st = table.stride;
+      const base0 = idx * st;
+      const base1 = (idx + 1) * st;
+      const omf = 1 - frac;
+      const cdf = table.cdf;
+      const cBelow = cdf[base0 + 9] * omf + cdf[base1 + 9] * frac;
+      const target = cBelow + u * (1.0 - cBelow);
+      let lo = 10;
+      let hi = 20;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        const cVal = cdf[base0 + mid] * omf + cdf[base1 + mid] * frac;
+        if (cVal < target) lo = mid + 1;
+        else hi = mid;
+      }
+      return lo;
+    }
+
+    // =========================================================================
+    // 4. EUFTE Essay Latent Rater-Error Calibration (r_E = 0.70, 0-10 in 0.5)
+    // =========================================================================
+    function discretizeEssay(raw) {
+      if (raw <= 0) return 0;
+      if (raw >= 10) return 10;
+      return Math.round(raw * 2) * 0.5;
+    }
+
+    function essayMoments(muStar, sdStar) {
+      const ghX = GH41.x;
+      const ghW = GH41.w;
+      let mean = 0;
+      let m2 = 0;
+      for (let q = 0; q < GH41.n; q++) {
+        const val = discretizeEssay(muStar + sdStar * ghX[q]);
+        const w = ghW[q];
+        mean += w * val;
+        m2 += w * val * val;
+      }
+      return { mean, sd: Math.sqrt(Math.max(1e-9, m2 - mean * mean)) };
+    }
+
+    function calibrateEssay(targetMean, targetSd) {
+      // Calibrate internal (muStar, sdStar) so truncated/discretized pool matches (targetMean, targetSd)
+      let muStar = targetMean;
+      let sdStar = targetSd;
+      for (let iter = 0; iter < 12; iter++) {
+        const mom = essayMoments(muStar, sdStar);
+        const errM = targetMean - mom.mean;
+        const ratioS = mom.sd > 1e-4 ? targetSd / mom.sd : 1.0;
+        muStar += 0.85 * errM;
+        sdStar = Math.min(6.5, Math.max(0.3, sdStar * Math.pow(ratioS, 0.75)));
+        if (Math.abs(errM) < 1e-3 && Math.abs(mom.sd - targetSd) < 2e-3) break;
+      }
+      return { muStar, sdStar };
+    }
+
+    // =========================================================================
+    // 5. Exact 2D Gauss-Hermite Part 1 Bivariate Quadrature
+    // =========================================================================
+    function computePart1Exact(vCal, naCal, rhoVN) {
+      const qN = GH21.n;
+      const qX = GH21.x;
+      const qW = GH21.w;
+      const sqrtOneMinusR2 = Math.sqrt(Math.max(0, 1 - rhoVN * rhoVN));
+
+      const verbalAllPmf = new Float64Array(21);
+      const verbalPassPmf = new Float64Array(21);
+      const condNAPassGivenV = new Float64Array(21);
+
+      let pVerbalPass = 0;
+      let pNAPass = 0;
+      let pJointPass = 0;
+      let covObs = 0;
+
+      const vMean = vCal.effectiveMean;
+      const naMean = naCal.effectiveMean;
+
+      for (let i = 0; i < qN; i++) {
+        const thV = qX[i];
+        const wV = qW[i];
+        const pVPassAtTh = interpPassProb(vCal.table, thV);
+        const eV = interpExpScore(vCal.table, thV);
+        pVerbalPass += wV * pVPassAtTh;
+
+        let pNAPassGivenThV = 0;
+        let eNAGivenThV = 0;
+        for (let j = 0; j < qN; j++) {
+          const z1 = qX[j];
+          const w1 = qW[j];
+          const thNA = rhoVN * thV + sqrtOneMinusR2 * z1;
+          const pNA = interpPassProb(naCal.table, thNA);
+          pNAPassGivenThV += w1 * pNA;
+          eNAGivenThV += w1 * interpExpScore(naCal.table, thNA);
+        }
+
+        pNAPass += wV * pNAPassGivenThV;
+        pJointPass += wV * pVPassAtTh * pNAPassGivenThV;
+        covObs += wV * (eV - vMean) * (eNAGivenThV - naMean);
+
+        for (let s = 0; s <= 20; s++) {
+          const ps = interpPmfAtScore(vCal.table, thV, s);
+          verbalAllPmf[s] += wV * ps;
+          if (s >= 10) {
+            verbalPassPmf[s] += wV * ps * pNAPassGivenThV;
+          }
+        }
+      }
+
+      // Normalize slightly for numerical hygiene
+      let sumAll = 0;
+      for (let s = 0; s <= 20; s++) sumAll += verbalAllPmf[s];
+      for (let s = 0; s <= 20; s++) verbalAllPmf[s] /= sumAll;
+
+      for (let s = 0; s <= 20; s++) {
+        if (s >= 10 && verbalAllPmf[s] > 1e-12) {
+          condNAPassGivenV[s] = Math.min(1.0, verbalPassPmf[s] / verbalAllPmf[s]);
+        } else {
+          // Even for s < 10 compute conditional P(NA >= 10 | V = s) for informative tooltips
+          condNAPassGivenV[s] = 0;
+        }
+      }
+
+      // Compute P(NA >= 10 | V = s) for s < 10 too so hover tooltips on 0-9 bars are exact
+      for (let s = 0; s < 10; s++) {
+        let num = 0;
+        for (let i = 0; i < qN; i++) {
+          const thV = qX[i];
+          const wV = qW[i];
+          const ps = interpPmfAtScore(vCal.table, thV, s);
+          let pNAPassGivenThV = 0;
+          for (let j = 0; j < qN; j++) {
+            const thNA = rhoVN * thV + sqrtOneMinusR2 * qX[j];
+            pNAPassGivenThV += qW[j] * interpPassProb(naCal.table, thNA);
+          }
+          num += wV * ps * pNAPassGivenThV;
+        }
+        condNAPassGivenV[s] = verbalAllPmf[s] > 1e-12 ? Math.min(1.0, num / verbalAllPmf[s]) : 0;
+      }
+
+      const obsCorrVN = Math.max(-0.99, Math.min(0.99, covObs / (vCal.effectiveSd * naCal.effectiveSd)));
+      const estPassers = CONSTANTS.N_SIT * pJointPass;
+
+      // Passer verbal mean & SD (range restriction diagnostic)
+      let passVMean = 0;
+      let passVM2 = 0;
+      if (pJointPass > 1e-10) {
+        for (let s = 10; s <= 20; s++) {
+          const w = verbalPassPmf[s] / pJointPass;
+          passVMean += w * s;
+          passVM2 += w * s * s;
+        }
+      }
+      const passVSd = Math.sqrt(Math.max(0, passVM2 - passVMean * passVMean));
+
+      return {
+        pVerbalPass,
+        pNAPass,
+        pJointPass,
+        estPassers,
+        obsCorrVN,
+        verbalAllPmf,
+        verbalPassPmf,
+        condNAPassGivenV,
+        passVMean,
+        passVSd
+      };
+    }
+
+    // Bidirectional Joint Pass Rate Solver (fast safeguarded secant/bisection, equal shift delta)
+    function solveMeansForPassRate(state, targetPassRate) {
+      const { vMean, vSd, naMean, naSd, rhoVN } = state;
+      const vMin = CONSTANTS.V_MEAN_MIN;
+      const vMax = CONSTANTS.V_MEAN_MAX;
+      const naMin = CONSTANTS.NA_MEAN_MIN;
+      const naMax = CONSTANTS.NA_MEAN_MAX;
+      const sqrtOneMinusR2 = Math.sqrt(Math.max(0, 1 - rhoVN * rhoVN));
+      const dpBuf = new Float64Array(21);
+
+      // Fast exact joint pass rate using 21x21 GH without constructing full 101-node PMF/CDF tables
+      function evalPairFast(vm, nam) {
+        const vp = calibrate3PLParamsOnly('verbal', vm, vSd);
+        const nap = calibrate3PLParamsOnly('na', nam, naSd);
+        // Build tiny 41-point passProb LUT for NA so inner 21x21 loop is instant
+        const lutN = 41;
+        const lutMin = -4.2, lutMax = 4.2, lutStep = (lutMax - lutMin) / (lutN - 1);
+        const naLut = new Float64Array(lutN);
+        for (let g = 0; g < lutN; g++) {
+          naLut[g] = exactPassProbAtTheta(nap.spec, nap.a, nap.bBar, CONSTANTS.NA_PASS, lutMin + g * lutStep, dpBuf);
+        }
+        const qN = GH21.n, qX = GH21.x, qW = GH21.w;
+        let pJoint = 0;
+        for (let i = 0; i < qN; i++) {
+          const thV = qX[i];
+          const pV = exactPassProbAtTheta(vp.spec, vp.a, vp.bBar, CONSTANTS.VERBAL_PASS, thV, dpBuf);
+          let pNA = 0;
+          for (let j = 0; j < qN; j++) {
+            const thNA = rhoVN * thV + sqrtOneMinusR2 * qX[j];
+            let pAtTh;
+            if (thNA <= lutMin) pAtTh = naLut[0];
+            else if (thNA >= lutMax) pAtTh = naLut[lutN - 1];
+            else {
+              const pos = (thNA - lutMin) / lutStep;
+              const idx = Math.floor(pos);
+              const f = pos - idx;
+              pAtTh = naLut[idx] * (1 - f) + naLut[idx + 1] * f;
+            }
+            pNA += qW[j] * pAtTh;
+          }
+          pJoint += qW[i] * pV * pNA;
+        }
+        return pJoint;
+      }
+
+      function solve1D(fn, lo, hi, fLo, fHi) {
+        let a = lo, fa = fLo;
+        let b = hi, fb = fHi;
+        for (let iter = 0; iter < 12; iter++) {
+          let mid;
+          if (iter % 3 !== 2 && fb - fa > 1e-6) {
+            const frac = (targetPassRate - fa) / (fb - fa);
+            mid = a + Math.min(0.92, Math.max(0.08, frac)) * (b - a);
+          } else {
+            mid = 0.5 * (a + b);
+          }
+          const fm = fn(mid);
+          if (Math.abs(fm - targetPassRate) < 3e-4 || (b - a) < 0.004) return mid;
+          if (fm < targetPassRate) { a = mid; fa = fm; }
+          else { b = mid; fb = fm; }
+        }
+        return 0.5 * (a + b);
+      }
+
+      const minPossible = evalPairFast(vMin, naMin);
+      if (targetPassRate <= minPossible + 1e-4) {
+        return {
+          vMean: vMin,
+          naMean: naMin,
+          achievedPassRate: minPossible,
+          clampNote: `Both means at lower slider bounds (min pass rate ${(minPossible * 100).toFixed(1)}%)`
+        };
+      }
+
+      const maxPossible = evalPairFast(vMax, naMax);
+      if (targetPassRate >= maxPossible - 1e-4) {
+        return {
+          vMean: vMax,
+          naMean: naMax,
+          achievedPassRate: maxPossible,
+          clampNote: `Both means at upper slider bounds (max pass rate ${(maxPossible * 100).toFixed(1)}%)`
+        };
+      }
+
+      // Phase 1: Equal shift delta while both stay inside [min, max]
+      const loEqual = Math.max(vMin - vMean, naMin - naMean);
+      const hiEqual = Math.min(vMax - vMean, naMax - naMean);
+      const pAtLoEqual = evalPairFast(vMean + loEqual, naMean + loEqual);
+      const pAtHiEqual = evalPairFast(vMean + hiEqual, naMean + hiEqual);
+
+      if (targetPassRate >= pAtLoEqual && targetPassRate <= pAtHiEqual) {
+        const delta = solve1D(d => evalPairFast(vMean + d, naMean + d), loEqual, hiEqual, pAtLoEqual, pAtHiEqual);
+        const outV = Math.min(vMax, Math.max(vMin, Math.round((vMean + delta) * 100) / 100));
+        const outNA = Math.min(naMax, Math.max(naMin, Math.round((naMean + delta) * 100) / 100));
+        return {
+          vMean: outV,
+          naMean: outNA,
+          achievedPassRate: evalPairFast(outV, outNA),
+          clampNote: ''
+        };
+      }
+
+      // Phase 2: One mean hit its bound; clamp it and let the other absorb the remaining shift
+      if (targetPassRate > pAtHiEqual) {
+        const vHitFirst = (vMax - vMean) <= (naMax - naMean);
+        if (vHitFirst) {
+          const sol = solve1D(m => evalPairFast(vMax, m), naMean + hiEqual, naMax, pAtHiEqual, maxPossible);
+          const outNA = Math.min(naMax, Math.max(naMin, Math.round(sol * 100) / 100));
+          return {
+            vMean: vMax,
+            naMean: outNA,
+            achievedPassRate: evalPairFast(vMax, outNA),
+            clampNote: `Verbal mean clamped at ${vMax.toFixed(1)}; Num+Abs absorbed remaining shift`
+          };
+        } else {
+          const sol = solve1D(m => evalPairFast(m, naMax), vMean + hiEqual, vMax, pAtHiEqual, maxPossible);
+          const outV = Math.min(vMax, Math.max(vMin, Math.round(sol * 100) / 100));
+          return {
+            vMean: outV,
+            naMean: naMax,
+            achievedPassRate: evalPairFast(outV, naMax),
+            clampNote: `Num+Abs mean clamped at ${naMax.toFixed(1)}; Verbal absorbed remaining shift`
+          };
+        }
+      } else {
+        const vHitFirst = (vMin - vMean) >= (naMin - naMean);
+        if (vHitFirst) {
+          const sol = solve1D(m => evalPairFast(vMin, m), naMin, naMean + loEqual, minPossible, pAtLoEqual);
+          const outNA = Math.min(naMax, Math.max(naMin, Math.round(sol * 100) / 100));
+          return {
+            vMean: vMin,
+            naMean: outNA,
+            achievedPassRate: evalPairFast(vMin, outNA),
+            clampNote: `Verbal mean clamped at ${vMin.toFixed(1)}; Num+Abs absorbed remaining shift`
+          };
+        } else {
+          const sol = solve1D(m => evalPairFast(m, naMin), vMin, vMean + loEqual, minPossible, pAtLoEqual);
+          const outV = Math.min(vMax, Math.max(vMin, Math.round(sol * 100) / 100));
+          return {
+            vMean: outV,
+            naMean: naMin,
+            achievedPassRate: evalPairFast(outV, naMin),
+            clampNote: `Num+Abs mean clamped at ${naMin.toFixed(1)}; Verbal absorbed remaining shift`
+          };
+        }
+      }
+    }
+
+    // =========================================================================
+    // 6. Fixed Common Random Numbers (CRN) Bank (Zero Flicker)
+    // =========================================================================
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function createCRNBank() {
+      const rng = mulberry32(20260514);
+      function randU() {
+        // Keep strictly in (1e-7, 1 - 1e-7)
+        return 1e-7 + (1 - 2e-7) * rng();
+      }
+      function randN() {
+        const u1 = randU();
+        const u2 = randU();
+        return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+      }
+
+      const MAIN_N = 40000;
+      const main = {
+        N: MAIN_N,
+        uThV: new Float64Array(MAIN_N),
+        uZ1: new Float64Array(MAIN_N),
+        uVScore: new Float64Array(MAIN_N),
+        z2: new Float64Array(MAIN_N),
+        z3: new Float64Array(MAIN_N),
+        z4: new Float64Array(MAIN_N),
+        uEuk: new Float64Array(MAIN_N),
+        uDig: new Float64Array(MAIN_N),
+        zEssayErr: new Float64Array(MAIN_N)
+      };
+
+      // Stratify uThV across [0, 1) with deterministic jitter for ultra-low variance
+      const perm = new Int32Array(MAIN_N);
+      for (let i = 0; i < MAIN_N; i++) perm[i] = i;
+      for (let i = MAIN_N - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        const tmp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = tmp;
+      }
+      for (let i = 0; i < MAIN_N; i++) {
+        main.uThV[i] = (perm[i] + randU()) / MAIN_N;
+        main.uZ1[i] = randU();
+        main.uVScore[i] = randU();
+        main.z2[i] = randN();
+        main.z3[i] = randN();
+        main.z4[i] = randN();
+        main.uEuk[i] = randU();
+        main.uDig[i] = randU();
+        main.zEssayErr[i] = randN();
+      }
+
+      // Dedicated CRN draws per integer Verbal score v in {10..20}: 3,000 draws each
+      const COND_N = 3000;
+      const cond = [];
+      for (let idx = 0; idx <= 10; idx++) {
+        const uThV = new Float64Array(COND_N);
+        const uZ1 = new Float64Array(COND_N);
+        const z2 = new Float64Array(COND_N);
+        const z3 = new Float64Array(COND_N);
+        const z4 = new Float64Array(COND_N);
+        const uEuk = new Float64Array(COND_N);
+        const uDig = new Float64Array(COND_N);
+        const zEssayErr = new Float64Array(COND_N);
+        for (let i = 0; i < COND_N; i++) {
+          uThV[i] = (i + randU()) / COND_N;
+          uZ1[i] = randU();
+          z2[i] = randN();
+          z3[i] = randN();
+          z4[i] = randN();
+          uEuk[i] = randU();
+          uDig[i] = randU();
+          zEssayErr[i] = randN();
+        }
+        cond.push({ N: COND_N, uThV, uZ1, z2, z3, z4, uEuk, uDig, zEssayErr });
+      }
+
+      return { main, cond };
+    }
+
+    const CRN = createCRNBank();
+
+    // Precomputed grids for rejection-free sampling of (theta_V, Z_1) conditional on Part 1 pass
+    const SAMP_V_N = 61;
+    const SAMP_Z1_N = 41;
+    const SAMP_MIN = -3.8;
+    const SAMP_MAX = 3.8;
+    const SAMP_V_STEP = (SAMP_MAX - SAMP_MIN) / (SAMP_V_N - 1);
+    const SAMP_Z1_STEP = (SAMP_MAX - SAMP_MIN) / (SAMP_Z1_N - 1);
+    const SAMP_V_GRID = new Float64Array(SAMP_V_N);
+    const SAMP_V_PDF = new Float64Array(SAMP_V_N);
+    const SAMP_Z1_GRID = new Float64Array(SAMP_Z1_N);
+    const SAMP_Z1_PDF = new Float64Array(SAMP_Z1_N);
+
+    for (let i = 0; i < SAMP_V_N; i++) {
+      SAMP_V_GRID[i] = SAMP_MIN + i * SAMP_V_STEP;
+      SAMP_V_PDF[i] = normPdf(SAMP_V_GRID[i]);
+    }
+    for (let j = 0; j < SAMP_Z1_N; j++) {
+      SAMP_Z1_GRID[j] = SAMP_MIN + j * SAMP_Z1_STEP;
+      SAMP_Z1_PDF[j] = normPdf(SAMP_Z1_GRID[j]);
+    }
+
+    function sampleContinuousFromCdf(cdfArr, offset, len, grid, u) {
+      let lo = 0;
+      let hi = len - 1;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (cdfArr[offset + mid] < u) lo = mid + 1;
+        else hi = mid;
+      }
+      if (lo === 0) return grid[0];
+      const cPrev = cdfArr[offset + lo - 1];
+      const cCurr = cdfArr[offset + lo];
+      const denom = cCurr - cPrev;
+      const frac = denom > 1e-12 ? (u - cPrev) / denom : 0.5;
+      return grid[lo - 1] + frac * (grid[lo] - grid[lo - 1]);
+    }
+
+    // Reusable buffers for sorting & histograms
+    const mainPrelimScores = new Float64Array(CRN.main.N);
+    const mainFinalScores = new Float64Array(CRN.main.N);
+    const mainEligibleMask = new Uint8Array(CRN.main.N);
+    const mainDigScores = new Uint8Array(CRN.main.N);
+    const mainEssayScores = new Float64Array(CRN.main.N);
+
+    // =========================================================================
+    // 7. Full Simulation Runner
+    // =========================================================================
+    function runSimulation(params) {
+      // 1. Calibrate all 4 MCQ 3PL models + Essay model
+      const vCal = calibrate3PL('verbal', params.vMean, params.vSd, CONSTANTS.VERBAL_PASS);
+      const naCal = calibrate3PL('na', params.naMean, params.naSd, CONSTANTS.NA_PASS);
+      const eukCal = calibrate3PL('euk', params.eukMean, params.eukSd, CONSTANTS.EUK_PASS);
+      const digCal = calibrate3PL('dig', params.digMean, params.digSd, CONSTANTS.DIG_PASS);
+      const essayCal = calibrateEssay(params.essayMean, params.essaySd);
+
+      // 2. Exact 2D Part 1 Quadrature
+      const part1 = computePart1Exact(vCal, naCal, params.rhoVN);
+
+      const estPart1Passers = part1.estPassers;
+      const attritionFrac = Math.min(0.40, Math.max(0.0, params.attrition / 100));
+      const estPart2Sitters = estPart1Passers * (1.0 - attritionFrac);
+      const baselinePasserOdds = estPart1Passers > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart1Passers) : 1.0;
+
+      // 3. Construct 5x5 Latent Correlation Matrix & Cholesky
+      // Order: [0: V, 1: NA, 2: EUK, 3: Dig, 4: Essay]
+      const rVN = params.rhoVN;
+      const rVP2 = params.rhoVP2;
+      const rNAP2 = rVN * rVP2;
+      const rawCorr = [
+        [1.0, rVN, rVP2, rVP2, rVP2],
+        [rVN, 1.0, rNAP2, rNAP2, rNAP2],
+        [rVP2, rNAP2, 1.0, params.rhoEukDig, params.rhoEukEssay],
+        [rVP2, rNAP2, params.rhoEukDig, 1.0, params.rhoDigEssay],
+        [rVP2, rNAP2, params.rhoEukEssay, params.rhoDigEssay, 1.0]
+      ];
+      const { L, wasAdjusted: matrixAdjusted } = ensurePsdAndCholesky(rawCorr);
+
+      // Extract Cholesky entries for fast inner loop
+      const L10 = L[1][0], L11 = L[1][1];
+      const L20 = L[2][0], L21 = L[2][1], L22 = L[2][2];
+      const L30 = L[3][0], L31 = L[3][1], L32 = L[3][2], L33 = L[3][3];
+      const L40 = L[4][0], L41 = L[4][1], L42 = L[4][2], L43 = L[4][3], L44 = L[4][4];
+
+      // 4. Build exact conditional CDF tables for rejection-free Part 1 survivor sampling
+      const z1CondCdf = new Float64Array(SAMP_V_N * SAMP_Z1_N);
+      const pNAPassAtVGrid = new Float64Array(SAMP_V_N);
+      const margThVCdf = new Float64Array(SAMP_V_N);
+
+      let margSum = 0;
+      for (let i = 0; i < SAMP_V_N; i++) {
+        const thV = SAMP_V_GRID[i];
+        const base = i * SAMP_Z1_N;
+        let zSum = 0;
+        for (let j = 0; j < SAMP_Z1_N; j++) {
+          const thNA = L10 * thV + L11 * SAMP_Z1_GRID[j];
+          const w = SAMP_Z1_PDF[j] * interpPassProb(naCal.table, thNA);
+          zSum += w;
+          z1CondCdf[base + j] = zSum;
+        }
+        pNAPassAtVGrid[i] = zSum * SAMP_Z1_STEP;
+        if (zSum > 1e-15) {
+          const invZ = 1.0 / zSum;
+          for (let j = 0; j < SAMP_Z1_N; j++) z1CondCdf[base + j] *= invZ;
+          z1CondCdf[base + SAMP_Z1_N - 1] = 1.0;
+        } else {
+          for (let j = 0; j < SAMP_Z1_N; j++) z1CondCdf[base + j] = (j + 1) / SAMP_Z1_N;
+        }
+
+        const wV = SAMP_V_PDF[i] * interpPassProb(vCal.table, thV) * pNAPassAtVGrid[i];
+        margSum += wV;
+        margThVCdf[i] = margSum;
+      }
+      if (margSum > 1e-15) {
+        const invM = 1.0 / margSum;
+        for (let i = 0; i < SAMP_V_N; i++) margThVCdf[i] *= invM;
+        margThVCdf[SAMP_V_N - 1] = 1.0;
+      }
+
+      // 5. Simulate 40,000 fixed CRN draws from the Part 2 sitter pool
+      const MAIN_N = CRN.main.N;
+      const m = CRN.main;
+      const sqrtR = Math.sqrt(CONSTANTS.ESSAY_RELIABILITY);
+      const sqrt1mR = Math.sqrt(1.0 - CONSTANTS.ESSAY_RELIABILITY);
+      const essayMu = essayCal.muStar;
+      const essaySd = essayCal.sdStar;
+
+      let eligibleMcqCount = 0;
+      const digFreq = new Int32Array(41);
+
+      for (let k = 0; k < MAIN_N; k++) {
+        const thV = sampleContinuousFromCdf(margThVCdf, 0, SAMP_V_N, SAMP_V_GRID, m.uThV[k]);
+        const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
+        const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, m.uZ1[k]);
+
+        const vScore = sampleVerbalGivenPass(vCal.table, thV, m.uVScore[k]);
+        const z2 = m.z2[k];
+        const z3 = m.z3[k];
+        const z4 = m.z4[k];
+
+        const thEuk = L20 * thV + L21 * z1 + L22 * z2;
+        const thDig = L30 * thV + L31 * z1 + L32 * z2 + L33 * z3;
+        const thEss = L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4;
+
+        const eukScore = sampleFromCdfTable(eukCal.table, thEuk, m.uEuk[k]);
+        const digScore = sampleFromCdfTable(digCal.table, thDig, m.uDig[k]);
+        const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEss + sqrt1mR * m.zEssayErr[k]));
+
+        mainDigScores[k] = digScore;
+        digFreq[digScore]++;
+        mainEssayScores[k] = essScore;
+
+        if (eukScore >= CONSTANTS.EUK_PASS && digScore >= CONSTANTS.DIG_PASS) {
+          mainEligibleMask[k] = 1;
+          mainPrelimScores[k] = calcPrelimScore(vScore, eukScore, digScore);
+          mainFinalScores[k] = calcFinalScore(vScore, eukScore, digScore, essScore);
+          eligibleMcqCount++;
+        } else {
+          mainEligibleMask[k] = 0;
+          mainPrelimScores[k] = -1;
+          mainFinalScores[k] = -1;
+        }
+      }
+
+      // Compute 85th percentile Digital Skills score for the Odds table benchmark
+      let digCum = 0;
+      let digBench85 = 34;
+      const target85 = 0.85 * MAIN_N;
+      for (let d = 0; d <= 40; d++) {
+        digCum += digFreq[d];
+        if (digCum >= target85) {
+          digBench85 = d;
+          break;
+        }
+      }
+
+      const prelimEligiblePool = new Float64Array(eligibleMcqCount);
+      const prelimEligibleIdx = new Int32Array(eligibleMcqCount);
+      let pPtr = 0;
+      for (let k = 0; k < MAIN_N; k++) {
+        if (mainEligibleMask[k]) {
+          prelimEligiblePool[pPtr] = mainPrelimScores[k];
+          prelimEligibleIdx[pPtr] = k;
+          pPtr++;
+        }
+      }
+
+      const estPart2McqPassers = estPart2Sitters * (eligibleMcqCount / MAIN_N);
+
+      // Sort eligible preliminary scores ascending natively in C++ (30x faster than JS comparator)
+      const sortedPrelimAsc = Float64Array.from(prelimEligiblePool).sort();
+      const prelimQualShare = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_PRELIM / estPart2Sitters) : 1.0;
+      const prelimSimQualCount = Math.min(eligibleMcqCount, Math.max(1, Math.round(prelimQualShare * MAIN_N)));
+      const prelimCutoff = eligibleMcqCount === 0
+        ? 100
+        : (prelimSimQualCount >= eligibleMcqCount
+            ? sortedPrelimAsc[0]
+            : sortedPrelimAsc[eligibleMcqCount - prelimSimQualCount]);
+
+      // Extract Top 2,235 candidates (handling ties smoothly around prelimCutoff)
+      // Count strictly above cutoff + fractional tie at cutoff
+      let strictlyAbove = 0;
+      let atCutoff = 0;
+      for (let i = 0; i < eligibleMcqCount; i++) {
+        const sc = prelimEligiblePool[i];
+        if (sc > prelimCutoff + 1e-9) strictlyAbove++;
+        else if (Math.abs(sc - prelimCutoff) <= 1e-9) atCutoff++;
+      }
+      const needAtTie = Math.max(0, prelimSimQualCount - strictlyAbove);
+      const tieKeepFrac = atCutoff > 0 ? Math.min(1.0, needAtTie / atCutoff) : 1.0;
+
+      const markedFinals = [];
+      let markedEssaySum = 0;
+      let markedEssayCount = 0;
+      let tieSeen = 0;
+      for (let i = 0; i < eligibleMcqCount; i++) {
+        const k = prelimEligibleIdx[i];
+        const sc = mainPrelimScores[k];
+        let inGate = false;
+        if (sc > prelimCutoff + 1e-9) {
+          inGate = true;
+        } else if (Math.abs(sc - prelimCutoff) <= 1e-9) {
+          tieSeen++;
+          if (tieSeen <= Math.round(atCutoff * tieKeepFrac)) inGate = true;
+        }
+        if (inGate) {
+          const es = mainEssayScores[k];
+          markedEssaySum += es;
+          markedEssayCount++;
+          if (es >= CONSTANTS.ESSAY_PASS) {
+            markedFinals.push(mainFinalScores[k]);
+          }
+        }
+      }
+
+      markedFinals.sort((a, b) => b - a);
+      const markedEssayMean = markedEssayCount > 0 ? markedEssaySum / markedEssayCount : params.essayMean;
+
+      const finalQualShare = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart2Sitters) : 1.0;
+      const finalSimQualCount = Math.min(markedFinals.length, Math.max(1, Math.round(finalQualShare * MAIN_N)));
+      const finalCutoff = markedFinals.length === 0
+        ? 100
+        : (finalSimQualCount >= markedFinals.length
+            ? markedFinals[markedFinals.length - 1]
+            : markedFinals[finalSimQualCount - 1]);
+
+      // 6. Build Histograms for Part 2 Chart (Preliminary 40..100 & Final 40..100, 1-point bins)
+      const BIN_MIN = 40;
+      const BIN_MAX = 100;
+      const BIN_COUNT = BIN_MAX - BIN_MIN; // 60 bins of width 1.0
+      const prelimBins = new Float64Array(BIN_COUNT);
+      const finalBins = new Float64Array(BIN_COUNT);
+      const weightPerMainDraw = estPart2Sitters / MAIN_N;
+
+      for (let i = 0; i < eligibleMcqCount; i++) {
+        const sc = prelimEligiblePool[i];
+        const b = Math.min(BIN_COUNT - 1, Math.max(0, Math.floor(sc - BIN_MIN)));
+        prelimBins[b] += weightPerMainDraw;
+      }
+      for (let i = 0; i < markedFinals.length; i++) {
+        const sc = markedFinals[i];
+        const b = Math.min(BIN_COUNT - 1, Math.max(0, Math.floor(sc - BIN_MIN)));
+        finalBins[b] += weightPerMainDraw;
+      }
+
+      // 7. Dedicated 3,000 CRN draws per integer Verbal score v in {10..20}
+      // Using exact conditional posterior p(theta_V | X_V = v, X_NA >= 10)
+      const verbalBreakdown = [];
+      const postCdf = new Float64Array(SAMP_V_N);
+
+      for (let v = 10; v <= 20; v++) {
+        let pSum = 0;
+        for (let i = 0; i < SAMP_V_N; i++) {
+          const thV = SAMP_V_GRID[i];
+          const w = SAMP_V_PDF[i] * interpPmfAtScore(vCal.table, thV, v) * pNAPassAtVGrid[i];
+          pSum += w;
+          postCdf[i] = pSum;
+        }
+        if (pSum > 1e-15) {
+          const invP = 1.0 / pSum;
+          for (let i = 0; i < SAMP_V_N; i++) postCdf[i] *= invP;
+          postCdf[SAMP_V_N - 1] = 1.0;
+        } else {
+          for (let i = 0; i < SAMP_V_N; i++) postCdf[i] = (i + 1) / SAMP_V_N;
+        }
+
+        const cBank = CRN.cond[v - 10];
+        const cN = cBank.N;
+        let rlPassWeight = 0;
+        let gatePassWeight = 0;
+
+        for (let k = 0; k < cN; k++) {
+          const thV = sampleContinuousFromCdf(postCdf, 0, SAMP_V_N, SAMP_V_GRID, cBank.uThV[k]);
+          const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
+          const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, cBank.uZ1[k]);
+
+          const z2 = cBank.z2[k];
+          const z3 = cBank.z3[k];
+          const z4 = cBank.z4[k];
+
+          const thEuk = L20 * thV + L21 * z1 + L22 * z2;
+          const thDig = L30 * thV + L31 * z1 + L32 * z2 + L33 * z3;
+          const thEss = L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4;
+
+          const eukScore = sampleFromCdfTable(eukCal.table, thEuk, cBank.uEuk[k]);
+          if (eukScore < CONSTANTS.EUK_PASS) continue;
+          const digScore = sampleFromCdfTable(digCal.table, thDig, cBank.uDig[k]);
+          if (digScore < CONSTANTS.DIG_PASS) continue;
+
+          const pScore = calcPrelimScore(v, eukScore, digScore);
+          let gateProb = 0;
+          if (pScore > prelimCutoff + 1e-9) gateProb = 1.0;
+          else if (Math.abs(pScore - prelimCutoff) <= 1e-9) gateProb = tieKeepFrac;
+          if (gateProb <= 0) continue;
+
+          gatePassWeight += gateProb;
+          const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEss + sqrt1mR * cBank.zEssayErr[k]));
+          if (essScore < CONSTANTS.ESSAY_PASS) continue;
+
+          const fScore = calcFinalScore(v, eukScore, digScore, essScore);
+          if (fScore > finalCutoff + 1e-9) {
+            rlPassWeight += gateProb;
+          } else if (Math.abs(fScore - finalCutoff) <= 1e-9) {
+            rlPassWeight += gateProb * 0.5;
+          }
+        }
+
+        const condRlOdds = rlPassWeight / cN;
+        const condGateOdds = gatePassWeight / cN;
+        const estPassersAtV = CONSTANTS.N_SIT * part1.verbalPassPmf[v];
+        const shareOfPassers = estPart1Passers > 0 ? estPassersAtV / estPart1Passers : 0;
+        const pNAGivenV = part1.condNAPassGivenV[v];
+        const overallOddsPreNA = condRlOdds * pNAGivenV * (1.0 - attritionFrac);
+
+        // Min EUK Target assuming benchmark Digital Skills (85th pct) & 7.0/10 EUFTE
+        const essayBench = 7.0;
+        const reqEukPrelimRaw = prelimCutoff - 2.0 * v - 0.75 * digBench85;
+        const reqEukFinalRaw = (6.0 / 5.0) * (finalCutoff - 1.75 * v - 0.625 * digBench85 - 1.5 * essayBench);
+        const reqEukPrelim = Math.ceil(reqEukPrelimRaw - 1e-9);
+        const reqEukFinal = Math.ceil(reqEukFinalRaw - 1e-9);
+        const reqEuk = Math.max(CONSTANTS.EUK_PASS, reqEukPrelim, reqEukFinal);
+        const prelimGateBinds = reqEukPrelim > reqEukFinal && reqEukPrelim > CONSTANTS.EUK_PASS;
+
+        verbalBreakdown.push({
+          v,
+          estSitters: CONSTANTS.N_SIT * part1.verbalAllPmf[v],
+          estPassers: estPassersAtV,
+          shareOfPassers,
+          pNAGivenV,
+          condGateOdds,
+          condRlOdds,
+          overallOddsPreNA,
+          reqEuk,
+          reqEukPrelim,
+          reqEukFinal,
+          prelimGateBinds
+        });
+      }
+
+      // Dynamic Green Highlight Threshold v*:
+      // Lowest Verbal score in {10..20} whose conditional RL odds > baselinePasserOdds
+      let greenThresholdV = 21;
+      for (let i = 0; i < verbalBreakdown.length; i++) {
+        if (verbalBreakdown[i].condRlOdds > baselinePasserOdds) {
+          greenThresholdV = verbalBreakdown[i].v;
+          break;
+        }
+      }
+
+      // Build complete 0..20 array for Part 1 chart
+      const verbalChartBars = [];
+      for (let s = 0; s <= 20; s++) {
+        const bd = s >= 10 ? verbalBreakdown[s - 10] : null;
+        verbalChartBars.push({
+          score: s,
+          sitters: CONSTANTS.N_SIT * part1.verbalAllPmf[s],
+          passers: s >= 10 ? CONSTANTS.N_SIT * part1.verbalPassPmf[s] : 0,
+          pNAGivenV: part1.condNAPassGivenV[s],
+          condRlOdds: bd ? bd.condRlOdds : 0,
+          zone: s < 10 ? 'eliminated' : (s >= greenThresholdV ? 'green' : 'below')
+        });
+      }
+
+      // Helper to estimate exact rank for any Personal Score
+      function evaluatePersonalScore(v, euk, dig, essay) {
+        const passEuk = euk >= CONSTANTS.EUK_PASS;
+        const passDig = dig >= CONSTANTS.DIG_PASS;
+        const passEssay = essay >= CONSTANTS.ESSAY_PASS;
+        const prelimScore = calcPrelimScore(v, euk, dig);
+        const finalScore = calcFinalScore(v, euk, dig, essay);
+
+        // Estimate Preliminary Rank among Part 2 sitters
+        let abovePrelim = 0;
+        let tiedPrelim = 0;
+        for (let i = 0; i < eligibleMcqCount; i++) {
+          const sc = prelimEligiblePool[i];
+          if (sc > prelimScore + 1e-9) abovePrelim++;
+          else if (Math.abs(sc - prelimScore) <= 1e-9) tiedPrelim++;
+        }
+        const prelimRank = Math.max(1, Math.round((abovePrelim + 0.5 * tiedPrelim) * weightPerMainDraw) + 1);
+
+        // Estimate Final Rank among marked essays
+        let aboveFinal = 0;
+        let tiedFinal = 0;
+        for (let i = 0; i < markedFinals.length; i++) {
+          const sc = markedFinals[i];
+          if (sc > finalScore + 1e-9) aboveFinal++;
+          else if (Math.abs(sc - finalScore) <= 1e-9) tiedFinal++;
+        }
+        const finalRank = Math.max(1, Math.round((aboveFinal + 0.5 * tiedFinal) * weightPerMainDraw) + 1);
+
+        const prelimMargin = prelimScore - prelimCutoff;
+        const finalMargin = finalScore - finalCutoff;
+        const clearsPrelimGate = passEuk && passDig && prelimMargin >= -1e-9;
+        const wouldClearFinalIfMarked = passEuk && passDig && passEssay && finalMargin >= -1e-9;
+        const blockedAtGateWithStrongEssay = passEuk && passDig && !clearsPrelimGate && wouldClearFinalIfMarked;
+
+        let verdict = 'fail';
+        let verdictLabel = 'Eliminated';
+        if (!passEuk || !passDig) {
+          verdict = 'fail';
+          verdictLabel = 'Failed Part 2 MCQ Threshold';
+        } else if (!clearsPrelimGate) {
+          verdict = 'fail';
+          verdictLabel = blockedAtGateWithStrongEssay
+            ? 'Blocked at Top 2,235 Gate (Essay Unmarked)'
+            : 'Below Top 2,235 Prelim Gate';
+        } else if (!passEssay) {
+          verdict = 'fail';
+          verdictLabel = 'Failed EUFTE Minimum (< 5.0/10)';
+        } else if (finalMargin >= 1.0 && prelimMargin >= 0.75) {
+          verdict = 'pass';
+          verdictLabel = 'Projected Reserve List Pass';
+        } else if (finalMargin >= -0.75) {
+          verdict = 'borderline';
+          verdictLabel = finalMargin >= 0 ? 'Borderline Reserve List Pass' : 'Borderline Miss';
+        } else {
+          verdict = 'fail';
+          verdictLabel = 'Below Top 1,490 Final Cutoff';
+        }
+
+        return {
+          v, euk, dig, essay,
+          passEuk, passDig, passEssay,
+          prelimScore, finalScore,
+          prelimMargin, finalMargin,
+          prelimRank, finalRank,
+          clearsPrelimGate,
+          wouldClearFinalIfMarked,
+          blockedAtGateWithStrongEssay,
+          verdict,
+          verdictLabel
+        };
+      }
+
+      return {
+        params: Object.assign({}, params),
+        calibrations: { vCal, naCal, eukCal, digCal, essayCal },
+        part1,
+        estPart1Passers,
+        estPart2Sitters,
+        estPart2McqPassers,
+        baselinePasserOdds,
+        matrixAdjusted,
+        prelimCutoff,
+        finalCutoff,
+        markedEssayMean,
+        digBench85,
+        greenThresholdV,
+        verbalBreakdown,
+        verbalChartBars,
+        histograms: {
+          binMin: BIN_MIN,
+          binMax: BIN_MAX,
+          binCount: BIN_COUNT,
+          prelimBins,
+          finalBins
+        },
+        evaluatePersonalScore
+      };
+    }
+
+    root.AD5Engine = {
+      CONSTANTS,
+      PRESETS,
+      calcPrelimScore,
+      calcFinalScore,
+      normInv,
+      calibrate3PL,
+      computePart1Exact,
+      solveMeansForPassRate,
+      ensurePsdAndCholesky,
+      runSimulation
+    };
+  })(typeof window !== 'undefined' ? window : globalThis);
+  </script>
+
+  <script id="app-ui">
+  (function () {
+    'use strict';
+
+    const E = window.AD5Engine;
+    const C = E.CONSTANTS;
+
+    const state = Object.assign({}, E.PRESETS.baseline);
+    const personal = { v: 16, euk: 24, dig: 34, essay: 7.0 };
+    let activePreset = 'baseline';
+    let part2Stage = 'prelim'; // 'prelim' | 'final'
+    let passRateClampNote = '';
+    let lastSim = null;
+
+    // Hover states for charts
+    let hoverPart1Idx = -1;
+    let hoverPart2Idx = -1;
+
+    // DOM shortcuts
+    const $ = id => document.getElementById(id);
+
+    const fmtInt = n => Math.round(n).toLocaleString('en-US');
+    const fmtPct = (p, d = 1) => `${(p * 100).toFixed(d)}%`;
+    const fmtOdds = p => {
+      if (p <= 0.0001) return '<0.01%';
+      if (p >= 0.999) return '>99.9%';
+      return `${(p * 100).toFixed(p < 0.1 ? 2 : 1)}%`;
+    };
+    const fmtOneIn = p => {
+      if (p <= 0.0005) return '(1 in >2,000)';
+      const ratio = 1 / p;
+      if (ratio < 1.05) return '(~1 in 1)';
+      return `(1 in ${ratio < 10 ? ratio.toFixed(1) : Math.round(ratio).toLocaleString('en-US')})`;
+    };
+
+    // =========================================================================
+    // Slider Sync Helpers
+    // =========================================================================
+    function syncControlsFromState() {
+      $('slVMean').value = state.vMean;
+      $('slVSd').value = state.vSd;
+      $('slNAMean').value = state.naMean;
+      $('slNASd').value = state.naSd;
+      $('slRhoVN').value = state.rhoVN;
+      $('slAttrition').value = state.attrition;
+      $('slEukMean').value = state.eukMean;
+      $('slEukSd').value = state.eukSd;
+      $('slDigMean').value = state.digMean;
+      $('slDigSd').value = state.digSd;
+      $('slEssayMean').value = state.essayMean;
+      $('slEssaySd').value = state.essaySd;
+      $('slRhoEukDig').value = state.rhoEukDig;
+      $('slRhoEukEssay').value = state.rhoEukEssay;
+      $('slRhoDigEssay').value = state.rhoDigEssay;
+      $('slRhoVP2').value = state.rhoVP2;
+    }
+
+    function syncPresetButtons() {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === activePreset);
+      });
+    }
+
+    function syncPersonalInputs() {
+      $('psVerbal').value = personal.v;
+      $('psVerbalNum').value = personal.v;
+      $('psEuk').value = personal.euk;
+      $('psEukNum').value = personal.euk;
+      $('psDig').value = personal.dig;
+      $('psDigNum').value = personal.dig;
+      $('psEssay').value = personal.essay;
+      $('psEssayNum').value = personal.essay.toFixed(1);
+    }
+
+    // =========================================================================
+    // Main Simulation & Render Pipeline (RAF-throttled for 60fps smoothness)
+    // =========================================================================
+    let rafPending = false;
+    function scheduleUpdate() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        runAndRender();
+      });
+    }
+
+    function runAndRender() {
+      const sim = E.runSimulation(state);
+      lastSim = sim;
+
+      // Update KPI strip
+      $('kpiPart1Passers').textContent = fmtInt(sim.estPart1Passers);
+      $('kpiPart1PassRate').textContent = `${fmtPct(sim.part1.pJointPass, 1)} of 75,274 sitters`;
+      $('kpiPart2Sitters').textContent = fmtInt(sim.estPart2Sitters);
+      $('kpiAttritionNote').textContent = `${state.attrition}% Part 2 no-show rate`;
+      $('kpiBaselineOdds').textContent = fmtPct(sim.baselinePasserOdds, 2);
+      $('kpiBaselineRatio').textContent = `1,490 / ${fmtInt(sim.estPart1Passers)} passers`;
+      $('kpiPrelimCutoff').textContent = sim.prelimCutoff.toFixed(2);
+      $('kpiPrelimSub').textContent = `of ${fmtInt(sim.estPart2McqPassers)} MCQ passers`;
+      $('kpiFinalCutoff').textContent = sim.finalCutoff.toFixed(2);
+      $('kpiFinalSub').textContent = `Marked EUFTE avg: ${sim.markedEssayMean.toFixed(2)}/10`;
+
+      // Update Part 1 readouts & Joint Pass Rate slider
+      const { vCal, naCal, eukCal, digCal } = sim.calibrations;
+      $('valVMean').textContent = `${state.vMean.toFixed(2)} / 20`;
+      $('valVSd').textContent = `${state.vSd.toFixed(2)}`;
+      $('relVerbal').innerHTML = `α<sub>V</sub> = ${vCal.reliability.toFixed(2)}`;
+      $('irtParamsV').textContent = `a = ${vCal.a.toFixed(2)}, b̄ = ${vCal.bBar.toFixed(2)}`;
+      $('clampVSd').textContent = vCal.clampedSd
+        ? `Clamped to IRT feasible SD (${vCal.effectiveSd.toFixed(2)})`
+        : '';
+
+      $('valNAMean').textContent = `${state.naMean.toFixed(2)} / 20`;
+      $('valNASd').textContent = `${state.naSd.toFixed(2)}`;
+      $('relNA').innerHTML = `α<sub>NA</sub> = ${naCal.reliability.toFixed(2)}`;
+      $('irtParamsNA').textContent = `a = ${naCal.a.toFixed(2)}, b̄ = ${naCal.bBar.toFixed(2)}`;
+      $('clampNASd').textContent = naCal.clampedSd
+        ? `Clamped to IRT feasible SD (${naCal.effectiveSd.toFixed(2)})`
+        : '';
+
+      const jointPct = Math.round(sim.part1.pJointPass * 200) / 2; // nearest 0.5% for slider thumb
+      $('slPassRate').value = Math.min(100, Math.max(3, jointPct));
+      $('valPassRate').textContent = `${(sim.part1.pJointPass * 100).toFixed(1)}% · ${fmtInt(sim.estPart1Passers)} passers`;
+      $('passRateClampNote').textContent = passRateClampNote;
+
+      // Part 1 Advanced Diagnostics
+      $('valRhoVN').textContent = state.rhoVN.toFixed(2);
+      $('roObsCorrVN').textContent = sim.part1.obsCorrVN.toFixed(3);
+      $('roVerbalPass').textContent = fmtPct(sim.part1.pVerbalPass, 1);
+      $('roNAPass').textContent = fmtPct(sim.part1.pNAPass, 1);
+      $('roRelV').textContent = vCal.reliability.toFixed(3);
+      $('roRelNA').textContent = naCal.reliability.toFixed(3);
+
+      // Part 1 Chart dynamic green zone banner
+      if (sim.greenThresholdV <= 20) {
+        $('greenZoneText').textContent =
+          `Green zone: Verbal ≥ ${sim.greenThresholdV} (Odds > ${fmtPct(sim.baselinePasserOdds, 2)} baseline)`;
+      } else {
+        $('greenZoneText').textContent =
+          `Green zone: No Verbal score exceeds ${fmtPct(sim.baselinePasserOdds, 2)} baseline`;
+      }
+      $('p1ChartPasserSummary').textContent =
+        `Est. Part 1 Passers: ${fmtInt(sim.estPart1Passers)} (Passer Verbal μ = ${sim.part1.passVMean.toFixed(2)}, σ = ${sim.part1.passVSd.toFixed(2)})`;
+
+      // Part 2 Readouts
+      $('valAttrition').textContent = `${state.attrition}% · ${fmtInt(sim.estPart2Sitters)} active Part 2 sitters`;
+      $('valEukMean').textContent = `${state.eukMean.toFixed(2)} / 30`;
+      $('valEukSd').textContent = `${state.eukSd.toFixed(2)}`;
+      $('relEUK').textContent = `α = ${eukCal.reliability.toFixed(2)}`;
+      $('irtParamsEUK').textContent = `a = ${eukCal.a.toFixed(2)}, b̄ = ${eukCal.bBar.toFixed(2)}`;
+      $('clampEukSd').textContent = eukCal.clampedSd
+        ? `Clamped to IRT feasible SD (${eukCal.effectiveSd.toFixed(2)})`
+        : '';
+
+      $('valDigMean').textContent = `${state.digMean.toFixed(2)} / 40`;
+      $('valDigSd').textContent = `${state.digSd.toFixed(2)}`;
+      $('relDig').textContent = `α = ${digCal.reliability.toFixed(2)}`;
+      $('irtParamsDig').textContent = `a = ${digCal.a.toFixed(2)}, b̄ = ${digCal.bBar.toFixed(2)}`;
+      $('clampDigSd').textContent = digCal.clampedSd
+        ? `Clamped to IRT feasible SD (${digCal.effectiveSd.toFixed(2)})`
+        : '';
+
+      $('valEssayMean').textContent = `${state.essayMean.toFixed(2)} / 10`;
+      $('valEssaySd').textContent = `${state.essaySd.toFixed(2)}`;
+      $('markedEssayMean').textContent = `Top 2,235 marked mean: ${sim.markedEssayMean.toFixed(2)} / 10`;
+
+      $('valRhoEukDig').textContent = state.rhoEukDig.toFixed(2);
+      $('valRhoEukEssay').textContent = state.rhoEukEssay.toFixed(2);
+      $('valRhoDigEssay').textContent = state.rhoDigEssay.toFixed(2);
+      $('valRhoVP2').textContent = state.rhoVP2.toFixed(2);
+
+      const psdEl = $('psdStatusText');
+      if (sim.matrixAdjusted) {
+        psdEl.textContent = '5×5 latent correlation matrix: Auto-projected to nearest valid PSD matrix';
+        psdEl.className = 'psd-adjusted';
+      } else {
+        psdEl.textContent = '5×5 latent correlation matrix: Naturally positive-definite (exact)';
+        psdEl.className = '';
+      }
+      $('p2PassStats').textContent = `Part 2 MCQ Passers (EUK ≥ 15 & Dig ≥ 20): ${fmtInt(sim.estPart2McqPassers)}`;
+
+      // Render Table, Personal Score Tester, and both Canvas Charts
+      renderOddsTable(sim);
+      renderPersonalTester(sim);
+      drawPart1Chart(sim);
+      drawPart2Chart(sim);
+    }
+
+    // =========================================================================
+    // Odds & Targets Table (Verbal 13 to 20)
+    // =========================================================================
+    function renderOddsTable(sim) {
+      $('thMinTarget').textContent = `Min. EUK Target (at ${sim.digBench85}/40 Dig [85th pct] & 7.0 EUFTE)`;
+      const tbody = $('oddsTableBody');
+      const rows = [];
+
+      for (let i = 0; i < sim.verbalBreakdown.length; i++) {
+        const r = sim.verbalBreakdown[i];
+        if (r.v < 13) continue;
+        const inGreen = r.v >= sim.greenThresholdV;
+        const isSelected = r.v === personal.v;
+        const rowClass = [
+          inGreen ? 'in-green-zone' : '',
+          isSelected ? 'selected-row' : ''
+        ].filter(Boolean).join(' ');
+
+        let targetHtml;
+        if (r.reqEuk > 30) {
+          targetHtml = `<span class="mono" style="color:var(--crimson);font-weight:600">&gt; 30/30</span> <span class="sub-dim">(Need Dig &gt; ${sim.digBench85} or higher EUFTE)</span>`;
+        } else {
+          targetHtml = `<span class="mono" style="font-weight:700">${r.reqEuk}/30</span>` +
+            (r.prelimGateBinds ? `<span class="gate-flag">Top 2,235 gate binds</span>` : '');
+        }
+
+        rows.push(`
+          <tr class="${rowClass}" data-v="${r.v}" tabindex="0" aria-label="Load Verbal ${r.v} out of 20 into Personal Score Tester">
+            <td>
+              <button type="button" class="score-btn" data-v="${r.v}">${r.v}/20</button>
+              ${inGreen ? '<span class="zone-marker">Above baseline</span>' : ''}
+            </td>
+            <td class="mono">${fmtInt(r.estPassers)} <span class="sub-dim">(${fmtPct(r.shareOfPassers, 1)})</span></td>
+            <td class="mono">${fmtPct(r.pNAGivenV, 1)}</td>
+            <td>
+              <span class="${inGreen ? 'odds-strong' : 'odds-normal'}">${fmtOdds(r.condRlOdds)}</span>
+              <span class="sub-dim">${fmtOneIn(r.condRlOdds)}</span>
+            </td>
+            <td class="mono">${fmtOdds(r.overallOddsPreNA)}</td>
+            <td class="target-note">${targetHtml}</td>
+          </tr>
+        `);
+      }
+      tbody.innerHTML = rows.join('');
+    }
+
+    // =========================================================================
+    // Personal Score Tester Renderer
+    // =========================================================================
+    function renderPersonalTester(sim) {
+      if (!sim) return;
+      const ev = sim.evaluatePersonalScore(personal.v, personal.euk, personal.dig, personal.essay);
+
+      $('psVerbalContrib').textContent = `${(2.0 * personal.v).toFixed(2)} Prelim / ${(1.75 * personal.v).toFixed(2)} Final`;
+      $('psEukContrib').textContent = `${(1.0 * personal.euk).toFixed(2)} Prelim / ${((5 / 6) * personal.euk).toFixed(2)} Final`;
+      $('psDigContrib').textContent = `${(0.75 * personal.dig).toFixed(2)} Prelim / ${(0.625 * personal.dig).toFixed(2)} Final`;
+      $('psEssayContrib').textContent = `${(1.5 * personal.essay).toFixed(2)} Final (Top 2,235 only)`;
+
+      const badge = $('verdictBadge');
+      badge.textContent = ev.verdictLabel;
+      badge.className = `verdict-status ${ev.verdict}`;
+
+      $('verdictRankSummary').textContent = ev.clearsPrelimGate
+        ? `Est. Final Rank: #${fmtInt(ev.finalRank)} / 1,490`
+        : `Est. Prelim Rank: #${fmtInt(ev.prelimRank)} / 2,235`;
+
+      const setThresh = (id, ok, text) => {
+        const el = $(id);
+        el.textContent = text;
+        el.className = `thresh-val ${ok ? 'ok' : 'bad'}`;
+      };
+      setThresh('thEukStatus', ev.passEuk, ev.passEuk ? `PASS (${personal.euk}/30)` : `FAIL (${personal.euk}/30 < 15)`);
+      setThresh('thDigStatus', ev.passDig, ev.passDig ? `PASS (${personal.dig}/40)` : `FAIL (${personal.dig}/40 < 20)`);
+      setThresh('thEssayStatus', ev.passEssay, ev.passEssay ? `PASS (${personal.essay.toFixed(1)}/10)` : `FAIL (${personal.essay.toFixed(1)} < 5.0)`);
+
+      const alertEl = $('gateBlockAlert');
+      if (ev.blockedAtGateWithStrongEssay) {
+        alertEl.hidden = false;
+        alertEl.innerHTML =
+          `<strong>Blocked at the Top 2,235 Essay-Marking Gate:</strong> Your combined Final Score (${ev.finalScore.toFixed(2)}) would exceed the Top 1,490 Reserve List cutoff (${sim.finalCutoff.toFixed(2)}), but your Preliminary Score (${ev.prelimScore.toFixed(2)}) falls ${Math.abs(ev.prelimMargin).toFixed(2)} pts short of the Top 2,235 gate (${sim.prelimCutoff.toFixed(2)}), so your EUFTE essay would never be marked.`;
+      } else {
+        alertEl.hidden = true;
+      }
+
+      $('scPrelimScore').textContent = `${ev.prelimScore.toFixed(2)} / 100`;
+      const pDelta = $('scPrelimDelta');
+      const pSign = ev.prelimMargin >= 0 ? '+' : '';
+      pDelta.textContent = `${pSign}${ev.prelimMargin.toFixed(2)} vs. ${sim.prelimCutoff.toFixed(2)} cutoff`;
+      pDelta.className = `sc-delta ${ev.prelimMargin >= 0 ? 'pos' : 'neg'}`;
+      $('scPrelimRank').textContent = ev.passEuk && ev.passDig
+        ? `Est. Prelim Rank #${fmtInt(ev.prelimRank)} of ${fmtInt(sim.estPart2McqPassers)} MCQ passers`
+        : 'Ineligible (below Part 2 MCQ minimum)';
+
+      $('scFinalScore').textContent = `${ev.finalScore.toFixed(2)} / 100`;
+      const fDelta = $('scFinalDelta');
+      const fSign = ev.finalMargin >= 0 ? '+' : '';
+      fDelta.textContent = `${fSign}${ev.finalMargin.toFixed(2)} vs. ${sim.finalCutoff.toFixed(2)} cutoff`;
+      fDelta.className = `sc-delta ${!ev.clearsPrelimGate ? 'neutral' : (ev.finalMargin >= 0 ? 'pos' : 'neg')}`;
+      $('scFinalRank').textContent = !ev.clearsPrelimGate
+        ? 'Not ranked (essay unmarked unless Top 2,235 cleared)'
+        : (ev.passEssay
+            ? `Est. Final Rank #${fmtInt(ev.finalRank)} of 2,235 marked`
+            : 'Eliminated (EUFTE < 5.0/10)');
+    }
+
+    // =========================================================================
+    // High-DPI Canvas Helpers
+    // =========================================================================
+    function prepCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const w = Math.max(280, Math.round(rect.width));
+      const h = Math.max(200, Math.round(rect.height));
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      return { ctx, w, h };
+    }
+
+    function positionTooltip(tooltipEl, wrapEl, clientX, clientY) {
+      const rect = wrapEl.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const ttW = tooltipEl.offsetWidth || 220;
+      const ttH = tooltipEl.offsetHeight || 110;
+      let left = x + 14;
+      if (left + ttW > rect.width - 6) left = x - ttW - 14;
+      if (left < 6) left = 6;
+      let top = y - ttH - 12;
+      if (top < 6) top = y + 14;
+      if (top + ttH > rect.height - 6) top = Math.max(6, rect.height - ttH - 6);
+      tooltipEl.style.left = `${left}px`;
+      tooltipEl.style.top = `${top}px`;
+    }
+
+    // =========================================================================
+    // Chart 1: Part 1 Verbal Distribution (0-20)
+    // =========================================================================
+    let p1Layout = null;
+
+    function drawPart1Chart(sim) {
+      if (!sim) return;
+      const canvas = $('canvasPart1');
+      const { ctx, w, h } = prepCanvas(canvas);
+      const pad = { top: 26, right: 18, bottom: 38, left: 54 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const bars = sim.verbalChartBars;
+      let maxVal = 100;
+      for (let i = 0; i < bars.length; i++) {
+        if (bars[i].sitters > maxVal) maxVal = bars[i].sitters;
+      }
+      // Nice Y ceiling
+      const stepPow = Math.pow(10, Math.floor(Math.log10(maxVal)));
+      const yMax = Math.ceil((maxVal * 1.12) / (stepPow * 0.5)) * (stepPow * 0.5);
+
+      p1Layout = { pad, plotW, plotH, w, h, barStep: plotW / 21 };
+
+      // Horizontal gridlines
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      const yTicks = 4;
+      for (let t = 0; t <= yTicks; t++) {
+        const val = (yMax * t) / yTicks;
+        const y = pad.top + plotH - (t / yTicks) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + plotW, y);
+        ctx.stroke();
+        const label = val >= 1000 ? `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k` : `${Math.round(val)}`;
+        ctx.fillText(label, pad.left - 8, y);
+      }
+
+      // Draw bars for 0..20
+      const step = plotW / 21;
+      const outerW = Math.max(5, step * 0.78);
+      const innerW = Math.max(4, step * 0.56);
+
+      for (let i = 0; i < bars.length; i++) {
+        const b = bars[i];
+        const cx = pad.left + (i + 0.5) * step;
+        const isHovered = i === hoverPart1Idx;
+
+        // Hover column highlight
+        if (isHovered) {
+          ctx.fillStyle = 'rgba(29, 78, 216, 0.06)';
+          ctx.fillRect(pad.left + i * step, pad.top, step, plotH);
+        }
+
+        // Background bar: All Sitters
+        const sitH = (b.sitters / yMax) * plotH;
+        const sitY = pad.top + plotH - sitH;
+        ctx.fillStyle = b.zone === 'eliminated'
+          ? (isHovered ? 'rgba(148, 163, 184, 0.52)' : 'rgba(203, 213, 225, 0.55)')
+          : (isHovered ? 'rgba(148, 163, 184, 0.42)' : 'rgba(148, 163, 184, 0.25)');
+        ctx.strokeStyle = b.zone === 'eliminated' ? '#94A3B8' : '#94A3B8';
+        ctx.lineWidth = isHovered ? 1.5 : 1;
+        ctx.fillRect(cx - outerW / 2, sitY, outerW, sitH);
+        ctx.strokeRect(cx - outerW / 2 + 0.5, sitY + 0.5, outerW - 1, Math.max(0, sitH - 1));
+
+        // Foreground solid bar: Part 1 Passers (scores 10..20)
+        if (b.score >= 10 && b.passers > 0) {
+          const passH = (b.passers / yMax) * plotH;
+          const passY = pad.top + plotH - passH;
+          if (b.zone === 'green') {
+            ctx.fillStyle = isHovered ? '#047857' : '#059669';
+          } else {
+            ctx.fillStyle = isHovered ? '#475569' : '#64748B';
+          }
+          ctx.fillRect(cx - innerW / 2, passY, innerW, passH);
+        }
+
+        // X-axis tick label
+        ctx.fillStyle = isHovered ? '#0F172A' : (b.zone === 'green' ? '#047857' : '#475569');
+        ctx.font = isHovered || b.zone === 'green'
+          ? '600 11px ui-monospace, SFMono-Regular, Menlo, monospace'
+          : '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(String(b.score), cx, pad.top + plotH + 7);
+      }
+
+      // Pass-mark vertical dashed line between 9 and 10
+      const passX = pad.left + 10 * step;
+      const gx = sim.greenThresholdV <= 20 ? pad.left + sim.greenThresholdV * step : Infinity;
+      const labelsClose = Math.abs(gx - passX) < 155;
+
+      ctx.save();
+      ctx.strokeStyle = '#B91C1C';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(passX, pad.top - 4);
+      ctx.lineTo(passX, pad.top + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#B91C1C';
+      ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = labelsClose ? 'right' : 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText('Pass mark ≥ 10', passX + (labelsClose ? -5 : 5), pad.top - 18);
+      ctx.restore();
+
+      // Dynamic Green Zone threshold marker
+      if (sim.greenThresholdV <= 20) {
+        ctx.save();
+        ctx.strokeStyle = '#047857';
+        ctx.lineWidth = 1.25;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(gx, pad.top - 2);
+        ctx.lineTo(gx, pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#047857';
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+        const alignRight = !labelsClose && gx > pad.left + plotW * 0.72;
+        ctx.textAlign = alignRight ? 'right' : 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`Contender zone ≥ ${sim.greenThresholdV}`, gx + (alignRight ? -5 : 5), pad.top - 18);
+        ctx.restore();
+      }
+
+      // Axis baseline & title
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + plotH);
+      ctx.lineTo(pad.left + plotW, pad.top + plotH);
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748B';
+      ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Verbal Reasoning Score (out of 20)', pad.left + plotW / 2, h - 2);
+    }
+
+    function handlePart1Pointer(clientX, clientY) {
+      if (!lastSim || !p1Layout) return;
+      const wrap = $('canvasPart1').parentElement;
+      const rect = wrap.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const { pad, plotW, plotH, barStep } = p1Layout;
+      if (x < pad.left || x > pad.left + plotW || y < pad.top || y > pad.top + plotH) {
+        hidePart1Tooltip();
+        return;
+      }
+      const idx = Math.min(20, Math.max(0, Math.floor((x - pad.left) / barStep)));
+      if (idx !== hoverPart1Idx) {
+        hoverPart1Idx = idx;
+        drawPart1Chart(lastSim);
+      }
+      const b = lastSim.verbalChartBars[idx];
+      const tt = $('tooltipPart1');
+      const zoneLabel = b.score < 10
+        ? 'Eliminated'
+        : (b.zone === 'green' ? 'Above Baseline' : 'Below Baseline');
+      tt.innerHTML = `
+        <div class="tt-head">
+          <span>Verbal ${b.score}/20</span>
+          <span style="color:${b.zone === 'green' ? '#34D399' : '#CBD5E1'}">${zoneLabel}</span>
+        </div>
+        <div class="tt-row"><span class="tt-key">Est. Total Sitters</span><span class="tt-val">${fmtInt(b.sitters)}</span></div>
+        <div class="tt-row"><span class="tt-key">Est. Part 1 Passers</span><span class="tt-val">${fmtInt(b.passers)}</span></div>
+        <div class="tt-row"><span class="tt-key">P(Num+Abs ≥ 10 | V)</span><span class="tt-val">${fmtPct(b.pNAGivenV, 1)}</span></div>
+        <div class="tt-row"><span class="tt-key">Cond. RL Odds</span><span class="tt-val">${b.score >= 10 ? fmtOdds(b.condRlOdds) : '0% (Fail)'}</span></div>
+      `;
+      tt.classList.add('visible');
+      tt.setAttribute('aria-hidden', 'false');
+      positionTooltip(tt, wrap, clientX, clientY);
+    }
+
+    function hidePart1Tooltip() {
+      if (hoverPart1Idx !== -1) {
+        hoverPart1Idx = -1;
+        if (lastSim) drawPart1Chart(lastSim);
+      }
+      const tt = $('tooltipPart1');
+      tt.classList.remove('visible');
+      tt.setAttribute('aria-hidden', 'true');
+    }
+
+    // =========================================================================
+    // Chart 2: Part 2 Score Distribution Histogram (Prelim vs Final)
+    // =========================================================================
+    let p2Layout = null;
+
+    function drawPart2Chart(sim) {
+      if (!sim) return;
+      const canvas = $('canvasPart2');
+      const { ctx, w, h } = prepCanvas(canvas);
+      const pad = { top: 32, right: 20, bottom: 38, left: 54 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const isPrelim = part2Stage === 'prelim';
+      const bins = isPrelim ? sim.histograms.prelimBins : sim.histograms.finalBins;
+      const binMin = sim.histograms.binMin;
+      const binMax = sim.histograms.binMax;
+      const binCount = sim.histograms.binCount;
+      const cutoff = isPrelim ? sim.prelimCutoff : sim.finalCutoff;
+      const userScore = isPrelim
+        ? E.calcPrelimScore(personal.v, personal.euk, personal.dig)
+        : E.calcFinalScore(personal.v, personal.euk, personal.dig, personal.essay);
+
+      // Compute visible X-range trimmed cleanly to populated region + user score + cutoff
+      let firstPop = 0;
+      while (firstPop < binCount - 1 && bins[firstPop] < 0.5) firstPop++;
+      let xMin = Math.max(binMin, Math.min(binMin + firstPop - 2, Math.floor(cutoff) - 10, Math.floor(userScore) - 4));
+      xMin = Math.floor(xMin / 5) * 5;
+      if (xMin < binMin) xMin = binMin;
+      const xMax = binMax;
+      const visibleBins = xMax - xMin;
+      const startOffset = xMin - binMin;
+
+      // Cumulative ranks from top for tooltips
+      const cumAbove = new Float64Array(binCount);
+      let running = 0;
+      for (let i = binCount - 1; i >= 0; i--) {
+        cumAbove[i] = running;
+        running += bins[i];
+      }
+
+      let maxVal = 10;
+      for (let i = startOffset; i < binCount; i++) {
+        if (bins[i] > maxVal) maxVal = bins[i];
+      }
+      const stepPow = Math.pow(10, Math.floor(Math.log10(Math.max(10, maxVal))));
+      const yMax = Math.ceil((maxVal * 1.15) / (stepPow * 0.5)) * (stepPow * 0.5);
+
+      p2Layout = {
+        pad, plotW, plotH, w, h,
+        xMin, xMax, visibleBins, startOffset, bins, cumAbove, cutoff, userScore, isPrelim
+      };
+
+      // Gridlines
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      for (let t = 0; t <= 4; t++) {
+        const val = (yMax * t) / 4;
+        const y = pad.top + plotH - (t / 4) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + plotW, y);
+        ctx.stroke();
+        const lbl = val >= 1000 ? `${(val / 1000).toFixed(1)}k` : `${Math.round(val)}`;
+        ctx.fillText(lbl, pad.left - 8, y);
+      }
+
+      // Histogram bars
+      const bw = plotW / visibleBins;
+      for (let j = 0; j < visibleBins; j++) {
+        const bi = startOffset + j;
+        const scoreLo = binMin + bi;
+        const scoreHi = scoreLo + 1;
+        const val = bins[bi];
+        const barH = (val / yMax) * plotH;
+        const x = pad.left + j * bw;
+        const y = pad.top + plotH - barH;
+        const isHovered = j === hoverPart2Idx;
+        const qualifies = scoreLo + 0.5 >= cutoff;
+
+        if (isHovered) {
+          ctx.fillStyle = 'rgba(29, 78, 216, 0.08)';
+          ctx.fillRect(x, pad.top, bw, plotH);
+        }
+
+        if (qualifies) {
+          ctx.fillStyle = isHovered ? '#047857' : '#059669';
+        } else {
+          ctx.fillStyle = isHovered ? '#475569' : '#94A3B8';
+        }
+        ctx.fillRect(x + 0.5, y, Math.max(1.5, bw - 1), barH);
+      }
+
+      // X-axis ticks every 5 points
+      ctx.fillStyle = '#475569';
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      for (let sc = xMin; sc <= xMax; sc += 5) {
+        const x = pad.left + ((sc - xMin) / visibleBins) * plotW;
+        ctx.fillText(String(sc), x, pad.top + plotH + 7);
+      }
+
+      // Baseline
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + plotH);
+      ctx.lineTo(pad.left + plotW, pad.top + plotH);
+      ctx.stroke();
+
+      // Cutoff reference line (dashed crimson)
+      const cutX = pad.left + ((Math.min(xMax, Math.max(xMin, cutoff)) - xMin) / visibleBins) * plotW;
+      ctx.save();
+      ctx.strokeStyle = '#B91C1C';
+      ctx.lineWidth = 1.75;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cutX, pad.top - 4);
+      ctx.lineTo(cutX, pad.top + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#B91C1C';
+      ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      const cutRight = cutX > pad.left + plotW * 0.72;
+      ctx.textAlign = cutRight ? 'right' : 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(
+        `${isPrelim ? 'Top 2,235' : 'Top 1,490'}: ${cutoff.toFixed(2)}`,
+        cutX + (cutRight ? -5 : 5),
+        pad.top - 22
+      );
+      ctx.restore();
+
+      // Personal Score vertical line (solid accent blue)
+      const clampedUser = Math.min(xMax, Math.max(xMin, userScore));
+      const userX = pad.left + ((clampedUser - xMin) / visibleBins) * plotW;
+      ctx.save();
+      ctx.strokeStyle = '#1D4ED8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(userX, pad.top + 8);
+      ctx.lineTo(userX, pad.top + plotH);
+      ctx.stroke();
+      ctx.fillStyle = '#1D4ED8';
+      ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      const nearCut = Math.abs(userX - cutX) < 95;
+      const userAlignRight = userX > pad.left + plotW * 0.76 || (nearCut && userX < cutX);
+      ctx.textAlign = userAlignRight ? 'right' : 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(
+        `You: ${userScore.toFixed(2)}`,
+        userX + (userAlignRight ? -5 : 5),
+        nearCut ? pad.top - 8 : pad.top - 22
+      );
+      ctx.restore();
+
+      // X-axis label
+      ctx.fillStyle = '#64748B';
+      ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(
+        isPrelim ? 'Preliminary Combined Score (/100) — Eligible Part 2 MCQ Passers' : 'Final Combined Score (/100) — Top 2,235 Marked Candidates (EUFTE ≥ 5.0)',
+        pad.left + plotW / 2,
+        h - 2
+      );
+    }
+
+    function handlePart2Pointer(clientX, clientY) {
+      if (!lastSim || !p2Layout) return;
+      const wrap = $('canvasPart2').parentElement;
+      const rect = wrap.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const { pad, plotW, plotH, xMin, visibleBins, startOffset, bins, cumAbove, cutoff, isPrelim } = p2Layout;
+      if (x < pad.left || x > pad.left + plotW || y < pad.top || y > pad.top + plotH) {
+        hidePart2Tooltip();
+        return;
+      }
+      const j = Math.min(visibleBins - 1, Math.max(0, Math.floor(((x - pad.left) / plotW) * visibleBins)));
+      if (j !== hoverPart2Idx) {
+        hoverPart2Idx = j;
+        drawPart2Chart(lastSim);
+      }
+      const bi = startOffset + j;
+      const scLo = xMin + j;
+      const scHi = scLo + 1;
+      const count = bins[bi];
+      const rankTop = Math.max(1, Math.round(cumAbove[bi]) + 1);
+      const rankBot = Math.max(rankTop, Math.round(cumAbove[bi] + count));
+      const qual = scLo + 0.5 >= cutoff;
+
+      const tt = $('tooltipPart2');
+      tt.innerHTML = `
+        <div class="tt-head">
+          <span>Score ${scLo}–${scHi}</span>
+          <span style="color:${qual ? '#34D399' : '#CBD5E1'}">${qual ? (isPrelim ? 'Top 2,235' : 'Top 1,490') : 'Below Cutoff'}</span>
+        </div>
+        <div class="tt-row"><span class="tt-key">Est. Candidates in Bin</span><span class="tt-val">${fmtInt(count)}</span></div>
+        <div class="tt-row"><span class="tt-key">Cumulative Rank Range</span><span class="tt-val">#${fmtInt(rankTop)} – #${fmtInt(rankBot)}</span></div>
+        <div class="tt-row"><span class="tt-key">Live Cutoff</span><span class="tt-val">${cutoff.toFixed(2)}</span></div>
+      `;
+      tt.classList.add('visible');
+      tt.setAttribute('aria-hidden', 'false');
+      positionTooltip(tt, wrap, clientX, clientY);
+    }
+
+    function hidePart2Tooltip() {
+      if (hoverPart2Idx !== -1) {
+        hoverPart2Idx = -1;
+        if (lastSim) drawPart2Chart(lastSim);
+      }
+      const tt = $('tooltipPart2');
+      tt.classList.remove('visible');
+      tt.setAttribute('aria-hidden', 'true');
+    }
+
+    // =========================================================================
+    // Event Listeners
+    // =========================================================================
+    function bindStateSlider(id, key, isInt = false) {
+      $(id).addEventListener('input', e => {
+        state[key] = isInt ? parseInt(e.target.value, 10) : parseFloat(e.target.value);
+        activePreset = null;
+        if (key === 'vMean' || key === 'vSd' || key === 'naMean' || key === 'naSd' || key === 'rhoVN') {
+          passRateClampNote = '';
+        }
+        syncPresetButtons();
+        scheduleUpdate();
+      });
+    }
+
+    bindStateSlider('slVMean', 'vMean');
+    bindStateSlider('slVSd', 'vSd');
+    bindStateSlider('slNAMean', 'naMean');
+    bindStateSlider('slNASd', 'naSd');
+    bindStateSlider('slRhoVN', 'rhoVN');
+    bindStateSlider('slAttrition', 'attrition', true);
+    bindStateSlider('slEukMean', 'eukMean');
+    bindStateSlider('slEukSd', 'eukSd');
+    bindStateSlider('slDigMean', 'digMean');
+    bindStateSlider('slDigSd', 'digSd');
+    bindStateSlider('slEssayMean', 'essayMean');
+    bindStateSlider('slEssaySd', 'essaySd');
+    bindStateSlider('slRhoEukDig', 'rhoEukDig');
+    bindStateSlider('slRhoEukEssay', 'rhoEukEssay');
+    bindStateSlider('slRhoDigEssay', 'rhoDigEssay');
+    bindStateSlider('slRhoVP2', 'rhoVP2');
+
+    // Bidirectional Joint Pass Rate Slider
+    $('slPassRate').addEventListener('input', e => {
+      const targetP = parseFloat(e.target.value) / 100;
+      const solved = E.solveMeansForPassRate(state, targetP);
+      state.vMean = solved.vMean;
+      state.naMean = solved.naMean;
+      passRateClampNote = solved.clampNote;
+      activePreset = null;
+      syncPresetButtons();
+      $('slVMean').value = state.vMean;
+      $('slNAMean').value = state.naMean;
+      scheduleUpdate();
+    });
+
+    // Presets & Reset
+    function applyPreset(key) {
+      const p = E.PRESETS[key];
+      if (!p) return;
+      Object.assign(state, p);
+      activePreset = key;
+      passRateClampNote = '';
+      syncControlsFromState();
+      syncPresetButtons();
+      scheduleUpdate();
+    }
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+    });
+    $('btnResetBaseline').addEventListener('click', () => applyPreset('baseline'));
+
+    // Odds Table row click -> load Verbal into Personal Score Tester
+    function selectVerbalFromTable(v) {
+      if (!Number.isFinite(v) || v < 10 || v > 20) return;
+      personal.v = v;
+      syncPersonalInputs();
+      if (lastSim) {
+        renderOddsTable(lastSim);
+        renderPersonalTester(lastSim);
+        drawPart2Chart(lastSim);
+      }
+    }
+
+    $('oddsTableBody').addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-v]');
+      if (tr) selectVerbalFromTable(parseInt(tr.dataset.v, 10));
+    });
+    $('oddsTableBody').addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const tr = e.target.closest('tr[data-v]');
+        if (tr) {
+          e.preventDefault();
+          selectVerbalFromTable(parseInt(tr.dataset.v, 10));
+        }
+      }
+    });
+
+    // Personal Score Tester Inputs
+    function bindPersonalPair(rangeId, numId, key, min, max, step) {
+      const updateVal = raw => {
+        let val = parseFloat(raw);
+        if (!Number.isFinite(val)) return;
+        val = Math.min(max, Math.max(min, Math.round(val / step) * step));
+        personal[key] = val;
+        syncPersonalInputs();
+        if (lastSim) {
+          if (key === 'v') renderOddsTable(lastSim);
+          renderPersonalTester(lastSim);
+          drawPart2Chart(lastSim);
+        }
+      };
+      $(rangeId).addEventListener('input', e => updateVal(e.target.value));
+      $(numId).addEventListener('change', e => updateVal(e.target.value));
+    }
+
+    bindPersonalPair('psVerbal', 'psVerbalNum', 'v', 10, 20, 1);
+    bindPersonalPair('psEuk', 'psEukNum', 'euk', 0, 30, 1);
+    bindPersonalPair('psDig', 'psDigNum', 'dig', 0, 40, 1);
+    bindPersonalPair('psEssay', 'psEssayNum', 'essay', 0, 10, 0.5);
+
+    // Part 2 Segmented Stage Toggle
+    function setPart2Stage(stage) {
+      part2Stage = stage;
+      const isPrelim = stage === 'prelim';
+      $('btnStagePrelim').classList.toggle('active', isPrelim);
+      $('btnStagePrelim').setAttribute('aria-selected', String(isPrelim));
+      $('btnStageFinal').classList.toggle('active', !isPrelim);
+      $('btnStageFinal').setAttribute('aria-selected', String(!isPrelim));
+      $('p2ChartTitle').textContent = isPrelim
+        ? 'Part 2 Score Distribution — Preliminary Ranking (Top 2,235 Gate)'
+        : 'Part 2 Score Distribution — Final Ranking (Top 1,490 Reserve List)';
+      $('p2QualLegend').textContent = isPrelim
+        ? 'Top 2,235 Qualifying Tail'
+        : 'Top 1,490 Reserve List Tail';
+      hoverPart2Idx = -1;
+      hidePart2Tooltip();
+      if (lastSim) drawPart2Chart(lastSim);
+    }
+
+    $('btnStagePrelim').addEventListener('click', () => setPart2Stage('prelim'));
+    $('btnStageFinal').addEventListener('click', () => setPart2Stage('final'));
+
+    // Canvas Hover & Touch Tooltip Bindings
+    const c1 = $('canvasPart1');
+    c1.addEventListener('mousemove', e => handlePart1Pointer(e.clientX, e.clientY));
+    c1.addEventListener('mouseleave', hidePart1Tooltip);
+    c1.addEventListener('touchstart', e => {
+      if (e.touches && e.touches[0]) handlePart1Pointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    c1.addEventListener('touchmove', e => {
+      if (e.touches && e.touches[0]) handlePart1Pointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    const c2 = $('canvasPart2');
+    c2.addEventListener('mousemove', e => handlePart2Pointer(e.clientX, e.clientY));
+    c2.addEventListener('mouseleave', hidePart2Tooltip);
+    c2.addEventListener('touchstart', e => {
+      if (e.touches && e.touches[0]) handlePart2Pointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    c2.addEventListener('touchmove', e => {
+      if (e.touches && e.touches[0]) handlePart2Pointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    // Responsive Canvas Redraw
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (lastSim) {
+          drawPart1Chart(lastSim);
+          drawPart2Chart(lastSim);
+        }
+      }, 60);
+    });
+
+    // Initial render
+    syncControlsFromState();
+    syncPresetButtons();
+    syncPersonalInputs();
+    runAndRender();
+  })();
+  </script>
+</body>
+</html>
