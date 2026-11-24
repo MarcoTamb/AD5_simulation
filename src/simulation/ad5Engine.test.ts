@@ -40,6 +40,15 @@ interface SimulationResult {
   estPart1Passers: number;
   estPart2Sitters: number;
   baselinePasserOdds: number;
+  baselinePart2Odds: number;
+  part2PoolStats: {
+    eukMean: number;
+    eukSd: number;
+    digMean: number;
+    digSd: number;
+    essayMean: number;
+    essaySd: number;
+  };
   matrixAdjusted: boolean;
   prelimCutoff: number;
   finalCutoff: number;
@@ -84,9 +93,13 @@ interface AD5EngineApi {
   PART1_KEYS: readonly string[];
   PART2_KEYS: readonly string[];
   PRESETS: Record<string, EnginePreset>;
+  TEST_SPECS: Record<string, { nItems: number; sigmaB: number; bOffsets: Float64Array; c: Float64Array; cSum: number }>;
   calcPrelimScore: (v: number, euk: number, dig: number) => number;
   calcFinalScore: (v: number, euk: number, dig: number, essay: number) => number;
+  normCdf: (z: number) => number;
   calibrate3PL: (key: string, mean: number, sd: number, passMark: number) => Calibrated3PL;
+  essayMoments: (muStar: number, sdStar: number) => { mean: number; sd: number };
+  calibrateEssay: (targetMean: number, targetSd: number) => { muStar: number; sdStar: number };
   solveMeansForPassRate: (
     state: EnginePreset,
     targetPassRate: number
@@ -288,4 +301,74 @@ test('Personal score evaluator detects strong essay blocked at the Top 2,235 gat
   if (ev.finalScore >= sim.finalCutoff) {
     assert.equal(ev.blockedAtGateWithStrongEssay, true);
   }
+});
+
+test('Num+Abs uses two independent symmetric 10-item normal quantile grids with unconfounded c', () => {
+  const na = E.TEST_SPECS.na;
+  assert.equal(na.nItems, 20);
+  let sumNumB = 0;
+  let sumAbsB = 0;
+  for (let i = 0; i < 10; i++) {
+    assert.equal(na.c[i], 0.22);
+    assert.equal(na.c[i + 10], 0.16);
+    assert.ok(Math.abs(na.bOffsets[i] - na.bOffsets[i + 10]) < 1e-12, `Subtest grids differ at item ${i}`);
+    sumNumB += na.bOffsets[i];
+    sumAbsB += na.bOffsets[i + 10];
+  }
+  assert.ok(Math.abs(sumNumB) < 1e-10, `Numerical bOffsets not centered: ${sumNumB}`);
+  assert.ok(Math.abs(sumAbsB) < 1e-10, `Abstract bOffsets not centered: ${sumAbsB}`);
+});
+
+test('Exact normal-CDF essayMoments and calibrateEssay match target moments smoothly', () => {
+  assert.ok(Math.abs(E.normCdf(0) - 0.5) < 1e-7);
+  assert.ok(Math.abs(E.normCdf(1.95996398454) - 0.975) < 1e-5);
+  assert.ok(Math.abs(E.normCdf(-1.95996398454) - 0.025) < 1e-5);
+
+  // Exact symmetry at muStar = 5.0
+  const sym = E.essayMoments(5.0, 1.5);
+  assert.ok(Math.abs(sym.mean - 5.0) < 1e-6, `Expected exact mean 5.0, got ${sym.mean}`);
+
+  const cal = E.calibrateEssay(5.5, 1.5);
+  const mom = E.essayMoments(cal.muStar, cal.sdStar);
+  assert.ok(Math.abs(mom.mean - 5.5) < 0.005, `Essay mean mismatch: ${mom.mean}`);
+  assert.ok(Math.abs(mom.sd - 1.5) < 0.005, `Essay SD mismatch: ${mom.sd}`);
+});
+
+test('Part 2 survivor standardization makes simulated Part 2 sitter pool match sliders and uses Part 2 sitter baseline for green zone', () => {
+  const base = E.PRESETS.baseline;
+  const sim = E.runSimulation(base);
+
+  // Simulated Part 2 sitter pool means & SDs must closely match user Part 2 sliders
+  assert.ok(
+    Math.abs(sim.part2PoolStats.eukMean - base.eukMean) < 0.12,
+    `EUK pool mean ${sim.part2PoolStats.eukMean} drifted from slider ${base.eukMean}`
+  );
+  assert.ok(
+    Math.abs(sim.part2PoolStats.eukSd - base.eukSd) < 0.15,
+    `EUK pool SD ${sim.part2PoolStats.eukSd} drifted from slider ${base.eukSd}`
+  );
+  assert.ok(
+    Math.abs(sim.part2PoolStats.digMean - base.digMean) < 0.15,
+    `Dig pool mean ${sim.part2PoolStats.digMean} drifted from slider ${base.digMean}`
+  );
+  assert.ok(
+    Math.abs(sim.part2PoolStats.digSd - base.digSd) < 0.15,
+    `Dig pool SD ${sim.part2PoolStats.digSd} drifted from slider ${base.digSd}`
+  );
+  assert.ok(
+    Math.abs(sim.part2PoolStats.essayMean - base.essayMean) < 0.08,
+    `Essay pool mean ${sim.part2PoolStats.essayMean} drifted from slider ${base.essayMean}`
+  );
+  assert.ok(
+    Math.abs(sim.part2PoolStats.essaySd - base.essaySd) < 0.08,
+    `Essay pool SD ${sim.part2PoolStats.essaySd} drifted from slider ${base.essaySd}`
+  );
+
+  // Green zone threshold must compare condRlOdds against baselinePart2Odds (not baselinePasserOdds)
+  const expectedP2Odds = Math.min(1.0, E.CONSTANTS.N_RL / sim.estPart2Sitters);
+  assert.ok(Math.abs(sim.baselinePart2Odds - expectedP2Odds) < 1e-12);
+  assert.ok(sim.baselinePart2Odds > sim.baselinePasserOdds);
+
+  const expectedGreenV = sim.verbalBreakdown.find((r) => r.condRlOdds > sim.baselinePart2Odds)?.v ?? 21;
+  assert.equal(sim.greenThresholdV, expectedGreenV);
 });

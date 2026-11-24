@@ -1,4 +1,4 @@
-# EPSO AD5 2026 Competition Simulator (IRT Edition)
+# EPSO AD5 2026 Competition Simulator
 
 > **Note:** This project is **100% vibe-coded** — built as a self-contained, single-file interactive psychometric simulator with zero external runtime dependencies.
 

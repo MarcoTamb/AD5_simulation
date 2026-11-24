@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EPSO AD5 2026 Competition Simulator (IRT Edition)</title>
+  <title>EPSO AD5 2026 Competition Simulator</title>
   <meta name="description" content="Self-contained psychometric simulator for the EPSO AD5 2026 competition using 3PL Item Response Theory, Poisson-Binomial exact scoring, and correlated Monte Carlo simulation." />
-  <meta property="og:title" content="EPSO AD5 2026 Competition Simulator (IRT Edition)" />
+  <meta property="og:title" content="EPSO AD5 2026 Competition Simulator" />
   <meta property="og:description" content="Interactive 3PL Item Response Theory simulator for EPSO AD5 2026 pass rates, cutoffs, and reserve list probabilities." />
   <style>
     :root {
@@ -1329,7 +1329,7 @@
     <section class="hero" aria-label="Competition overview and scenarios">
       <div class="hero-top">
         <div>
-          <h1>EPSO AD5 2026 Competition Simulator (IRT Edition)</h1>
+          <h1>EPSO AD5 2026 Competition Simulator</h1>
           <p class="subtitle">75,274 Part 1 Sitters · Top 2,235 Essays Marked · 1,490 Reserve List</p>
           <div class="constants-line">
             <span><strong>Registered:</strong> 174,382 (43.2% sat Part 1)</span>
@@ -1809,7 +1809,7 @@
           <div class="doc-content">
             <p>Each multiple-choice test (Verbal 20 Qs, Num+Abs 20 Qs, EU Knowledge 30 Qs, Digital Skills 40 Qs) is modeled using the 3-Parameter Logistic (3PL) IRT model rather than a naive Normal or Beta-Binomial approximation. For a candidate with standardized latent ability θ<sub>k</sub> ~ N(0, 1), the probability of answering item <em>i</em> correctly is:</p>
             <div class="formula-box">P<sub>k,i</sub>(θ<sub>k</sub>) = c<sub>k,i</sub> + (1 − c<sub>k,i</sub>) / (1 + exp(−1.702 · a<sub>k</sub> · (θ<sub>k</sub> − b<sub>k,i</sub>)))</div>
-            <p>Item difficulties are spaced heterogeneously across the item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills, and σ<sub>b,NA</sub> = 0.85 for the composite Num+Abs test. Pseudo-guessing asymptotes reflect 4-option MCQs attenuated by speededness: c = 0.22 for Verbal (L1) and Numerical (items 1–10), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge, and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
+            <p>Item difficulties are spaced heterogeneously across each item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills. For the composite Num+Abs test (σ<sub>b,NA</sub> = 0.85), two independent 10-item normal quantile grids are generated—one for Numerical (items 1–10) and one for Abstract (items 11–20)—rather than a single 20-item grid, so both subtests span the full difficulty range symmetrically without confounding difficulty and guessing. Pseudo-guessing asymptotes reflect 4-option MCQs attenuated by speededness: c = 0.22 for Verbal (L1) and Numerical (items 1–10), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge, and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
             <p>Given your chosen observed Mean (μ<sub>k</sub>) and SD (σ<sub>k</sub>), the engine calibrates (b̄<sub>k</sub>, a<sub>k</sub>) in real time via 41-node Gauss-Hermite quadrature and the Law of Total Variance: Var(X<sub>k</sub>) = Var<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)) + E<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)(1 − P<sub>k,i</sub>(θ))). Because the binomial measurement-error term E<sub>θ</sub>[SEM(θ)<sup>2</sup>] is strictly positive even as discrimination a<sub>k</sub> → 0.05, every MCQ test has an irreducible psychometric SD floor (σ<sub>min</sub>) and finite ceiling (σ<sub>max</sub> at a<sub>k</sub> = 3.50). Exact conditional score PMFs P(X<sub>k</sub> = s | θ) are computed via exact Poisson-Binomial dynamic programming on a 101-point θ grid—naturally capturing guessing floors, ceiling compression near 20/20 or 40/40, and conditional measurement error.</p>
           </div>
         </details>
@@ -1827,7 +1827,7 @@
           <summary>3. Latent vs. Observed Correlation Attenuation, Range Restriction &amp; Zero-Flicker CRN</summary>
           <div class="doc-content">
             <p>Observed test scores contain measurement error, so observed correlations are strictly lower than underlying latent correlations following Spearman's attenuation relation (r<sub>obs</sub> ≈ ρ<sub>θ</sub> · √(α<sub>1</sub> · α<sub>2</sub>)). For example, a latent Part 1 correlation of ρ<sub>VN</sub><sup>θ</sup> = 0.60 typically translates to an observed score correlation of r<sub>VN</sub><sup>obs</sup> ≈ 0.42–0.47. Part 1 pass rates and Verbal distributions are solved deterministically via 21×21 bivariate Gauss-Hermite quadrature—capturing upward range restriction (selection on Num+Abs ≥ 10 shifts the Verbal mean up and compresses Verbal SD among passers).</p>
-            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws sampled rejection-free from the exact Part 1 survivor distribution, plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
+            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>), assuming conditional independence between Num+Abs and Part 2 given Verbal (ρ<sub>NA,P2</sub> = ρ<sub>VN</sub> · ρ<sub>V,P2</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Before mapping Part 2 latent traits to observed scores, θ<sub>EUK</sub>, θ<sub>Dig</sub>, and θ<sub>EUFTE</sub> are standardized on the Part 1 survivor pool so that the Part 2 sliders directly govern the unselected Part 2 sitter distribution (while preserving cross-test correlations and organic upward selection among the Top 2,235). Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws sampled rejection-free from the exact Part 1 survivor distribution, plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
           </div>
         </details>
 
@@ -1995,6 +1995,18 @@
       return 0.3989422804014327 * Math.exp(-0.5 * z * z);
     }
 
+    function erf(x) {
+      const sign = x < 0 ? -1 : 1;
+      const ax = Math.abs(x);
+      const t = 1.0 / (1.0 + 0.3275911 * ax);
+      const y = 1.0 - (((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t) * Math.exp(-ax * ax);
+      return sign * y;
+    }
+
+    function normCdf(z) {
+      return 0.5 * (1.0 + erf(z * 0.7071067811865475));
+    }
+
     // Jacobi eigendecomposition for symmetric n x n matrices
     function jacobiEigen(mat) {
       const n = mat.length;
@@ -2138,11 +2150,12 @@
     // =========================================================================
     // 3. 3PL IRT Item Bank, Calibration & Exact Poisson-Binomial DP
     // =========================================================================
-    function buildItemSpec(nItems, sigmaB, cSpec) {
+    function buildItemSpec(nItems, sigmaB, cSpec, subtestSize) {
+      const gridN = subtestSize || nItems;
       const bOffsets = new Float64Array(nItems);
       const c = new Float64Array(nItems);
       for (let i = 0; i < nItems; i++) {
-        bOffsets[i] = sigmaB * normInv((i + 0.5) / nItems);
+        bOffsets[i] = sigmaB * normInv(((i % gridN) + 0.5) / gridN);
         c[i] = typeof cSpec === 'function' ? cSpec(i) : cSpec;
       }
       let cSum = 0;
@@ -2152,7 +2165,7 @@
 
     const TEST_SPECS = {
       verbal: buildItemSpec(CONSTANTS.VERBAL_N, 0.75, 0.22),
-      na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.22 : 0.16)),
+      na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.22 : 0.16), 10),
       euk: buildItemSpec(CONSTANTS.EUK_N, 0.75, 0.23),
       dig: buildItemSpec(CONSTANTS.DIG_N, 0.75, 0.18)
     };
@@ -2503,15 +2516,17 @@
     }
 
     function essayMoments(muStar, sdStar) {
-      const ghX = GH41.x;
-      const ghW = GH41.w;
+      const invSd = 1.0 / Math.max(1e-9, sdStar);
       let mean = 0;
       let m2 = 0;
-      for (let q = 0; q < GH41.n; q++) {
-        const val = discretizeEssay(muStar + sdStar * ghX[q]);
-        const w = ghW[q];
-        mean += w * val;
-        m2 += w * val * val;
+      let prevCdf = 0.0;
+      for (let i = 0; i <= 20; i++) {
+        const score = i * 0.5;
+        const currCdf = i < 20 ? normCdf((score + 0.25 - muStar) * invSd) : 1.0;
+        const prob = Math.max(0, currCdf - prevCdf);
+        mean += prob * score;
+        m2 += prob * score * score;
+        prevCdf = currCdf;
       }
       return { mean, sd: Math.sqrt(Math.max(1e-9, m2 - mean * mean)) };
     }
@@ -2919,7 +2934,11 @@
       return grid[lo - 1] + frac * (grid[lo] - grid[lo - 1]);
     }
 
-    // Reusable buffers for sorting & histograms
+    // Reusable buffers for survivor standardization, sorting & histograms
+    const mainVScores = new Uint8Array(CRN.main.N);
+    const mainThEuk = new Float64Array(CRN.main.N);
+    const mainThDig = new Float64Array(CRN.main.N);
+    const mainThEss = new Float64Array(CRN.main.N);
     const mainPrelimScores = new Float64Array(CRN.main.N);
     const mainFinalScores = new Float64Array(CRN.main.N);
     const mainEligibleMask = new Uint8Array(CRN.main.N);
@@ -2944,6 +2963,7 @@
       const attritionFrac = Math.min(0.40, Math.max(0.0, params.attrition / 100));
       const estPart2Sitters = estPart1Passers * (1.0 - attritionFrac);
       const baselinePasserOdds = estPart1Passers > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart1Passers) : 1.0;
+      const baselinePart2Odds = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart2Sitters) : 1.0;
 
       // 3. Construct 5x5 Latent Correlation Matrix & Cholesky
       // Order: [0: V, 1: NA, 2: EUK, 3: Dig, 4: Essay]
@@ -3008,15 +3028,17 @@
       const essayMu = essayCal.muStar;
       const essaySd = essayCal.sdStar;
 
-      let eligibleMcqCount = 0;
-      const digFreq = new Int32Array(41);
+      // Pass 1: Draw correlated latent Part 2 traits among Part 1 passers & compute survivor moments
+      let sumThEuk = 0, sumThEuk2 = 0;
+      let sumThDig = 0, sumThDig2 = 0;
+      let sumThEss = 0, sumThEss2 = 0;
 
       for (let k = 0; k < MAIN_N; k++) {
         const thV = sampleContinuousFromCdf(margThVCdf, 0, SAMP_V_N, SAMP_V_GRID, m.uThV[k]);
         const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
         const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, m.uZ1[k]);
 
-        const vScore = sampleVerbalGivenPass(vCal.table, thV, m.uVScore[k]);
+        mainVScores[k] = sampleVerbalGivenPass(vCal.table, thV, m.uVScore[k]);
         const z2 = m.z2[k];
         const z3 = m.z3[k];
         const z4 = m.z4[k];
@@ -3025,9 +3047,47 @@
         const thDig = L30 * thV + L31 * z1 + L32 * z2 + L33 * z3;
         const thEss = L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4;
 
-        const eukScore = sampleFromCdfTable(eukCal.table, thEuk, m.uEuk[k]);
-        const digScore = sampleFromCdfTable(digCal.table, thDig, m.uDig[k]);
-        const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEss + sqrt1mR * m.zEssayErr[k]));
+        mainThEuk[k] = thEuk;
+        mainThDig[k] = thDig;
+        mainThEss[k] = thEss;
+
+        sumThEuk += thEuk; sumThEuk2 += thEuk * thEuk;
+        sumThDig += thDig; sumThDig2 += thDig * thDig;
+        sumThEss += thEss; sumThEss2 += thEss * thEss;
+      }
+
+      const survMeanEuk = sumThEuk / MAIN_N;
+      const survSdEuk = Math.sqrt(Math.max(1e-6, sumThEuk2 / MAIN_N - survMeanEuk * survMeanEuk));
+      const invSurvSdEuk = 1.0 / survSdEuk;
+
+      const survMeanDig = sumThDig / MAIN_N;
+      const survSdDig = Math.sqrt(Math.max(1e-6, sumThDig2 / MAIN_N - survMeanDig * survMeanDig));
+      const invSurvSdDig = 1.0 / survSdDig;
+
+      const survMeanEss = sumThEss / MAIN_N;
+      const survSdEss = Math.sqrt(Math.max(1e-6, sumThEss2 / MAIN_N - survMeanEss * survMeanEss));
+      const invSurvSdEss = 1.0 / survSdEss;
+
+      // Pass 2: Standardize latent traits on the Part 1 survivor pool before sampling Part 2 scores
+      let eligibleMcqCount = 0;
+      const digFreq = new Int32Array(41);
+      let sumEukObs = 0, sumEukObs2 = 0;
+      let sumDigObs = 0, sumDigObs2 = 0;
+      let sumEssObs = 0, sumEssObs2 = 0;
+
+      for (let k = 0; k < MAIN_N; k++) {
+        const vScore = mainVScores[k];
+        const thEukStd = (mainThEuk[k] - survMeanEuk) * invSurvSdEuk;
+        const thDigStd = (mainThDig[k] - survMeanDig) * invSurvSdDig;
+        const thEssStd = (mainThEss[k] - survMeanEss) * invSurvSdEss;
+
+        const eukScore = sampleFromCdfTable(eukCal.table, thEukStd, m.uEuk[k]);
+        const digScore = sampleFromCdfTable(digCal.table, thDigStd, m.uDig[k]);
+        const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEssStd + sqrt1mR * m.zEssayErr[k]));
+
+        sumEukObs += eukScore; sumEukObs2 += eukScore * eukScore;
+        sumDigObs += digScore; sumDigObs2 += digScore * digScore;
+        sumEssObs += essScore; sumEssObs2 += essScore * essScore;
 
         mainDigScores[k] = digScore;
         digFreq[digScore]++;
@@ -3044,6 +3104,18 @@
           mainFinalScores[k] = -1;
         }
       }
+
+      const poolEukMean = sumEukObs / MAIN_N;
+      const poolDigMean = sumDigObs / MAIN_N;
+      const poolEssMean = sumEssObs / MAIN_N;
+      const part2PoolStats = {
+        eukMean: poolEukMean,
+        eukSd: Math.sqrt(Math.max(0, sumEukObs2 / MAIN_N - poolEukMean * poolEukMean)),
+        digMean: poolDigMean,
+        digSd: Math.sqrt(Math.max(0, sumDigObs2 / MAIN_N - poolDigMean * poolDigMean)),
+        essayMean: poolEssMean,
+        essaySd: Math.sqrt(Math.max(0, sumEssObs2 / MAIN_N - poolEssMean * poolEssMean))
+      };
 
       // Compute 85th percentile Digital Skills score for the Odds table benchmark
       let digCum = 0;
@@ -3181,9 +3253,9 @@
           const z3 = cBank.z3[k];
           const z4 = cBank.z4[k];
 
-          const thEuk = L20 * thV + L21 * z1 + L22 * z2;
-          const thDig = L30 * thV + L31 * z1 + L32 * z2 + L33 * z3;
-          const thEss = L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4;
+          const thEuk = (L20 * thV + L21 * z1 + L22 * z2 - survMeanEuk) * invSurvSdEuk;
+          const thDig = (L30 * thV + L31 * z1 + L32 * z2 + L33 * z3 - survMeanDig) * invSurvSdDig;
+          const thEss = (L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4 - survMeanEss) * invSurvSdEss;
 
           const eukScore = sampleFromCdfTable(eukCal.table, thEuk, cBank.uEuk[k]);
           if (eukScore < CONSTANTS.EUK_PASS) continue;
@@ -3241,10 +3313,10 @@
       }
 
       // Dynamic Green Highlight Threshold v*:
-      // Lowest Verbal score in {10..20} whose conditional RL odds > baselinePasserOdds
+      // Lowest Verbal score in {10..20} whose conditional RL odds > baselinePart2Odds
       let greenThresholdV = 21;
       for (let i = 0; i < verbalBreakdown.length; i++) {
-        if (verbalBreakdown[i].condRlOdds > baselinePasserOdds) {
+        if (verbalBreakdown[i].condRlOdds > baselinePart2Odds) {
           greenThresholdV = verbalBreakdown[i].v;
           break;
         }
@@ -3340,10 +3412,12 @@
         params: Object.assign({}, params),
         calibrations: { vCal, naCal, eukCal, digCal, essayCal },
         part1,
+        part2PoolStats,
         estPart1Passers,
         estPart2Sitters,
         estPart2McqPassers,
         baselinePasserOdds,
+        baselinePart2Odds,
         matrixAdjusted,
         prelimCutoff,
         finalCutoff,
@@ -3368,10 +3442,14 @@
       PART1_KEYS,
       PART2_KEYS,
       PRESETS,
+      TEST_SPECS,
       calcPrelimScore,
       calcFinalScore,
       normInv,
+      normCdf,
       calibrate3PL,
+      essayMoments,
+      calibrateEssay,
       computePart1Exact,
       solveMeansForPassRate,
       ensurePsdAndCholesky,
@@ -3524,10 +3602,10 @@
       // Part 1 Chart dynamic green zone banner
       if (sim.greenThresholdV <= 20) {
         $('greenZoneText').textContent =
-          `Green zone: Verbal ≥ ${sim.greenThresholdV} (Odds > ${fmtPct(sim.baselinePasserOdds, 2)} baseline)`;
+          `Green zone: Verbal ≥ ${sim.greenThresholdV} (Odds > ${fmtPct(sim.baselinePart2Odds, 2)} Part 2 sitter baseline)`;
       } else {
         $('greenZoneText').textContent =
-          `Green zone: No Verbal score exceeds ${fmtPct(sim.baselinePasserOdds, 2)} baseline`;
+          `Green zone: No Verbal score exceeds ${fmtPct(sim.baselinePart2Odds, 2)} Part 2 sitter baseline`;
       }
       $('p1ChartPasserSummary').textContent =
         `Est. Part 1 Passers: ${fmtInt(sim.estPart1Passers)} (Passer Verbal μ = ${sim.part1.passVMean.toFixed(2)}, σ = ${sim.part1.passVSd.toFixed(2)})`;
