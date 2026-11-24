@@ -309,7 +309,7 @@ test('Num+Abs uses two independent symmetric 10-item normal quantile grids with 
   let sumNumB = 0;
   let sumAbsB = 0;
   for (let i = 0; i < 10; i++) {
-    assert.equal(na.c[i], 0.22);
+    assert.equal(na.c[i], 0.18);
     assert.equal(na.c[i + 10], 0.16);
     assert.ok(Math.abs(na.bOffsets[i] - na.bOffsets[i + 10]) < 1e-12, `Subtest grids differ at item ${i}`);
     sumNumB += na.bOffsets[i];

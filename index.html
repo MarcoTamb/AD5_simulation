@@ -1388,7 +1388,7 @@
     <section id="part1" class="section" aria-labelledby="h-part1">
       <div class="section-header">
         <h2 id="h-part1" class="section-title">1. Part 1 — Reasoning Tests (3PL Item Response Theory)</h2>
-        <div class="section-meta">Verbal (20 MCQs, L1, c = 0.22) · Num+Abs (10 Num c = 0.22 + 10 speeded Abs c = 0.16)</div>
+        <div class="section-meta">Verbal (20 MCQs, L1, c = 0.22) · Num+Abs (10 Num c = 0.18 + 10 speeded Abs c = 0.16)</div>
       </div>
 
       <div class="slider-grid-p1">
@@ -1809,7 +1809,7 @@
           <div class="doc-content">
             <p>Each multiple-choice test (Verbal 20 Qs, Num+Abs 20 Qs, EU Knowledge 30 Qs, Digital Skills 40 Qs) is modeled using the 3-Parameter Logistic (3PL) IRT model rather than a naive Normal or Beta-Binomial approximation. For a candidate with standardized latent ability θ<sub>k</sub> ~ N(0, 1), the probability of answering item <em>i</em> correctly is:</p>
             <div class="formula-box">P<sub>k,i</sub>(θ<sub>k</sub>) = c<sub>k,i</sub> + (1 − c<sub>k,i</sub>) / (1 + exp(−1.702 · a<sub>k</sub> · (θ<sub>k</sub> − b<sub>k,i</sub>)))</div>
-            <p>Item difficulties are spaced heterogeneously across each item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills. For the composite Num+Abs test (σ<sub>b,NA</sub> = 0.85), two independent 10-item normal quantile grids are generated—one for Numerical (items 1–10) and one for Abstract (items 11–20)—rather than a single 20-item grid, so both subtests span the full difficulty range symmetrically without confounding difficulty and guessing. Pseudo-guessing asymptotes reflect 4-option MCQs attenuated by speededness: c = 0.22 for Verbal (L1) and Numerical (items 1–10), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge, and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
+            <p>Item difficulties are spaced heterogeneously across each item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills. For the composite Num+Abs test (σ<sub>b,NA</sub> = 0.85), two independent 10-item normal quantile grids are generated—one for Numerical (items 1–10) and one for Abstract (items 11–20)—rather than a single 20-item grid, so both subtests span the full difficulty range symmetrically without confounding difficulty and guessing. Pseudo-guessing asymptotes reflect option counts attenuated by speededness: c = 0.22 for Verbal (L1, 4 options), c = 0.18 for Numerical (items 1–10, 5 options), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge (4 options), and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
             <p>Given your chosen observed Mean (μ<sub>k</sub>) and SD (σ<sub>k</sub>), the engine calibrates (b̄<sub>k</sub>, a<sub>k</sub>) in real time via 41-node Gauss-Hermite quadrature and the Law of Total Variance: Var(X<sub>k</sub>) = Var<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)) + E<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)(1 − P<sub>k,i</sub>(θ))). Because the binomial measurement-error term E<sub>θ</sub>[SEM(θ)<sup>2</sup>] is strictly positive even as discrimination a<sub>k</sub> → 0.05, every MCQ test has an irreducible psychometric SD floor (σ<sub>min</sub>) and finite ceiling (σ<sub>max</sub> at a<sub>k</sub> = 3.50). Exact conditional score PMFs P(X<sub>k</sub> = s | θ) are computed via exact Poisson-Binomial dynamic programming on a 101-point θ grid—naturally capturing guessing floors, ceiling compression near 20/20 or 40/40, and conditional measurement error.</p>
           </div>
         </details>
@@ -2165,7 +2165,7 @@
 
     const TEST_SPECS = {
       verbal: buildItemSpec(CONSTANTS.VERBAL_N, 0.75, 0.22),
-      na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.22 : 0.16), 10),
+      na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.18 : 0.16), 10),
       euk: buildItemSpec(CONSTANTS.EUK_N, 0.75, 0.23),
       dig: buildItemSpec(CONSTANTS.DIG_N, 0.75, 0.18)
     };
