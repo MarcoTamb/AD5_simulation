@@ -200,19 +200,26 @@
     }
 
     /* Presets Bar */
+    .presets-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
     .presets-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      margin-top: 16px;
     }
 
     .presets-label {
       font-size: 12.5px;
       font-weight: 600;
       color: var(--text-muted);
-      margin-right: 4px;
+      min-width: 112px;
+      flex-shrink: 0;
     }
 
     .preset-btn {
@@ -1332,12 +1339,20 @@
         </div>
       </div>
 
-      <div class="presets-row" role="group" aria-label="Scenario presets">
-        <span class="presets-label">Scenarios:</span>
-        <button type="button" class="preset-btn active" data-preset="baseline">Revised IRT Baseline (~40% Pass)</button>
-        <button type="button" class="preset-btn" data-preset="toughPart1">Tougher Part 1 (~35% Pass)</button>
-        <button type="button" class="preset-btn" data-preset="drilledEuk">Drilled EUK + Easy Digital</button>
-        <button type="button" class="preset-btn" data-preset="highAttrition">15% Part 2 Attrition</button>
+      <div class="presets-stack">
+        <div class="presets-row" role="group" aria-label="Part 1 Scenario presets">
+          <span class="presets-label">Part 1 Scenarios:</span>
+          <button type="button" class="preset-btn active" data-preset="baseline" title="Resets Part 1 &amp; Part 2 to baseline: ~42.7% joint pass (equal ~60% Verbal &amp; Num+Abs pass rates) with 15% Part 2 attrition">Baseline (JPP, same weighting)</button>
+          <button type="button" class="preset-btn" data-preset="jppVerbalEasier" title="Part 1 only: ~42.2% joint pass with easier Verbal (~71% pass) and tougher Num+Abs (~51% pass)">JPP rate &amp; Verbal easier</button>
+          <button type="button" class="preset-btn" data-preset="jppNaEasier" title="Part 1 only: ~42.3% joint pass with tougher Verbal (~51% pass, Verbal bottleneck) and easier Num+Abs (~71% pass)">JPP rate &amp; NA easier (Verbal Bottleneck)</button>
+          <button type="button" class="preset-btn" data-preset="lowPassRate" title="Part 1 only: ~32.9% joint pass rate (equal ~51% Verbal &amp; Num+Abs pass rates, ρ = 0.62)">Low pass rate</button>
+        </div>
+        <div class="presets-row" role="group" aria-label="Part 2 Scenario presets">
+          <span class="presets-label">Part 2 Scenarios:</span>
+          <button type="button" class="preset-btn active" data-preset="part2Baseline" title="Part 2 only: 15% attrition, EUK 18.0 (SD 4.8), Digital 25.0 (SD 5.0), EUFTE 5.5 (SD 1.5)">Part 2 Baseline</button>
+          <button type="button" class="preset-btn" data-preset="ceilingCrunch" title="Part 2 only: higher Part 2 scores (EUK 20.0, Digital 28.0, EUFTE 6.0) compressing top cutoffs">Ceiling Crunch</button>
+          <button type="button" class="preset-btn" data-preset="harshFatigue" title="Part 2 only: 25% attrition and tougher Part 2 scoring (EUK 15.5, Digital 22.0, EUFTE 5.2)">Harsh Calibration &amp; Fatigue</button>
+        </div>
       </div>
     </section>
 
@@ -1392,9 +1407,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slVSd" class="control-label">Verbal SD (σ<sub>V</sub>)</label>
-            <span class="control-val" id="valVSd">4.00</span>
+            <span class="control-val" id="valVSd">3.40</span>
           </div>
-          <input type="range" id="slVSd" min="2.0" max="5.0" step="0.05" value="4.0" />
+          <input type="range" id="slVSd" min="2.0" max="5.0" step="0.05" value="3.4" />
           <div class="control-meta">
             <span id="clampVSd" class="clamp-note"></span>
             <span class="reliability-inline" id="irtParamsV">a = —, b̄ = —</span>
@@ -1404,9 +1419,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slNAMean" class="control-label">Num+Abs Mean (μ<sub>NA</sub>)</label>
-            <span class="control-val" id="valNAMean">10.40 / 20</span>
+            <span class="control-val" id="valNAMean">10.60 / 20</span>
           </div>
-          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.4" />
+          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.6" />
           <div class="control-meta">
             <span>Pass mark &ge; 10/20 combined (Eliminatory only)</span>
             <span class="reliability-inline" id="relNA">α<sub>NA</sub> = —</span>
@@ -1416,9 +1431,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slNASd" class="control-label">Num+Abs SD (σ<sub>NA</sub>)</label>
-            <span class="control-val" id="valNASd">3.80</span>
+            <span class="control-val" id="valNASd">3.60</span>
           </div>
-          <input type="range" id="slNASd" min="2.0" max="5.0" step="0.05" value="3.8" />
+          <input type="range" id="slNASd" min="2.0" max="5.0" step="0.05" value="3.6" />
           <div class="control-meta">
             <span id="clampNASd" class="clamp-note"></span>
             <span class="reliability-inline" id="irtParamsNA">a = —, b̄ = —</span>
@@ -1428,7 +1443,7 @@
         <div class="control-block slider-span-2">
           <div class="control-header">
             <label for="slPassRate" class="control-label">Joint Part 1 Pass Rate (P<sub>pass</sub> — Bidirectional Sync)</label>
-            <span class="control-val highlight" id="valPassRate">42.5% · 31,991 passers</span>
+            <span class="control-val highlight" id="valPassRate">42.7% · 32,111 passers</span>
           </div>
           <input type="range" id="slPassRate" class="accent-slider" min="3.0" max="100.0" step="0.5" value="42.5" />
           <div class="control-meta">
@@ -1444,9 +1459,9 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slRhoVN" class="control-label">Latent Correlation: Verbal ↔ Num+Abs (ρ<sub>VN</sub><sup>θ</sup>)</label>
-              <span class="control-val" id="valRhoVN">0.60</span>
+              <span class="control-val" id="valRhoVN">0.65</span>
             </div>
-            <input type="range" id="slRhoVN" min="0.00" max="0.90" step="0.01" value="0.60" />
+            <input type="range" id="slRhoVN" min="0.00" max="0.90" step="0.01" value="0.65" />
             <div class="control-meta">
               <span>Operates on standardized latent abilities (θ<sub>V</sub>, θ<sub>NA</sub>); observed score correlation is attenuated by IRT reliability.</span>
             </div>
@@ -1509,9 +1524,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slAttrition" class="control-label">Part 2 No-Show / Attrition Rate</label>
-            <span class="control-val highlight" id="valAttrition">10% · 28,792 active Part 2 sitters</span>
+            <span class="control-val highlight" id="valAttrition">15% · 27,295 active Part 2 sitters</span>
           </div>
-          <input type="range" id="slAttrition" class="accent-slider" min="0" max="40" step="1" value="10" />
+          <input type="range" id="slAttrition" class="accent-slider" min="0" max="40" step="1" value="15" />
           <div class="control-meta">
             <span>Share of Part 1 passers who do not sit Part 2 (modeled uniformly across Part 1 passers; see Methodology caveats).</span>
           </div>
@@ -1527,16 +1542,16 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slEukMean" class="control-label">Mean (μ<sub>EUK</sub>)</label>
-              <span class="control-val" id="valEukMean">17.50 / 30</span>
+              <span class="control-val" id="valEukMean">18.00 / 30</span>
             </div>
-            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="17.5" />
+            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="18.0" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slEukSd" class="control-label">SD (σ<sub>EUK</sub>)</label>
-              <span class="control-val" id="valEukSd">5.20</span>
+              <span class="control-val" id="valEukSd">4.80</span>
             </div>
-            <input type="range" id="slEukSd" min="2.5" max="10.0" step="0.1" value="5.2" />
+            <input type="range" id="slEukSd" min="2.5" max="10.0" step="0.1" value="4.8" />
             <div class="control-meta">
               <span id="clampEukSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsEUK">a = —, b̄ = —</span>
@@ -1552,16 +1567,16 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slDigMean" class="control-label">Mean (μ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigMean">30.00 / 40</span>
+              <span class="control-val" id="valDigMean">25.00 / 40</span>
             </div>
-            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="30.0" />
+            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="25.0" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slDigSd" class="control-label">SD (σ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigSd">4.20</span>
+              <span class="control-val" id="valDigSd">5.00</span>
             </div>
-            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="4.2" />
+            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="5.0" />
             <div class="control-meta">
               <span id="clampDigSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsDig">a = —, b̄ = —</span>
@@ -1577,16 +1592,16 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slEssayMean" class="control-label">Pool Mean (μ<sub>E</sub>)</label>
-              <span class="control-val" id="valEssayMean">6.20 / 10</span>
+              <span class="control-val" id="valEssayMean">5.50 / 10</span>
             </div>
-            <input type="range" id="slEssayMean" min="4.0" max="8.0" step="0.05" value="6.2" />
+            <input type="range" id="slEssayMean" min="4.0" max="8.0" step="0.05" value="5.5" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slEssaySd" class="control-label">Pool SD (σ<sub>E</sub>)</label>
-              <span class="control-val" id="valEssaySd">1.20</span>
+              <span class="control-val" id="valEssaySd">1.50</span>
             </div>
-            <input type="range" id="slEssaySd" min="0.6" max="3.5" step="0.05" value="1.2" />
+            <input type="range" id="slEssaySd" min="0.6" max="3.5" step="0.05" value="1.5" />
             <div class="control-meta">
               <span class="reliability-inline" id="markedEssayMean">Top 2,235 marked mean: —</span>
             </div>
@@ -1601,33 +1616,33 @@
             <div class="control-block">
               <div class="control-header">
                 <label for="slRhoEukDig" class="control-label">EU Knowledge ↔ Digital Skills (ρ<sub>EUK,Dig</sub><sup>θ</sup>)</label>
-                <span class="control-val" id="valRhoEukDig">0.35</span>
+                <span class="control-val" id="valRhoEukDig">0.45</span>
               </div>
-              <input type="range" id="slRhoEukDig" min="0.00" max="0.85" step="0.01" value="0.35" />
+              <input type="range" id="slRhoEukDig" min="0.00" max="0.85" step="0.01" value="0.45" />
             </div>
 
             <div class="control-block">
               <div class="control-header">
                 <label for="slRhoEukEssay" class="control-label">EU Knowledge ↔ EUFTE Essay (ρ<sub>EUK,E</sub><sup>θ</sup>)</label>
-                <span class="control-val" id="valRhoEukEssay">0.40</span>
+                <span class="control-val" id="valRhoEukEssay">0.42</span>
               </div>
-              <input type="range" id="slRhoEukEssay" min="0.00" max="0.85" step="0.01" value="0.40" />
+              <input type="range" id="slRhoEukEssay" min="0.00" max="0.85" step="0.01" value="0.42" />
             </div>
 
             <div class="control-block">
               <div class="control-header">
                 <label for="slRhoDigEssay" class="control-label">Digital Skills ↔ EUFTE Essay (ρ<sub>Dig,E</sub><sup>θ</sup>)</label>
-                <span class="control-val" id="valRhoDigEssay">0.25</span>
+                <span class="control-val" id="valRhoDigEssay">0.28</span>
               </div>
-              <input type="range" id="slRhoDigEssay" min="0.00" max="0.85" step="0.01" value="0.25" />
+              <input type="range" id="slRhoDigEssay" min="0.00" max="0.85" step="0.01" value="0.28" />
             </div>
 
             <div class="control-block">
               <div class="control-header">
                 <label for="slRhoVP2" class="control-label">Verbal ↔ Part 2 Latent Coupling (ρ<sub>V,P2</sub><sup>θ</sup>)</label>
-                <span class="control-val" id="valRhoVP2">0.35</span>
+                <span class="control-val" id="valRhoVP2">0.45</span>
               </div>
-              <input type="range" id="slRhoVP2" min="0.00" max="0.75" step="0.01" value="0.35" />
+              <input type="range" id="slRhoVP2" min="0.00" max="0.75" step="0.01" value="0.45" />
             </div>
           </div>
 
@@ -1684,33 +1699,33 @@
           <div class="control-block">
             <div class="control-header">
               <label for="psEuk" class="control-label">EU Knowledge (0–30, pass &ge; 15)</label>
-              <span class="control-val" id="psEukContrib">24.00 Prelim / 20.00 Final</span>
+              <span class="control-val" id="psEukContrib">23.00 Prelim / 19.17 Final</span>
             </div>
             <div class="tester-input-row">
-              <input type="range" id="psEuk" min="0" max="30" step="1" value="24" />
-              <input type="number" id="psEukNum" class="num-input" min="0" max="30" step="1" value="24" aria-label="EU Knowledge score numeric input" />
+              <input type="range" id="psEuk" min="0" max="30" step="1" value="23" />
+              <input type="number" id="psEukNum" class="num-input" min="0" max="30" step="1" value="23" aria-label="EU Knowledge score numeric input" />
             </div>
           </div>
 
           <div class="control-block">
             <div class="control-header">
               <label for="psDig" class="control-label">Digital Skills (0–40, pass &ge; 20)</label>
-              <span class="control-val" id="psDigContrib">25.50 Prelim / 21.25 Final</span>
+              <span class="control-val" id="psDigContrib">22.50 Prelim / 18.75 Final</span>
             </div>
             <div class="tester-input-row">
-              <input type="range" id="psDig" min="0" max="40" step="1" value="34" />
-              <input type="number" id="psDigNum" class="num-input" min="0" max="40" step="1" value="34" aria-label="Digital Skills score numeric input" />
+              <input type="range" id="psDig" min="0" max="40" step="1" value="30" />
+              <input type="number" id="psDigNum" class="num-input" min="0" max="40" step="1" value="30" aria-label="Digital Skills score numeric input" />
             </div>
           </div>
 
           <div class="control-block">
             <div class="control-header">
               <label for="psEssay" class="control-label">EUFTE Essay (0.0–10.0, pass &ge; 5.0)</label>
-              <span class="control-val" id="psEssayContrib">10.50 Final (Top 2,235 only)</span>
+              <span class="control-val" id="psEssayContrib">9.75 Final (Top 2,235 only)</span>
             </div>
             <div class="tester-input-row">
-              <input type="range" id="psEssay" min="0" max="10" step="0.5" value="7.0" />
-              <input type="number" id="psEssayNum" class="num-input" min="0" max="10" step="0.5" value="7.0" aria-label="EUFTE Essay score numeric input" />
+              <input type="range" id="psEssay" min="0" max="10" step="0.5" value="6.5" />
+              <input type="number" id="psEssayNum" class="num-input" min="0" max="10" step="0.5" value="6.5" aria-label="EUFTE Essay score numeric input" />
             </div>
           </div>
         </div>
@@ -1874,51 +1889,62 @@
       NA_MEAN_MAX: 16.0
     });
 
+    const PART1_KEYS = Object.freeze(['vMean', 'vSd', 'naMean', 'naSd', 'rhoVN']);
+    const PART2_KEYS = Object.freeze([
+      'attrition',
+      'eukMean', 'eukSd',
+      'digMean', 'digSd',
+      'essayMean', 'essaySd',
+      'rhoEukDig', 'rhoEukEssay', 'rhoDigEssay', 'rhoVP2'
+    ]);
+
+    const DEFAULT_PART1 = Object.freeze({
+      vMean: 10.5, vSd: 3.4,
+      naMean: 10.6, naSd: 3.6,
+      rhoVN: 0.65
+    });
+
+    const DEFAULT_PART2 = Object.freeze({
+      attrition: 15,
+      eukMean: 18.0, eukSd: 4.8,
+      digMean: 25.0, digSd: 5.0,
+      essayMean: 5.5, essaySd: 1.5,
+      rhoEukDig: 0.45, rhoEukEssay: 0.42, rhoDigEssay: 0.28, rhoVP2: 0.45
+    });
+
     const PRESETS = Object.freeze({
-      baseline: {
-        name: 'Revised IRT Baseline (~40% Pass)',
-        vMean: 10.5, vSd: 4.0,
-        naMean: 10.4, naSd: 3.8,
-        rhoVN: 0.60,
-        attrition: 10,
-        eukMean: 17.5, eukSd: 5.2,
-        digMean: 30.0, digSd: 4.2,
-        essayMean: 6.2, essaySd: 1.2,
-        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
-      },
-      toughPart1: {
-        name: 'Tougher Part 1 (~35% Pass)',
-        vMean: 9.8, vSd: 3.9,
-        naMean: 9.7, naSd: 3.7,
-        rhoVN: 0.60,
-        attrition: 10,
-        eukMean: 17.5, eukSd: 5.2,
-        digMean: 30.0, digSd: 4.2,
-        essayMean: 6.2, essaySd: 1.2,
-        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
-      },
-      drilledEuk: {
-        name: 'Drilled EUK + Easy Digital',
-        vMean: 10.5, vSd: 4.0,
-        naMean: 10.4, naSd: 3.8,
-        rhoVN: 0.60,
-        attrition: 10,
-        eukMean: 20.5, eukSd: 5.5,
-        digMean: 32.5, digSd: 3.8,
-        essayMean: 6.4, essaySd: 1.2,
-        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
-      },
-      highAttrition: {
-        name: '15% Part 2 Attrition',
-        vMean: 10.5, vSd: 4.0,
-        naMean: 10.4, naSd: 3.8,
-        rhoVN: 0.60,
-        attrition: 15,
-        eukMean: 17.5, eukSd: 5.2,
-        digMean: 30.0, digSd: 4.2,
-        essayMean: 6.2, essaySd: 1.2,
-        rhoEukDig: 0.35, rhoEukEssay: 0.40, rhoDigEssay: 0.25, rhoVP2: 0.35
-      }
+      baseline: Object.freeze(Object.assign({
+        name: 'Baseline (JPP, same weighting)',
+        scope: 'all'
+      }, DEFAULT_PART1, DEFAULT_PART2)),
+      jppVerbalEasier: Object.freeze(Object.assign({
+        name: 'JPP rate & Verbal easier',
+        scope: 'part1'
+      }, DEFAULT_PART1, { vMean: 11.5, naMean: 9.8 }, DEFAULT_PART2)),
+      jppNaEasier: Object.freeze(Object.assign({
+        name: 'JPP rate & NA easier (Verbal Bottleneck)',
+        scope: 'part1'
+      }, DEFAULT_PART1, { vMean: 9.8, naMean: 11.6 }, DEFAULT_PART2)),
+      lowPassRate: Object.freeze(Object.assign({
+        name: 'Low pass rate',
+        scope: 'part1'
+      }, DEFAULT_PART1, { vMean: 9.8, naMean: 9.8, rhoVN: 0.62 }, DEFAULT_PART2)),
+      part2Baseline: Object.freeze(Object.assign({
+        name: 'Part 2 Baseline',
+        scope: 'part2'
+      }, DEFAULT_PART1, DEFAULT_PART2)),
+      ceilingCrunch: Object.freeze(Object.assign({
+        name: 'Ceiling Crunch',
+        scope: 'part2'
+      }, DEFAULT_PART1, DEFAULT_PART2, {
+        eukMean: 20.0, digMean: 28.0, essayMean: 6.0
+      })),
+      harshFatigue: Object.freeze(Object.assign({
+        name: 'Harsh Calibration & Fatigue',
+        scope: 'part2'
+      }, DEFAULT_PART1, DEFAULT_PART2, {
+        attrition: 25, eukMean: 15.5, digMean: 22.0, essayMean: 5.2
+      }))
     });
 
     function calcPrelimScore(v, euk, dig) {
@@ -3339,6 +3365,8 @@
 
     root.AD5Engine = {
       CONSTANTS,
+      PART1_KEYS,
+      PART2_KEYS,
       PRESETS,
       calcPrelimScore,
       calcFinalScore,
@@ -3360,8 +3388,9 @@
     const C = E.CONSTANTS;
 
     const state = Object.assign({}, E.PRESETS.baseline);
-    const personal = { v: 16, euk: 24, dig: 34, essay: 7.0 };
-    let activePreset = 'baseline';
+    const personal = { v: 16, euk: 23, dig: 30, essay: 6.5 };
+    let activePart1Preset = 'baseline';
+    let activePart2Preset = 'part2Baseline';
     let part2Stage = 'prelim'; // 'prelim' | 'final'
     let passRateClampNote = '';
     let lastSim = null;
@@ -3411,7 +3440,13 @@
 
     function syncPresetButtons() {
       document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.preset === activePreset);
+        const key = btn.dataset.preset;
+        const p = E.PRESETS[key];
+        const isActive = p && (
+          (p.scope === 'part2' && key === activePart2Preset) ||
+          ((p.scope === 'all' || p.scope === 'part1') && key === activePart1Preset)
+        );
+        btn.classList.toggle('active', Boolean(isActive));
       });
     }
 
@@ -4101,12 +4136,16 @@
     // =========================================================================
     // Event Listeners
     // =========================================================================
+    const PART1_KEY_SET = new Set(E.PART1_KEYS);
+
     function bindStateSlider(id, key, isInt = false) {
       $(id).addEventListener('input', e => {
         state[key] = isInt ? parseInt(e.target.value, 10) : parseFloat(e.target.value);
-        activePreset = null;
-        if (key === 'vMean' || key === 'vSd' || key === 'naMean' || key === 'naSd' || key === 'rhoVN') {
+        if (PART1_KEY_SET.has(key)) {
+          activePart1Preset = null;
           passRateClampNote = '';
+        } else {
+          activePart2Preset = null;
         }
         syncPresetButtons();
         scheduleUpdate();
@@ -4137,20 +4176,31 @@
       state.vMean = solved.vMean;
       state.naMean = solved.naMean;
       passRateClampNote = solved.clampNote;
-      activePreset = null;
+      activePart1Preset = null;
       syncPresetButtons();
       $('slVMean').value = state.vMean;
       $('slNAMean').value = state.naMean;
       scheduleUpdate();
     });
 
-    // Presets & Reset
+    // Scoped Presets & Full Baseline Reset
     function applyPreset(key) {
       const p = E.PRESETS[key];
       if (!p) return;
-      Object.assign(state, p);
-      activePreset = key;
-      passRateClampNote = '';
+      if (p.scope === 'all') {
+        E.PART1_KEYS.forEach(k => { state[k] = p[k]; });
+        E.PART2_KEYS.forEach(k => { state[k] = p[k]; });
+        activePart1Preset = 'baseline';
+        activePart2Preset = 'part2Baseline';
+        passRateClampNote = '';
+      } else if (p.scope === 'part1') {
+        E.PART1_KEYS.forEach(k => { state[k] = p[k]; });
+        activePart1Preset = key;
+        passRateClampNote = '';
+      } else if (p.scope === 'part2') {
+        E.PART2_KEYS.forEach(k => { state[k] = p[k]; });
+        activePart2Preset = key;
+      }
       syncControlsFromState();
       syncPresetButtons();
       scheduleUpdate();

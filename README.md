@@ -44,6 +44,7 @@ Because the entire application lives inside a single self-contained [`index.html
 
 ## Key Features
 
+- **Independent Part 1 & Part 2 Scenario Presets:** Mix and match 3PL-calibrated Part 1 pass-rate regimes (*Baseline ~42.7% JPP*, *Verbal easier*, *NA easier / Verbal Bottleneck*, *Low pass rate ~32.9%*) independently from Part 2 scoring and attrition regimes (*Part 2 Baseline with 15% default attrition*, *Ceiling Crunch*, *Harsh Calibration & Fatigue with 25% attrition*).
 - **3PL IRT Psychometric Engine:** Real-time calibration of item discrimination ($a_k$) and mean difficulty ($\bar{b}_k$) from user Mean & SD sliders using 41-node Gauss-Hermite quadrature, heterogeneous item difficulty banks ($\sigma_b$), speededness-adjusted pseudo-guessing floors ($c$), feasibility clamping badges, and marginal reliability ($\alpha$) readouts.
 - **Exact Poisson-Binomial Conditional Scoring:** Precomputed on a 101-point $\theta \in [-4.2, +4.2]$ grid via exact dynamic programming.
 - **Bidirectional Part 1 Sync:** Dragging any Verbal / Num+Abs Mean or SD slider (or latent correlation $\rho_{VN}^\theta$) updates the Joint Pass Rate slider automatically; dragging the Joint Pass Rate slider solves for an equal shift $\Delta\mu$ across both means via bisection (with graceful bound clamping).

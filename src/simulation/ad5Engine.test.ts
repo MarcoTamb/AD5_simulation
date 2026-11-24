@@ -6,6 +6,7 @@ import vm from 'node:vm';
 
 interface EnginePreset {
   name: string;
+  scope?: 'all' | 'part1' | 'part2';
   vMean: number;
   vSd: number;
   naMean: number;
@@ -80,6 +81,8 @@ interface AD5EngineApi {
     N_RL: number;
     N_PRELIM: number;
   };
+  PART1_KEYS: readonly string[];
+  PART2_KEYS: readonly string[];
   PRESETS: Record<string, EnginePreset>;
   calcPrelimScore: (v: number, euk: number, dig: number) => number;
   calcFinalScore: (v: number, euk: number, dig: number, essay: number) => number;
@@ -142,20 +145,25 @@ test('3PL IRT calibration matches target mean/SD and clamps infeasible SDs clean
   assert.ok(lowCal.effectiveSd > 1.5);
 });
 
-test('Baseline simulation produces realistic ~42.5% Part 1 pass rate, attenuated r_obs, and monotonic RL odds', () => {
+test('Baseline simulation produces realistic ~42.5% Part 1 pass rate, attenuated r_obs, exact PSD matrix, and monotonic RL odds', () => {
+  assert.equal(E.PRESETS.baseline.attrition, 15);
+  assert.equal(E.PRESETS.baseline.scope, 'all');
   const sim = E.runSimulation(E.PRESETS.baseline);
+
+  // Naturally positive-definite 5x5 correlation matrix
+  assert.equal(sim.matrixAdjusted, false);
 
   // Part 1 pass rate near 42.5%
   assert.ok(
-    sim.part1.pJointPass > 0.39 && sim.part1.pJointPass < 0.46,
+    Math.abs(sim.part1.pJointPass - 0.425) <= 0.006,
     `Unexpected baseline joint pass rate: ${sim.part1.pJointPass}`
   );
-  // Observed correlation strictly attenuated below latent rhoVN = 0.60
+  // Observed correlation strictly attenuated below latent rhoVN = 0.65
   assert.ok(
     sim.part1.obsCorrVN > 0.35 && sim.part1.obsCorrVN < 0.54,
     `Unexpected observed correlation: ${sim.part1.obsCorrVN}`
   );
-  // Marked Top 2,235 essay mean must be strictly higher than pool mean (6.2) due to positive correlation
+  // Marked Top 2,235 essay mean must be strictly higher than pool mean (5.5) due to positive correlation
   assert.ok(
     sim.markedEssayMean > E.PRESETS.baseline.essayMean + 0.25,
     `Expected selection lift in marked essay mean, got ${sim.markedEssayMean}`
@@ -174,6 +182,65 @@ test('Baseline simulation produces realistic ~42.5% Part 1 pass rate, attenuated
   const sim2 = E.runSimulation(E.PRESETS.baseline);
   assert.equal(sim.prelimCutoff, sim2.prelimCutoff);
   assert.equal(sim.finalCutoff, sim2.finalCutoff);
+});
+
+test('All Part 1 and Part 2 presets hit calibrated pass-rate regimes, scopes, PSD compliance, and cutoff ordering', () => {
+  assert.deepEqual([...E.PART1_KEYS], ['vMean', 'vSd', 'naMean', 'naSd', 'rhoVN']);
+  assert.equal(E.PART2_KEYS.length, 11);
+
+  const baseSim = E.runSimulation(E.PRESETS.baseline);
+  const vEasierSim = E.runSimulation(E.PRESETS.jppVerbalEasier);
+  const naEasierSim = E.runSimulation(E.PRESETS.jppNaEasier);
+  const lowPassSim = E.runSimulation(E.PRESETS.lowPassRate);
+  const p2BaseSim = E.runSimulation(E.PRESETS.part2Baseline);
+  const ceilingSim = E.runSimulation(E.PRESETS.ceilingCrunch);
+  const harshSim = E.runSimulation(E.PRESETS.harshFatigue);
+
+  // Scopes & natural PSD
+  assert.equal(E.PRESETS.jppVerbalEasier.scope, 'part1');
+  assert.equal(E.PRESETS.jppNaEasier.scope, 'part1');
+  assert.equal(E.PRESETS.lowPassRate.scope, 'part1');
+  assert.equal(E.PRESETS.part2Baseline.scope, 'part2');
+  assert.equal(E.PRESETS.ceilingCrunch.scope, 'part2');
+  assert.equal(E.PRESETS.harshFatigue.scope, 'part2');
+
+  for (const s of [baseSim, vEasierSim, naEasierSim, lowPassSim, p2BaseSim, ceilingSim, harshSim]) {
+    assert.equal(s.matrixAdjusted, false);
+  }
+
+  // Joint pass rates within 42.5% +/- 1.0% for the three JPP presets
+  for (const s of [baseSim, vEasierSim, naEasierSim]) {
+    assert.ok(
+      Math.abs(s.part1.pJointPass - 0.425) <= 0.01,
+      `Expected ~42.5% joint pass, got ${(s.part1.pJointPass * 100).toFixed(2)}%`
+    );
+  }
+
+  // Asymmetric marginal pass rates (> 12 percentage points separation)
+  assert.ok(
+    vEasierSim.part1.pVerbalPass > vEasierSim.part1.pNAPass + 0.12,
+    `jppVerbalEasier marginal separation too small: V=${vEasierSim.part1.pVerbalPass}, NA=${vEasierSim.part1.pNAPass}`
+  );
+  assert.ok(
+    naEasierSim.part1.pNAPass > naEasierSim.part1.pVerbalPass + 0.12,
+    `jppNaEasier marginal separation too small: V=${naEasierSim.part1.pVerbalPass}, NA=${naEasierSim.part1.pNAPass}`
+  );
+
+  // Low pass rate within 33.0% +/- 1.0%
+  assert.ok(
+    Math.abs(lowPassSim.part1.pJointPass - 0.33) <= 0.01,
+    `Expected ~33.0% low pass rate, got ${(lowPassSim.part1.pJointPass * 100).toFixed(2)}%`
+  );
+
+  // Part 2 baseline matches full baseline cutoffs
+  assert.equal(p2BaseSim.finalCutoff, baseSim.finalCutoff);
+  assert.equal(p2BaseSim.prelimCutoff, baseSim.prelimCutoff);
+
+  // Strict Part 2 final cutoff ordering: harshFatigue < baseline < ceilingCrunch
+  assert.ok(
+    harshSim.finalCutoff < baseSim.finalCutoff && baseSim.finalCutoff < ceilingSim.finalCutoff,
+    `Expected harsh (${harshSim.finalCutoff}) < baseline (${baseSim.finalCutoff}) < ceiling (${ceilingSim.finalCutoff})`
+  );
 });
 
 test('Bidirectional Joint Pass Rate solver shifts both means equally and clamps gracefully at extremes', () => {
