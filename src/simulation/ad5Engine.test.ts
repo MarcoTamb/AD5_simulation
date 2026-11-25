@@ -49,10 +49,18 @@ interface SimulationResult {
     essayMean: number;
     essaySd: number;
   };
+  part2SubCharts: {
+    euk: Array<{ score: number; sitters: number; marked: number }>;
+    dig: Array<{ score: number; sitters: number; marked: number }>;
+    essay: Array<{ score: number; sitters: number; marked: number }>;
+  };
   matrixAdjusted: boolean;
   prelimCutoff: number;
   finalCutoff: number;
+  markedEukMean: number;
+  markedDigMean: number;
   markedEssayMean: number;
+  markedEssayPassRate: number;
   greenThresholdV: number;
   part1: {
     pVerbalPass: number;
@@ -80,6 +88,12 @@ interface SimulationResult {
     clearsPrelimGate: boolean;
     blockedAtGateWithStrongEssay: boolean;
     verdict: string;
+    percentiles: {
+      verbalPart1: number;
+      eukPart2: number;
+      digPart2: number;
+      essayPart2: number;
+    };
   };
 }
 
@@ -445,4 +459,64 @@ test('High-SD Part 1 quadrature eliminates aliasing at vMean=11.0, vSd=5.0 and s
       `evalPairFast vs computePart1Exact mismatch at SD=5.0: exact=${exact.pJointPass.toFixed(5)}, fast=${solved.achievedPassRate.toFixed(5)}`
     );
   }
+});
+
+test('Part 2 subtest distributions and Personal Score Tester percentiles are exact and consistent', () => {
+  const sim = E.runSimulation(E.PRESETS.baseline);
+  const { euk, dig, essay } = sim.part2SubCharts;
+
+  assert.equal(euk.length, 31);
+  assert.equal(dig.length, 41);
+  assert.equal(essay.length, 21);
+
+  for (const [name, arr] of [
+    ['euk', euk],
+    ['dig', dig],
+    ['essay', essay]
+  ] as const) {
+    let totalSitters = 0;
+    let totalMarked = 0;
+    for (const b of arr) {
+      assert.ok(b.marked <= b.sitters + 1e-6, `${name} score ${b.score}: marked (${b.marked}) > sitters (${b.sitters})`);
+      totalSitters += b.sitters;
+      totalMarked += b.marked;
+    }
+    assert.ok(
+      Math.abs(totalSitters - sim.estPart2Sitters) < 1.0,
+      `${name} sitter sum ${totalSitters} != estPart2Sitters ${sim.estPart2Sitters}`
+    );
+    assert.ok(
+      Math.abs(totalMarked - E.CONSTANTS.N_PRELIM) < 5.0,
+      `${name} marked sum ${totalMarked} != N_PRELIM (${E.CONSTANTS.N_PRELIM})`
+    );
+  }
+
+  // Below MCQ pass marks, zero candidates can reach the Top 2,235 essay-marking gate
+  for (let s = 0; s < 15; s++) assert.equal(euk[s].marked, 0);
+  for (let s = 0; s < 20; s++) assert.equal(dig[s].marked, 0);
+
+  // Selection lift: marked EUK & Digital averages exceed Part 2 sitter averages
+  assert.ok(sim.markedEukMean > sim.part2PoolStats.eukMean + 2.0);
+  assert.ok(sim.markedDigMean > sim.part2PoolStats.digMean + 2.0);
+  assert.ok(sim.markedEssayPassRate > 0.5 && sim.markedEssayPassRate <= 1.0);
+
+  // Personal Score Tester percentiles: Verbal vs Part 1 sitters, EUK/Dig/Essay vs Part 2 sitters
+  const lowEv = sim.evaluatePersonalScore(10, 0, 0, 0);
+  const midEv = sim.evaluatePersonalScore(16, 23, 30, 6.5);
+  const highEv = sim.evaluatePersonalScore(20, 30, 40, 10);
+
+  assert.equal(lowEv.percentiles.eukPart2, 0);
+  assert.equal(lowEv.percentiles.digPart2, 0);
+  assert.equal(lowEv.percentiles.essayPart2, 0);
+
+  // Exact match between verbalPart1 percentile and cumulative Part 1 PMF strictly below v=16
+  let expectedVerbal16 = 0;
+  for (let s = 0; s < 16; s++) expectedVerbal16 += sim.part1.verbalAllPmf[s];
+  assert.ok(Math.abs(midEv.percentiles.verbalPart1 - expectedVerbal16) < 1e-12);
+
+  // Strict monotonicity across low < mid < high
+  assert.ok(lowEv.percentiles.verbalPart1 < midEv.percentiles.verbalPart1 && midEv.percentiles.verbalPart1 < highEv.percentiles.verbalPart1);
+  assert.ok(lowEv.percentiles.eukPart2 < midEv.percentiles.eukPart2 && midEv.percentiles.eukPart2 < highEv.percentiles.eukPart2);
+  assert.ok(lowEv.percentiles.digPart2 < midEv.percentiles.digPart2 && midEv.percentiles.digPart2 < highEv.percentiles.digPart2);
+  assert.ok(lowEv.percentiles.essayPart2 < midEv.percentiles.essayPart2 && midEv.percentiles.essayPart2 < highEv.percentiles.essayPart2);
 });

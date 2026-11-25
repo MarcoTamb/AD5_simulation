@@ -553,6 +553,7 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      min-width: 0;
       padding-right: 24px;
       border-right: 1px solid var(--border);
     }
@@ -579,6 +580,63 @@
       font-size: 12px;
       color: var(--text-muted);
       font-variant-numeric: tabular-nums;
+    }
+
+    .mini-chart-block {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .mini-chart-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .mini-chart-title {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .mini-chart-stat {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--emerald);
+      white-space: nowrap;
+    }
+
+    .mini-canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 156px;
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .mini-canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .mini-canvas-wrap .chart-tooltip {
+      padding: 8px 10px;
+      font-size: 11.5px;
+      min-width: 175px;
+      max-width: 225px;
+    }
+
+    .mini-legend-bar {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      justify-content: space-between;
     }
 
     .corr-grid {
@@ -950,6 +1008,13 @@
       grid-template-columns: 1fr 74px;
       gap: 12px;
       align-items: center;
+    }
+
+    .tester-pct {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
     }
 
     .num-input {
@@ -1557,6 +1622,16 @@
               <span class="reliability-inline" id="irtParamsEUK">a = —, b̄ = —</span>
             </div>
           </div>
+          <div class="mini-chart-block">
+            <div class="mini-chart-head">
+              <span class="mini-chart-title">Score Distribution (0–30)</span>
+              <span class="mini-chart-stat" id="miniStatEuk">Marked μ = —</span>
+            </div>
+            <div class="mini-canvas-wrap">
+              <canvas id="canvasP2Euk" aria-label="EU Knowledge Part 2 sitter and essay-marked score distribution"></canvas>
+              <div id="tooltipP2Euk" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
 
         <div class="test-column">
@@ -1580,6 +1655,16 @@
             <div class="control-meta">
               <span id="clampDigSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsDig">a = —, b̄ = —</span>
+            </div>
+          </div>
+          <div class="mini-chart-block">
+            <div class="mini-chart-head">
+              <span class="mini-chart-title">Score Distribution (0–40)</span>
+              <span class="mini-chart-stat" id="miniStatDig">Marked μ = —</span>
+            </div>
+            <div class="mini-canvas-wrap">
+              <canvas id="canvasP2Dig" aria-label="Digital Skills Part 2 sitter and essay-marked score distribution"></canvas>
+              <div id="tooltipP2Dig" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
             </div>
           </div>
         </div>
@@ -1606,7 +1691,28 @@
               <span class="reliability-inline" id="markedEssayMean">Top 2,235 marked mean: —</span>
             </div>
           </div>
+          <div class="mini-chart-block">
+            <div class="mini-chart-head">
+              <span class="mini-chart-title">Score Distribution (0–10)</span>
+              <span class="mini-chart-stat" id="miniStatEssay">Marked &ge; 5.0: —</span>
+            </div>
+            <div class="mini-canvas-wrap">
+              <canvas id="canvasP2Essay" aria-label="EUFTE Essay Part 2 sitter and essay-marked score distribution"></canvas>
+              <div id="tooltipP2Essay" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="chart-legend-row mini-legend-bar" aria-label="Part 2 subtest chart legend">
+        <div class="chart-legend-row">
+          <span class="legend-item"><span class="swatch swatch-sitters"></span>All Part 2 Sitters</span>
+          <span class="legend-item"><span class="swatch swatch-green"></span>Essay Marked (Top 2,235)</span>
+          <span class="legend-item"><span class="swatch swatch-elim"></span>Below Pass Mark</span>
+          <span class="legend-item"><span class="swatch swatch-cutoff"></span>Pass Mark</span>
+          <span class="legend-item"><span class="swatch swatch-personal"></span>Your Score</span>
+        </div>
+        <span style="font-size:11.5px;color:var(--text-muted)">Hover or tap any bar for counts &amp; Part 2 percentiles</span>
       </div>
 
       <details class="accordion" id="accPart2">
@@ -1694,6 +1800,10 @@
               <input type="range" id="psVerbal" min="10" max="20" step="1" value="16" />
               <input type="number" id="psVerbalNum" class="num-input" min="10" max="20" step="1" value="16" aria-label="Verbal score numeric input" />
             </div>
+            <div class="control-meta">
+              <span>Percentile vs. Part 1 test takers</span>
+              <span class="tester-pct" id="psVerbalPct">—</span>
+            </div>
           </div>
 
           <div class="control-block">
@@ -1704,6 +1814,10 @@
             <div class="tester-input-row">
               <input type="range" id="psEuk" min="0" max="30" step="1" value="23" />
               <input type="number" id="psEukNum" class="num-input" min="0" max="30" step="1" value="23" aria-label="EU Knowledge score numeric input" />
+            </div>
+            <div class="control-meta">
+              <span>Percentile vs. Part 2 test takers</span>
+              <span class="tester-pct" id="psEukPct">—</span>
             </div>
           </div>
 
@@ -1716,6 +1830,10 @@
               <input type="range" id="psDig" min="0" max="40" step="1" value="30" />
               <input type="number" id="psDigNum" class="num-input" min="0" max="40" step="1" value="30" aria-label="Digital Skills score numeric input" />
             </div>
+            <div class="control-meta">
+              <span>Percentile vs. Part 2 test takers</span>
+              <span class="tester-pct" id="psDigPct">—</span>
+            </div>
           </div>
 
           <div class="control-block">
@@ -1726,6 +1844,10 @@
             <div class="tester-input-row">
               <input type="range" id="psEssay" min="0" max="10" step="0.5" value="6.5" />
               <input type="number" id="psEssayNum" class="num-input" min="0" max="10" step="0.5" value="6.5" aria-label="EUFTE Essay score numeric input" />
+            </div>
+            <div class="control-meta">
+              <span>Percentile vs. Part 2 test takers</span>
+              <span class="tester-pct" id="psEssayPct">—</span>
             </div>
           </div>
         </div>
@@ -2947,6 +3069,7 @@
     const mainPrelimScores = new Float64Array(CRN.main.N);
     const mainFinalScores = new Float64Array(CRN.main.N);
     const mainEligibleMask = new Uint8Array(CRN.main.N);
+    const mainEukScores = new Uint8Array(CRN.main.N);
     const mainDigScores = new Uint8Array(CRN.main.N);
     const mainEssayScores = new Float64Array(CRN.main.N);
 
@@ -3075,7 +3198,9 @@
 
       // Pass 2: Standardize latent traits on the Part 1 survivor pool before sampling Part 2 scores
       let eligibleMcqCount = 0;
+      const eukFreq = new Int32Array(31);
       const digFreq = new Int32Array(41);
+      const essayFreq = new Int32Array(21);
       let sumEukObs = 0, sumEukObs2 = 0;
       let sumDigObs = 0, sumDigObs2 = 0;
       let sumEssObs = 0, sumEssObs2 = 0;
@@ -3094,9 +3219,12 @@
         sumDigObs += digScore; sumDigObs2 += digScore * digScore;
         sumEssObs += essScore; sumEssObs2 += essScore * essScore;
 
+        mainEukScores[k] = eukScore;
+        eukFreq[eukScore]++;
         mainDigScores[k] = digScore;
         digFreq[digScore]++;
         mainEssayScores[k] = essScore;
+        essayFreq[Math.round(essScore * 2)]++;
 
         if (eukScore >= CONSTANTS.EUK_PASS && digScore >= CONSTANTS.DIG_PASS) {
           mainEligibleMask[k] = 1;
@@ -3170,8 +3298,14 @@
       const tieKeepFrac = atCutoff > 0 ? Math.min(1.0, needAtTie / atCutoff) : 1.0;
 
       const markedFinals = [];
+      const eukMarkedFreq = new Int32Array(31);
+      const digMarkedFreq = new Int32Array(41);
+      const essayMarkedFreq = new Int32Array(21);
+      let markedEukSum = 0;
+      let markedDigSum = 0;
       let markedEssaySum = 0;
       let markedEssayCount = 0;
+      let markedEssayPassCount = 0;
       let tieSeen = 0;
       for (let i = 0; i < eligibleMcqCount; i++) {
         const k = prelimEligibleIdx[i];
@@ -3184,17 +3318,28 @@
           if (tieSeen <= Math.round(atCutoff * tieKeepFrac)) inGate = true;
         }
         if (inGate) {
+          const euk = mainEukScores[k];
+          const dig = mainDigScores[k];
           const es = mainEssayScores[k];
+          eukMarkedFreq[euk]++;
+          digMarkedFreq[dig]++;
+          essayMarkedFreq[Math.round(es * 2)]++;
+          markedEukSum += euk;
+          markedDigSum += dig;
           markedEssaySum += es;
           markedEssayCount++;
           if (es >= CONSTANTS.ESSAY_PASS) {
+            markedEssayPassCount++;
             markedFinals.push(mainFinalScores[k]);
           }
         }
       }
 
       markedFinals.sort((a, b) => b - a);
+      const markedEukMean = markedEssayCount > 0 ? markedEukSum / markedEssayCount : params.eukMean;
+      const markedDigMean = markedEssayCount > 0 ? markedDigSum / markedEssayCount : params.digMean;
       const markedEssayMean = markedEssayCount > 0 ? markedEssaySum / markedEssayCount : params.essayMean;
+      const markedEssayPassRate = markedEssayCount > 0 ? markedEssayPassCount / markedEssayCount : 0;
 
       const finalQualShare = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart2Sitters) : 1.0;
       const finalSimQualCount = Math.min(markedFinals.length, Math.max(1, Math.round(finalQualShare * MAIN_N)));
@@ -3222,6 +3367,25 @@
         const b = Math.min(BIN_COUNT - 1, Math.max(0, Math.floor(sc - BIN_MIN)));
         finalBins[b] += weightPerMainDraw;
       }
+
+      // Build Part 2 Subtest Distributions (All Part 2 Sitters vs. Top 2,235 Essay-Marked)
+      const part2SubCharts = {
+        euk: Array.from({ length: 31 }, (_, s) => ({
+          score: s,
+          sitters: eukFreq[s] * weightPerMainDraw,
+          marked: eukMarkedFreq[s] * weightPerMainDraw
+        })),
+        dig: Array.from({ length: 41 }, (_, s) => ({
+          score: s,
+          sitters: digFreq[s] * weightPerMainDraw,
+          marked: digMarkedFreq[s] * weightPerMainDraw
+        })),
+        essay: Array.from({ length: 21 }, (_, idx) => ({
+          score: idx * 0.5,
+          sitters: essayFreq[idx] * weightPerMainDraw,
+          marked: essayMarkedFreq[idx] * weightPerMainDraw
+        }))
+      };
 
       // 7. Dedicated 3,000 CRN draws per integer Verbal score v in {10..20}
       // Using exact conditional posterior p(theta_V | X_V = v, X_NA >= 10)
@@ -3399,6 +3563,24 @@
           verdictLabel = 'Below Top 1,490 Final Cutoff';
         }
 
+        // Exact percentiles strictly below each score:
+        // Verbal vs. all Part 1 test takers; EUK, Digital, EUFTE vs. all Part 2 test takers
+        const vInt = Math.min(20, Math.max(0, Math.round(v)));
+        let verbalBelow = 0;
+        for (let s = 0; s < vInt; s++) verbalBelow += part1.verbalAllPmf[s];
+
+        const eukInt = Math.min(30, Math.max(0, Math.round(euk)));
+        let eukBelow = 0;
+        for (let s = 0; s < eukInt; s++) eukBelow += eukFreq[s];
+
+        const digInt = Math.min(40, Math.max(0, Math.round(dig)));
+        let digBelow = 0;
+        for (let s = 0; s < digInt; s++) digBelow += digFreq[s];
+
+        const essIdx = Math.min(20, Math.max(0, Math.round(essay * 2)));
+        let essBelow = 0;
+        for (let s = 0; s < essIdx; s++) essBelow += essayFreq[s];
+
         return {
           v, euk, dig, essay,
           passEuk, passDig, passEssay,
@@ -3409,7 +3591,13 @@
           wouldClearFinalIfMarked,
           blockedAtGateWithStrongEssay,
           verdict,
-          verdictLabel
+          verdictLabel,
+          percentiles: {
+            verbalPart1: Math.min(1, Math.max(0, verbalBelow)),
+            eukPart2: eukBelow / MAIN_N,
+            digPart2: digBelow / MAIN_N,
+            essayPart2: essBelow / MAIN_N
+          }
         };
       }
 
@@ -3418,6 +3606,7 @@
         calibrations: { vCal, naCal, eukCal, digCal, essayCal },
         part1,
         part2PoolStats,
+        part2SubCharts,
         estPart1Passers,
         estPart2Sitters,
         estPart2McqPassers,
@@ -3426,7 +3615,10 @@
         matrixAdjusted,
         prelimCutoff,
         finalCutoff,
+        markedEukMean,
+        markedDigMean,
         markedEssayMean,
+        markedEssayPassRate,
         digBench85,
         greenThresholdV,
         verbalBreakdown,
@@ -3481,6 +3673,7 @@
     // Hover states for charts
     let hoverPart1Idx = -1;
     let hoverPart2Idx = -1;
+    const hoverMiniIdx = { euk: -1, dig: -1, essay: -1 };
 
     // DOM shortcuts
     const $ = id => document.getElementById(id);
@@ -3636,6 +3829,9 @@
       $('valEssayMean').textContent = `${state.essayMean.toFixed(2)} / 10`;
       $('valEssaySd').textContent = `${state.essaySd.toFixed(2)}`;
       $('markedEssayMean').textContent = `Top 2,235 marked mean: ${sim.markedEssayMean.toFixed(2)} / 10`;
+      $('miniStatEuk').textContent = `Marked μ = ${sim.markedEukMean.toFixed(1)}/30`;
+      $('miniStatDig').textContent = `Marked μ = ${sim.markedDigMean.toFixed(1)}/40`;
+      $('miniStatEssay').textContent = `Marked ≥ 5.0: ${fmtPct(sim.markedEssayPassRate, 1)}`;
 
       $('valRhoEukDig').textContent = state.rhoEukDig.toFixed(2);
       $('valRhoEukEssay').textContent = state.rhoEukEssay.toFixed(2);
@@ -3652,10 +3848,11 @@
       }
       $('p2PassStats').textContent = `Part 2 MCQ Passers (EUK ≥ 15 & Dig ≥ 20): ${fmtInt(sim.estPart2McqPassers)}`;
 
-      // Render Table, Personal Score Tester, and both Canvas Charts
+      // Render Table, Personal Score Tester, and all Canvas Charts
       renderOddsTable(sim);
       renderPersonalTester(sim);
       drawPart1Chart(sim);
+      drawPart2MiniCharts(sim);
       drawPart2Chart(sim);
     }
 
@@ -3717,6 +3914,11 @@
       $('psDigContrib').textContent = `${(0.75 * personal.dig).toFixed(2)} Prelim / ${(0.625 * personal.dig).toFixed(2)} Final`;
       $('psEssayContrib').textContent = `${(1.5 * personal.essay).toFixed(2)} Final (Top 2,235 only)`;
 
+      $('psVerbalPct').textContent = `${fmtPct(ev.percentiles.verbalPart1, 1)} score below`;
+      $('psEukPct').textContent = `${fmtPct(ev.percentiles.eukPart2, 1)} score below`;
+      $('psDigPct').textContent = `${fmtPct(ev.percentiles.digPart2, 1)} score below`;
+      $('psEssayPct').textContent = `${fmtPct(ev.percentiles.essayPart2, 1)} score below`;
+
       const badge = $('verdictBadge');
       badge.textContent = ev.verdictLabel;
       badge.className = `verdict-status ${ev.verdict}`;
@@ -3770,8 +3972,8 @@
     function prepCanvas(canvas) {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-      const w = Math.max(280, Math.round(rect.width));
-      const h = Math.max(200, Math.round(rect.height));
+      const w = Math.max(180, Math.round(rect.width));
+      const h = Math.max(110, Math.round(rect.height));
       if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
@@ -4244,6 +4446,240 @@
     }
 
     // =========================================================================
+    // Part 2 Subtest Mini Charts (EU Knowledge, Digital Skills, EUFTE Essay)
+    // =========================================================================
+    const MINI_CHART_META = {
+      euk: {
+        canvasId: 'canvasP2Euk',
+        tooltipId: 'tooltipP2Euk',
+        shortName: 'EUK',
+        maxScore: 30,
+        passMark: C.EUK_PASS,
+        passIdx: 15,
+        ticks: [0, 5, 10, 15, 20, 25, 30],
+        fmtScore: s => `${s}`,
+        getPersonalIdx: () => Math.min(30, Math.max(0, Math.round(personal.euk)))
+      },
+      dig: {
+        canvasId: 'canvasP2Dig',
+        tooltipId: 'tooltipP2Dig',
+        shortName: 'Digital',
+        maxScore: 40,
+        passMark: C.DIG_PASS,
+        passIdx: 20,
+        ticks: [0, 10, 20, 30, 40],
+        fmtScore: s => `${s}`,
+        getPersonalIdx: () => Math.min(40, Math.max(0, Math.round(personal.dig)))
+      },
+      essay: {
+        canvasId: 'canvasP2Essay',
+        tooltipId: 'tooltipP2Essay',
+        shortName: 'EUFTE',
+        maxScore: 10,
+        passMark: C.ESSAY_PASS,
+        passIdx: 10,
+        ticks: [0, 5, 10, 15, 20],
+        fmtScore: s => s.toFixed(1),
+        getPersonalIdx: () => Math.min(20, Math.max(0, Math.round(personal.essay * 2)))
+      }
+    };
+    const miniLayouts = { euk: null, dig: null, essay: null };
+
+    function drawMiniSubChart(key, sim) {
+      if (!sim || !sim.part2SubCharts) return;
+      const meta = MINI_CHART_META[key];
+      const bars = sim.part2SubCharts[key];
+      const canvas = $(meta.canvasId);
+      const { ctx, w, h } = prepCanvas(canvas);
+      const pad = { top: 18, right: 8, bottom: 22, left: 34 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+      const n = bars.length;
+      const step = plotW / n;
+
+      let maxVal = 10;
+      for (let i = 0; i < n; i++) {
+        if (bars[i].sitters > maxVal) maxVal = bars[i].sitters;
+      }
+      const stepPow = Math.pow(10, Math.floor(Math.log10(Math.max(10, maxVal))));
+      const yMax = Math.ceil((maxVal * 1.12) / (stepPow * 0.5)) * (stepPow * 0.5);
+
+      miniLayouts[key] = { pad, plotW, plotH, step, n, bars };
+
+      // Horizontal gridlines (3 levels: 0, 50%, 100%)
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let t = 0; t <= 2; t++) {
+        const val = (yMax * t) / 2;
+        const y = pad.top + plotH - (t / 2) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + plotW, y);
+        ctx.stroke();
+        const lbl = val >= 1000 ? `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k` : `${Math.round(val)}`;
+        ctx.fillText(lbl, pad.left - 5, y);
+      }
+
+      // Draw bars (outer: all Part 2 sitters; inner emerald: Top 2,235 essay-marked)
+      const outerW = Math.max(2.5, step * 0.82);
+      const innerW = Math.max(1.8, step * 0.58);
+      const hovered = hoverMiniIdx[key];
+
+      for (let i = 0; i < n; i++) {
+        const b = bars[i];
+        const cx = pad.left + (i + 0.5) * step;
+        const isHovered = i === hovered;
+        const belowPass = b.score < meta.passMark - 1e-9;
+
+        if (isHovered) {
+          ctx.fillStyle = 'rgba(29, 78, 216, 0.08)';
+          ctx.fillRect(pad.left + i * step, pad.top, step, plotH);
+        }
+
+        const sitH = (b.sitters / yMax) * plotH;
+        const sitY = pad.top + plotH - sitH;
+        if (sitH > 0.2) {
+          ctx.fillStyle = belowPass
+            ? (isHovered ? 'rgba(148, 163, 184, 0.55)' : 'rgba(203, 213, 225, 0.62)')
+            : (isHovered ? 'rgba(148, 163, 184, 0.44)' : 'rgba(148, 163, 184, 0.25)');
+          ctx.strokeStyle = '#94A3B8';
+          ctx.lineWidth = isHovered ? 1.25 : 0.75;
+          ctx.fillRect(cx - outerW / 2, sitY, outerW, sitH);
+          if (outerW >= 4 && sitH >= 2) {
+            ctx.strokeRect(cx - outerW / 2 + 0.4, sitY + 0.4, outerW - 0.8, Math.max(0, sitH - 0.8));
+          }
+        }
+
+        if (b.marked > 0.01) {
+          const markedH = Math.min(sitH > 0 ? Math.max(sitH, 1.5) : plotH, Math.max(1.5, (b.marked / yMax) * plotH));
+          const markedY = pad.top + plotH - markedH;
+          ctx.fillStyle = isHovered ? '#047857' : '#059669';
+          ctx.fillRect(cx - innerW / 2, markedY, innerW, markedH);
+        }
+      }
+
+      // Pass-mark vertical dashed crimson line
+      const passX = pad.left + meta.passIdx * step;
+      ctx.save();
+      ctx.strokeStyle = '#B91C1C';
+      ctx.lineWidth = 1.25;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(passX, pad.top - 2);
+      ctx.lineTo(passX, pad.top + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#B91C1C';
+      ctx.font = '600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`≥${meta.fmtScore(meta.passMark)}`, passX + 3, 2);
+      ctx.restore();
+
+      // Personal score marker line (solid accent blue)
+      const pIdx = meta.getPersonalIdx();
+      const userX = pad.left + (pIdx + 0.5) * step;
+      ctx.save();
+      ctx.strokeStyle = '#1D4ED8';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(userX, pad.top + 1);
+      ctx.lineTo(userX, pad.top + plotH);
+      ctx.stroke();
+      ctx.fillStyle = '#1D4ED8';
+      ctx.beginPath();
+      ctx.arc(userX, pad.top + 1, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Axis baseline
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + plotH);
+      ctx.lineTo(pad.left + plotW, pad.top + plotH);
+      ctx.stroke();
+
+      // X-axis tick labels
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      for (let t = 0; t < meta.ticks.length; t++) {
+        const idx = meta.ticks[t];
+        const cx = pad.left + (idx + 0.5) * step;
+        const lbl = key === 'essay' ? (idx % 2 === 0 ? String(idx / 2) : (idx / 2).toFixed(1)) : String(idx);
+        ctx.fillText(lbl, cx, pad.top + plotH + 5);
+      }
+    }
+
+    function drawPart2MiniCharts(sim) {
+      drawMiniSubChart('euk', sim);
+      drawMiniSubChart('dig', sim);
+      drawMiniSubChart('essay', sim);
+    }
+
+    function handleMiniPointer(key, clientX, clientY) {
+      const layout = miniLayouts[key];
+      if (!lastSim || !layout) return;
+      const meta = MINI_CHART_META[key];
+      const wrap = $(meta.canvasId).parentElement;
+      const rect = wrap.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const { pad, plotW, plotH, step, n, bars } = layout;
+      if (x < pad.left || x > pad.left + plotW || y < pad.top || y > pad.top + plotH) {
+        hideMiniTooltip(key);
+        return;
+      }
+      const idx = Math.min(n - 1, Math.max(0, Math.floor((x - pad.left) / step)));
+      if (idx !== hoverMiniIdx[key]) {
+        hoverMiniIdx[key] = idx;
+        drawMiniSubChart(key, lastSim);
+      }
+
+      const b = bars[idx];
+      let belowSitters = 0;
+      let totalSitters = 0;
+      for (let k = 0; k < n; k++) {
+        totalSitters += bars[k].sitters;
+        if (k < idx) belowSitters += bars[k].sitters;
+      }
+      const pctBelow = totalSitters > 0 ? belowSitters / totalSitters : 0;
+      const shareMarked = b.sitters > 0 ? b.marked / b.sitters : 0;
+      const passesMin = b.score >= meta.passMark - 1e-9;
+      const scoreTxt = meta.fmtScore(b.score);
+
+      const tt = $(meta.tooltipId);
+      tt.innerHTML = `
+        <div class="tt-head">
+          <span>${meta.shortName} ${scoreTxt}/${meta.maxScore}</span>
+          <span style="color:${passesMin ? '#34D399' : '#FCA5A5'}">${passesMin ? 'Pass' : 'Fail'}</span>
+        </div>
+        <div class="tt-row"><span class="tt-key">Part 2 Sitters</span><span class="tt-val">${fmtInt(b.sitters)}</span></div>
+        <div class="tt-row"><span class="tt-key">Essay Marked</span><span class="tt-val">${fmtInt(b.marked)} (${fmtPct(shareMarked, 1)})</span></div>
+        <div class="tt-row"><span class="tt-key">Percentile (&lt;${scoreTxt})</span><span class="tt-val">${fmtPct(pctBelow, 1)}</span></div>
+      `;
+      tt.classList.add('visible');
+      tt.setAttribute('aria-hidden', 'false');
+      positionTooltip(tt, wrap, clientX, clientY);
+    }
+
+    function hideMiniTooltip(key) {
+      if (hoverMiniIdx[key] !== -1) {
+        hoverMiniIdx[key] = -1;
+        if (lastSim) drawMiniSubChart(key, lastSim);
+      }
+      const tt = $(MINI_CHART_META[key].tooltipId);
+      tt.classList.remove('visible');
+      tt.setAttribute('aria-hidden', 'true');
+    }
+
+    // =========================================================================
     // Event Listeners
     // =========================================================================
     const PART1_KEY_SET = new Set(E.PART1_KEYS);
@@ -4357,6 +4793,7 @@
         syncPersonalInputs();
         if (lastSim) {
           if (key === 'v') renderOddsTable(lastSim);
+          else drawMiniSubChart(key, lastSim);
           renderPersonalTester(lastSim);
           drawPart2Chart(lastSim);
         }
@@ -4413,6 +4850,18 @@
       if (e.touches && e.touches[0]) handlePart2Pointer(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
+    ['euk', 'dig', 'essay'].forEach(key => {
+      const cm = $(MINI_CHART_META[key].canvasId);
+      cm.addEventListener('mousemove', e => handleMiniPointer(key, e.clientX, e.clientY));
+      cm.addEventListener('mouseleave', () => hideMiniTooltip(key));
+      cm.addEventListener('touchstart', e => {
+        if (e.touches && e.touches[0]) handleMiniPointer(key, e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      cm.addEventListener('touchmove', e => {
+        if (e.touches && e.touches[0]) handleMiniPointer(key, e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+    });
+
     // Responsive Canvas Redraw
     let resizeTimer = null;
     window.addEventListener('resize', () => {
@@ -4420,6 +4869,7 @@
       resizeTimer = setTimeout(() => {
         if (lastSim) {
           drawPart1Chart(lastSim);
+          drawPart2MiniCharts(lastSim);
           drawPart2Chart(lastSim);
         }
       }, 60);
