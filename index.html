@@ -3964,6 +3964,22 @@
         drawPart1Chart(lastSim);
       }
       const b = lastSim.verbalChartBars[idx];
+      const bars = lastSim.verbalChartBars;
+      let belowSitters = 0;
+      let totalSitters = 0;
+      let belowPassers = 0;
+      let totalPassers = 0;
+      for (let k = 0; k < bars.length; k++) {
+        totalSitters += bars[k].sitters;
+        totalPassers += bars[k].passers;
+        if (k < idx) {
+          belowSitters += bars[k].sitters;
+          belowPassers += bars[k].passers;
+        }
+      }
+      const pctBelowSitters = totalSitters > 0 ? belowSitters / totalSitters : 0;
+      const pctBelowPassers = totalPassers > 0 ? belowPassers / totalPassers : 0;
+
       const tt = $('tooltipPart1');
       const zoneLabel = b.score < 10
         ? 'Eliminated'
@@ -3975,6 +3991,8 @@
         </div>
         <div class="tt-row"><span class="tt-key">Est. Total Sitters</span><span class="tt-val">${fmtInt(b.sitters)}</span></div>
         <div class="tt-row"><span class="tt-key">Est. Part 1 Passers</span><span class="tt-val">${fmtInt(b.passers)}</span></div>
+        <div class="tt-row"><span class="tt-key">Percentile (Sitters, &lt;${b.score})</span><span class="tt-val">${fmtPct(pctBelowSitters, 1)}</span></div>
+        ${b.score >= 10 ? `<div class="tt-row"><span class="tt-key">Percentile (Passers, &lt;${b.score})</span><span class="tt-val">${fmtPct(pctBelowPassers, 1)}</span></div>` : ''}
         <div class="tt-row"><span class="tt-key">P(Num+Abs ≥ 10 | V)</span><span class="tt-val">${fmtPct(b.pNAGivenV, 1)}</span></div>
         <div class="tt-row"><span class="tt-key">Cond. RL Odds</span><span class="tt-val">${b.score >= 10 ? fmtOdds(b.condRlOdds) : '0% (Fail)'}</span></div>
       `;
@@ -4026,12 +4044,19 @@
       const visibleBins = xMax - xMin;
       const startOffset = xMin - binMin;
 
-      // Cumulative ranks from top for tooltips
+      // Cumulative counts above and strictly below each bin for tooltips
       const cumAbove = new Float64Array(binCount);
       let running = 0;
       for (let i = binCount - 1; i >= 0; i--) {
         cumAbove[i] = running;
         running += bins[i];
+      }
+      const totalCount = running;
+      const cumBelow = new Float64Array(binCount);
+      let runningBelow = 0;
+      for (let i = 0; i < binCount; i++) {
+        cumBelow[i] = runningBelow;
+        runningBelow += bins[i];
       }
 
       let maxVal = 10;
@@ -4043,7 +4068,7 @@
 
       p2Layout = {
         pad, plotW, plotH, w, h,
-        xMin, xMax, visibleBins, startOffset, bins, cumAbove, cutoff, userScore, isPrelim
+        xMin, xMax, visibleBins, startOffset, bins, cumAbove, cumBelow, totalCount, cutoff, userScore, isPrelim
       };
 
       // Gridlines
@@ -4173,7 +4198,7 @@
       const rect = wrap.getBoundingClientRect();
       const x = clientX - rect.left;
       const y = clientY - rect.top;
-      const { pad, plotW, plotH, xMin, visibleBins, startOffset, bins, cumAbove, cutoff, isPrelim } = p2Layout;
+      const { pad, plotW, plotH, xMin, visibleBins, startOffset, bins, cumAbove, cumBelow, totalCount, cutoff, isPrelim } = p2Layout;
       if (x < pad.left || x > pad.left + plotW || y < pad.top || y > pad.top + plotH) {
         hidePart2Tooltip();
         return;
@@ -4189,6 +4214,7 @@
       const count = bins[bi];
       const rankTop = Math.max(1, Math.round(cumAbove[bi]) + 1);
       const rankBot = Math.max(rankTop, Math.round(cumAbove[bi] + count));
+      const pctBelow = totalCount > 0 ? cumBelow[bi] / totalCount : 0;
       const qual = scLo + 0.5 >= cutoff;
 
       const tt = $('tooltipPart2');
@@ -4198,6 +4224,7 @@
           <span style="color:${qual ? '#34D399' : '#CBD5E1'}">${qual ? (isPrelim ? 'Top 2,235' : 'Top 1,490') : 'Below Cutoff'}</span>
         </div>
         <div class="tt-row"><span class="tt-key">Est. Candidates in Bin</span><span class="tt-val">${fmtInt(count)}</span></div>
+        <div class="tt-row"><span class="tt-key">Percentile (&lt;${scLo})</span><span class="tt-val">${fmtPct(pctBelow, 1)}</span></div>
         <div class="tt-row"><span class="tt-key">Cumulative Rank Range</span><span class="tt-val">#${fmtInt(rankTop)} – #${fmtInt(rankBot)}</span></div>
         <div class="tt-row"><span class="tt-key">Live Cutoff</span><span class="tt-val">${cutoff.toFixed(2)}</span></div>
       `;
