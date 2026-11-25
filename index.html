@@ -1349,9 +1349,9 @@
         </div>
         <div class="presets-row" role="group" aria-label="Part 2 Scenario presets">
           <span class="presets-label">Part 2 Scenarios:</span>
-          <button type="button" class="preset-btn active" data-preset="part2Baseline" title="Part 2 only: 15% attrition, EUK 18.0 (SD 4.8), Digital 25.0 (SD 5.0), EUFTE 5.5 (SD 1.5)">Part 2 Baseline</button>
-          <button type="button" class="preset-btn" data-preset="ceilingCrunch" title="Part 2 only: higher Part 2 scores (EUK 20.0, Digital 28.0, EUFTE 6.0) compressing top cutoffs">Ceiling Crunch</button>
-          <button type="button" class="preset-btn" data-preset="harshFatigue" title="Part 2 only: 25% attrition and tougher Part 2 scoring (EUK 15.5, Digital 22.0, EUFTE 5.2)">Harsh Calibration &amp; Fatigue</button>
+          <button type="button" class="preset-btn active" data-preset="part2Baseline" title="Part 2 only: 15% attrition, EUK 19.0 (SD 4.8), Digital 27.0 (SD 5.5), EUFTE 5.5 (SD 1.5)">Part 2 Baseline</button>
+          <button type="button" class="preset-btn" data-preset="ceilingCrunch" title="Part 2 only: higher Part 2 scores (EUK 21.0, Digital 29.5, SD 5.5, EUFTE 6.0) compressing top cutoffs">Ceiling Crunch</button>
+          <button type="button" class="preset-btn" data-preset="harshFatigue" title="Part 2 only: 25% attrition and tougher Part 2 scoring (EUK 15.5, Digital 25.0, EUFTE 5.2)">Harsh Calibration</button>
         </div>
       </div>
     </section>
@@ -1397,7 +1397,7 @@
             <label for="slVMean" class="control-label">Verbal Mean (μ<sub>V</sub>)</label>
             <span class="control-val" id="valVMean">10.50 / 20</span>
           </div>
-          <input type="range" id="slVMean" min="7.0" max="16.0" step="0.1" value="10.5" />
+          <input type="range" id="slVMean" min="6.5" max="16.0" step="0.1" value="10.5" />
           <div class="control-meta">
             <span>Pass mark &ge; 10/20 (40% Prelim, 35% Final)</span>
             <span class="reliability-inline" id="relVerbal">α<sub>V</sub> = —</span>
@@ -1542,9 +1542,9 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slEukMean" class="control-label">Mean (μ<sub>EUK</sub>)</label>
-              <span class="control-val" id="valEukMean">18.00 / 30</span>
+              <span class="control-val" id="valEukMean">19.00 / 30</span>
             </div>
-            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="18.0" />
+            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="19.0" />
           </div>
           <div class="control-block">
             <div class="control-header">
@@ -1562,21 +1562,21 @@
         <div class="test-column">
           <div class="test-col-head">
             <h3 class="test-col-title">Digital Skills (0–40)</h3>
-            <div class="test-col-sub">Pass &ge; 20/40 · 30% Prelim / 25% Final · 30 min speeded (c = 0.18) · <span class="reliability-inline" id="relDig">α = —</span></div>
+            <div class="test-col-sub">Pass &ge; 20/40 · 30% Prelim / 25% Final · 30 min speeded (c = 0.21) · <span class="reliability-inline" id="relDig">α = —</span></div>
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slDigMean" class="control-label">Mean (μ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigMean">25.00 / 40</span>
+              <span class="control-val" id="valDigMean">27.00 / 40</span>
             </div>
-            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="25.0" />
+            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="27.0" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slDigSd" class="control-label">SD (σ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigSd">5.00</span>
+              <span class="control-val" id="valDigSd">5.50</span>
             </div>
-            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="5.0" />
+            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="5.5" />
             <div class="control-meta">
               <span id="clampDigSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsDig">a = —, b̄ = —</span>
@@ -1809,7 +1809,7 @@
           <div class="doc-content">
             <p>Each multiple-choice test (Verbal 20 Qs, Num+Abs 20 Qs, EU Knowledge 30 Qs, Digital Skills 40 Qs) is modeled using the 3-Parameter Logistic (3PL) IRT model rather than a naive Normal or Beta-Binomial approximation. For a candidate with standardized latent ability θ<sub>k</sub> ~ N(0, 1), the probability of answering item <em>i</em> correctly is:</p>
             <div class="formula-box">P<sub>k,i</sub>(θ<sub>k</sub>) = c<sub>k,i</sub> + (1 − c<sub>k,i</sub>) / (1 + exp(−1.702 · a<sub>k</sub> · (θ<sub>k</sub> − b<sub>k,i</sub>)))</div>
-            <p>Item difficulties are spaced heterogeneously across each item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills. For the composite Num+Abs test (σ<sub>b,NA</sub> = 0.85), two independent 10-item normal quantile grids are generated—one for Numerical (items 1–10) and one for Abstract (items 11–20)—rather than a single 20-item grid, so both subtests span the full difficulty range symmetrically without confounding difficulty and guessing. Pseudo-guessing asymptotes reflect option counts attenuated by speededness: c = 0.22 for Verbal (L1, 4 options), c = 0.18 for Numerical (items 1–10, 5 options), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge (4 options), and c = 0.18 for speeded Digital Skills (40 questions in 30 minutes).</p>
+            <p>Item difficulties are spaced heterogeneously across each item bank via normal quantiles b<sub>k,i</sub> = b̄<sub>k</sub> + σ<sub>b,k</sub> · Φ<sup>−1</sup>((i − 0.5) / N<sub>k</sub>), with σ<sub>b</sub> = 0.75 for Verbal, EUK, and Digital Skills. For the composite Num+Abs test (σ<sub>b,NA</sub> = 0.85), two independent 10-item normal quantile grids are generated—one for Numerical (items 1–10) and one for Abstract (items 11–20)—rather than a single 20-item grid, so both subtests span the full difficulty range symmetrically without confounding difficulty and guessing. Pseudo-guessing asymptotes reflect option counts attenuated by speededness: c = 0.22 for Verbal (L1, 4 options), c = 0.18 for Numerical (items 1–10, 5 options), c = 0.16 for heavily speeded Abstract Reasoning (items 11–20, 10 minutes), c = 0.23 for EU Knowledge (4 options), and c = 0.21 for speeded Digital Skills (40 questions in 30 minutes, 4 options).</p>
             <p>Given your chosen observed Mean (μ<sub>k</sub>) and SD (σ<sub>k</sub>), the engine calibrates (b̄<sub>k</sub>, a<sub>k</sub>) in real time via 41-node Gauss-Hermite quadrature and the Law of Total Variance: Var(X<sub>k</sub>) = Var<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)) + E<sub>θ</sub>(Σ P<sub>k,i</sub>(θ)(1 − P<sub>k,i</sub>(θ))). Because the binomial measurement-error term E<sub>θ</sub>[SEM(θ)<sup>2</sup>] is strictly positive even as discrimination a<sub>k</sub> → 0.05, every MCQ test has an irreducible psychometric SD floor (σ<sub>min</sub>) and finite ceiling (σ<sub>max</sub> at a<sub>k</sub> = 3.50). Exact conditional score PMFs P(X<sub>k</sub> = s | θ) are computed via exact Poisson-Binomial dynamic programming on a 101-point θ grid—naturally capturing guessing floors, ceiling compression near 20/20 or 40/40, and conditional measurement error.</p>
           </div>
         </details>
@@ -1883,7 +1883,7 @@
       IRT_D: 1.702,
       A_MIN: 0.05,
       A_MAX: 3.50,
-      V_MEAN_MIN: 7.0,
+      V_MEAN_MIN: 6.5,
       V_MEAN_MAX: 16.0,
       NA_MEAN_MIN: 6.5,
       NA_MEAN_MAX: 16.0
@@ -1906,8 +1906,8 @@
 
     const DEFAULT_PART2 = Object.freeze({
       attrition: 15,
-      eukMean: 18.0, eukSd: 4.8,
-      digMean: 25.0, digSd: 5.0,
+      eukMean: 19.0, eukSd: 4.8,
+      digMean: 27.0, digSd: 5.5,
       essayMean: 5.5, essaySd: 1.5,
       rhoEukDig: 0.45, rhoEukEssay: 0.42, rhoDigEssay: 0.28, rhoVP2: 0.45
     });
@@ -1937,13 +1937,13 @@
         name: 'Ceiling Crunch',
         scope: 'part2'
       }, DEFAULT_PART1, DEFAULT_PART2, {
-        eukMean: 20.0, digMean: 28.0, essayMean: 6.0
+        eukMean: 21.0, digMean: 29.5, digSd: 5.5, essayMean: 6.0
       })),
       harshFatigue: Object.freeze(Object.assign({
-        name: 'Harsh Calibration & Fatigue',
+        name: 'Harsh Calibration',
         scope: 'part2'
       }, DEFAULT_PART1, DEFAULT_PART2, {
-        attrition: 25, eukMean: 15.5, digMean: 22.0, essayMean: 5.2
+        attrition: 25, eukMean: 15.5, digMean: 25.0, essayMean: 5.2
       }))
     });
 
@@ -2090,14 +2090,38 @@
     const GH41 = buildGaussHermiteStandardNormal(41);
     const GH21 = buildGaussHermiteStandardNormal(21);
 
-    // 101-point theta grid in [-4.2, +4.2] for Poisson-Binomial DP tables
+    // 101-point theta grid in [-4.2, +4.2] for Poisson-Binomial DP tables & midpoint quadrature
     const THETA_GRID_N = 101;
     const THETA_MIN = -4.2;
     const THETA_MAX = 4.2;
     const THETA_STEP = (THETA_MAX - THETA_MIN) / (THETA_GRID_N - 1);
     const THETA_GRID = new Float64Array(THETA_GRID_N);
+    const THETA_GRID_W = new Float64Array(THETA_GRID_N);
+    let thetaGridWSum = 0;
     for (let i = 0; i < THETA_GRID_N; i++) {
       THETA_GRID[i] = THETA_MIN + i * THETA_STEP;
+      const w = normPdf(THETA_GRID[i]);
+      THETA_GRID_W[i] = w;
+      thetaGridWSum += w;
+    }
+    for (let i = 0; i < THETA_GRID_N; i++) {
+      THETA_GRID_W[i] /= thetaGridWSum;
+    }
+
+    // 61-point standard-normal midpoint grid on [-4.2, +4.2] (step 0.14) for inner z1 & solver quadrature
+    const Z1_GRID_N = 61;
+    const Z1_STEP = (THETA_MAX - THETA_MIN) / (Z1_GRID_N - 1);
+    const Z1_GRID = new Float64Array(Z1_GRID_N);
+    const Z1_W = new Float64Array(Z1_GRID_N);
+    let z1WSum = 0;
+    for (let i = 0; i < Z1_GRID_N; i++) {
+      Z1_GRID[i] = THETA_MIN + i * Z1_STEP;
+      const w = normPdf(Z1_GRID[i]);
+      Z1_W[i] = w;
+      z1WSum += w;
+    }
+    for (let i = 0; i < Z1_GRID_N; i++) {
+      Z1_W[i] /= z1WSum;
     }
 
     // Nearest PSD Correlation Matrix + Cholesky Factorization
@@ -2167,7 +2191,7 @@
       verbal: buildItemSpec(CONSTANTS.VERBAL_N, 0.75, 0.22),
       na: buildItemSpec(CONSTANTS.NA_N, 0.85, i => (i < 10 ? 0.18 : 0.16), 10),
       euk: buildItemSpec(CONSTANTS.EUK_N, 0.75, 0.23),
-      dig: buildItemSpec(CONSTANTS.DIG_N, 0.75, 0.18)
+      dig: buildItemSpec(CONSTANTS.DIG_N, 0.75, 0.21)
     };
 
     const GH41_TVALS = new Float64Array(41);
@@ -2227,10 +2251,10 @@
       const nItems = spec.nItems;
       const bOff = spec.bOffsets;
       const cArr = spec.c;
-      // 21-node GH is accurate to <1e-7 for smooth 3PL means and 2x faster
-      const ghX = GH21.x;
-      const ghW = GH21.w;
-      const qN = GH21.n;
+      // Match GH41 used in irtMoments for full calibration consistency at high discrimination a
+      const ghX = GH41.x;
+      const ghW = GH41.w;
+      const qN = GH41.n;
 
       let lo = -12.0;
       let hi = 12.0;
@@ -2547,16 +2571,20 @@
     }
 
     // =========================================================================
-    // 5. Exact 2D Gauss-Hermite Part 1 Bivariate Quadrature
+    // 5. Exact 2D Dense Midpoint Part 1 Bivariate Quadrature (101 x 61)
     // =========================================================================
     function computePart1Exact(vCal, naCal, rhoVN) {
-      const qN = GH21.n;
-      const qX = GH21.x;
-      const qW = GH21.w;
       const sqrtOneMinusR2 = Math.sqrt(Math.max(0, 1 - rhoVN * rhoVN));
+      const vTable = vCal.table;
+      const vStride = vTable.stride;
+      const vPmf = vTable.pmf;
+      const vPassProb = vTable.passProb;
+      const vExpScore = vTable.expScore;
+      const naTable = naCal.table;
 
       const verbalAllPmf = new Float64Array(21);
       const verbalPassPmf = new Float64Array(21);
+      const verbalJointAll = new Float64Array(21);
       const condNAPassGivenV = new Float64Array(21);
 
       let pVerbalPass = 0;
@@ -2567,33 +2595,37 @@
       const vMean = vCal.effectiveMean;
       const naMean = naCal.effectiveMean;
 
-      for (let i = 0; i < qN; i++) {
-        const thV = qX[i];
-        const wV = qW[i];
-        const pVPassAtTh = interpPassProb(vCal.table, thV);
-        const eV = interpExpScore(vCal.table, thV);
+      for (let i = 0; i < THETA_GRID_N; i++) {
+        const thV = THETA_GRID[i];
+        const wV = THETA_GRID_W[i];
+        const pVPassAtTh = vPassProb[i];
+        const eV = vExpScore[i];
         pVerbalPass += wV * pVPassAtTh;
 
         let pNAPassGivenThV = 0;
         let eNAGivenThV = 0;
-        for (let j = 0; j < qN; j++) {
-          const z1 = qX[j];
-          const w1 = qW[j];
+        for (let j = 0; j < Z1_GRID_N; j++) {
+          const z1 = Z1_GRID[j];
+          const w1 = Z1_W[j];
           const thNA = rhoVN * thV + sqrtOneMinusR2 * z1;
-          const pNA = interpPassProb(naCal.table, thNA);
+          const pNA = interpPassProb(naTable, thNA);
           pNAPassGivenThV += w1 * pNA;
-          eNAGivenThV += w1 * interpExpScore(naCal.table, thNA);
+          eNAGivenThV += w1 * interpExpScore(naTable, thNA);
         }
 
         pNAPass += wV * pNAPassGivenThV;
         pJointPass += wV * pVPassAtTh * pNAPassGivenThV;
         covObs += wV * (eV - vMean) * (eNAGivenThV - naMean);
 
+        const base = i * vStride;
         for (let s = 0; s <= 20; s++) {
-          const ps = interpPmfAtScore(vCal.table, thV, s);
-          verbalAllPmf[s] += wV * ps;
+          const ps = vPmf[base + s];
+          const wPs = wV * ps;
+          verbalAllPmf[s] += wPs;
+          const wPsNA = wPs * pNAPassGivenThV;
+          verbalJointAll[s] += wPsNA;
           if (s >= 10) {
-            verbalPassPmf[s] += wV * ps * pNAPassGivenThV;
+            verbalPassPmf[s] += wPsNA;
           }
         }
       }
@@ -2601,32 +2633,10 @@
       // Normalize slightly for numerical hygiene
       let sumAll = 0;
       for (let s = 0; s <= 20; s++) sumAll += verbalAllPmf[s];
-      for (let s = 0; s <= 20; s++) verbalAllPmf[s] /= sumAll;
-
       for (let s = 0; s <= 20; s++) {
-        if (s >= 10 && verbalAllPmf[s] > 1e-12) {
-          condNAPassGivenV[s] = Math.min(1.0, verbalPassPmf[s] / verbalAllPmf[s]);
-        } else {
-          // Even for s < 10 compute conditional P(NA >= 10 | V = s) for informative tooltips
-          condNAPassGivenV[s] = 0;
-        }
-      }
-
-      // Compute P(NA >= 10 | V = s) for s < 10 too so hover tooltips on 0-9 bars are exact
-      for (let s = 0; s < 10; s++) {
-        let num = 0;
-        for (let i = 0; i < qN; i++) {
-          const thV = qX[i];
-          const wV = qW[i];
-          const ps = interpPmfAtScore(vCal.table, thV, s);
-          let pNAPassGivenThV = 0;
-          for (let j = 0; j < qN; j++) {
-            const thNA = rhoVN * thV + sqrtOneMinusR2 * qX[j];
-            pNAPassGivenThV += qW[j] * interpPassProb(naCal.table, thNA);
-          }
-          num += wV * ps * pNAPassGivenThV;
-        }
-        condNAPassGivenV[s] = verbalAllPmf[s] > 1e-12 ? Math.min(1.0, num / verbalAllPmf[s]) : 0;
+        const rawAll = verbalAllPmf[s];
+        condNAPassGivenV[s] = rawAll > 1e-12 ? Math.min(1.0, verbalJointAll[s] / rawAll) : 0;
+        verbalAllPmf[s] = rawAll / sumAll;
       }
 
       const obsCorrVN = Math.max(-0.99, Math.min(0.99, covObs / (vCal.effectiveSd * naCal.effectiveSd)));
@@ -2667,38 +2677,34 @@
       const naMax = CONSTANTS.NA_MEAN_MAX;
       const sqrtOneMinusR2 = Math.sqrt(Math.max(0, 1 - rhoVN * rhoVN));
       const dpBuf = new Float64Array(21);
+      const naLut = new Float64Array(THETA_GRID_N);
 
-      // Fast exact joint pass rate using 21x21 GH without constructing full 101-node PMF/CDF tables
+      // Fast exact joint pass rate using 61x61 dense midpoint grid + 101-pt NA LUT
       function evalPairFast(vm, nam) {
         const vp = calibrate3PLParamsOnly('verbal', vm, vSd);
         const nap = calibrate3PLParamsOnly('na', nam, naSd);
-        // Build tiny 41-point passProb LUT for NA so inner 21x21 loop is instant
-        const lutN = 41;
-        const lutMin = -4.2, lutMax = 4.2, lutStep = (lutMax - lutMin) / (lutN - 1);
-        const naLut = new Float64Array(lutN);
-        for (let g = 0; g < lutN; g++) {
-          naLut[g] = exactPassProbAtTheta(nap.spec, nap.a, nap.bBar, CONSTANTS.NA_PASS, lutMin + g * lutStep, dpBuf);
+        for (let g = 0; g < THETA_GRID_N; g++) {
+          naLut[g] = exactPassProbAtTheta(nap.spec, nap.a, nap.bBar, CONSTANTS.NA_PASS, THETA_GRID[g], dpBuf);
         }
-        const qN = GH21.n, qX = GH21.x, qW = GH21.w;
         let pJoint = 0;
-        for (let i = 0; i < qN; i++) {
-          const thV = qX[i];
+        for (let i = 0; i < Z1_GRID_N; i++) {
+          const thV = Z1_GRID[i];
           const pV = exactPassProbAtTheta(vp.spec, vp.a, vp.bBar, CONSTANTS.VERBAL_PASS, thV, dpBuf);
           let pNA = 0;
-          for (let j = 0; j < qN; j++) {
-            const thNA = rhoVN * thV + sqrtOneMinusR2 * qX[j];
+          for (let j = 0; j < Z1_GRID_N; j++) {
+            const thNA = rhoVN * thV + sqrtOneMinusR2 * Z1_GRID[j];
             let pAtTh;
-            if (thNA <= lutMin) pAtTh = naLut[0];
-            else if (thNA >= lutMax) pAtTh = naLut[lutN - 1];
+            if (thNA <= THETA_MIN) pAtTh = naLut[0];
+            else if (thNA >= THETA_MAX) pAtTh = naLut[THETA_GRID_N - 1];
             else {
-              const pos = (thNA - lutMin) / lutStep;
+              const pos = (thNA - THETA_MIN) / THETA_STEP;
               const idx = Math.floor(pos);
               const f = pos - idx;
               pAtTh = naLut[idx] * (1 - f) + naLut[idx + 1] * f;
             }
-            pNA += qW[j] * pAtTh;
+            pNA += Z1_W[j] * pAtTh;
           }
-          pJoint += qW[i] * pV * pNA;
+          pJoint += Z1_W[i] * pV * pNA;
         }
         return pJoint;
       }
@@ -2926,12 +2932,11 @@
         if (cdfArr[offset + mid] < u) lo = mid + 1;
         else hi = mid;
       }
-      if (lo === 0) return grid[0];
-      const cPrev = cdfArr[offset + lo - 1];
+      const cPrev = lo === 0 ? 0 : cdfArr[offset + lo - 1];
       const cCurr = cdfArr[offset + lo];
-      const denom = cCurr - cPrev;
-      const frac = denom > 1e-12 ? (u - cPrev) / denom : 0.5;
-      return grid[lo - 1] + frac * (grid[lo] - grid[lo - 1]);
+      const frac = (cCurr - cPrev) > 1e-12 ? (u - cPrev) / (cCurr - cPrev) : 0.5;
+      const step = grid[1] - grid[0];
+      return grid[lo] + (frac - 0.5) * step;
     }
 
     // Reusable buffers for survivor standardization, sorting & histograms

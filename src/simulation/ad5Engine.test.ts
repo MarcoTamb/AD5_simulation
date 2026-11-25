@@ -89,6 +89,8 @@ interface AD5EngineApi {
     N_SIT: number;
     N_RL: number;
     N_PRELIM: number;
+    V_MEAN_MIN: number;
+    NA_MEAN_MIN: number;
   };
   PART1_KEYS: readonly string[];
   PART2_KEYS: readonly string[];
@@ -98,6 +100,19 @@ interface AD5EngineApi {
   calcFinalScore: (v: number, euk: number, dig: number, essay: number) => number;
   normCdf: (z: number) => number;
   calibrate3PL: (key: string, mean: number, sd: number, passMark: number) => Calibrated3PL;
+  computePart1Exact: (
+    vCal: Calibrated3PL,
+    naCal: Calibrated3PL,
+    rhoVN: number
+  ) => {
+    pVerbalPass: number;
+    pNAPass: number;
+    pJointPass: number;
+    obsCorrVN: number;
+    verbalAllPmf: Float64Array;
+    verbalPassPmf: Float64Array;
+    condNAPassGivenV: Float64Array;
+  };
   essayMoments: (muStar: number, sdStar: number) => { mean: number; sd: number };
   calibrateEssay: (targetMean: number, targetSd: number) => { muStar: number; sdStar: number };
   solveMeansForPassRate: (
@@ -371,4 +386,63 @@ test('Part 2 survivor standardization makes simulated Part 2 sitter pool match s
 
   const expectedGreenV = sim.verbalBreakdown.find((r) => r.condRlOdds > sim.baselinePart2Odds)?.v ?? 21;
   assert.equal(sim.greenThresholdV, expectedGreenV);
+});
+
+test('High-SD Part 1 quadrature eliminates aliasing at vMean=11.0, vSd=5.0 and solver matches computePart1Exact at SD=5.0', () => {
+  // Verify updated slider bounds, Part 2 defaults, scenarios, and Digital Skills guessing floor
+  assert.equal(E.CONSTANTS.V_MEAN_MIN, 6.5);
+  assert.equal(E.CONSTANTS.NA_MEAN_MIN, 6.5);
+  assert.equal(E.PRESETS.baseline.eukMean, 19.0);
+  assert.equal(E.PRESETS.baseline.digMean, 27.0);
+  assert.equal(E.PRESETS.baseline.digSd, 5.5);
+  assert.equal(E.PRESETS.ceilingCrunch.eukMean, 21.0);
+  assert.equal(E.PRESETS.ceilingCrunch.digMean, 29.5);
+  assert.equal(E.PRESETS.ceilingCrunch.digSd, 5.5);
+  assert.equal(E.PRESETS.harshFatigue.name, 'Harsh Calibration');
+  assert.equal(E.PRESETS.harshFatigue.digMean, 25.0);
+  assert.equal(E.TEST_SPECS.dig.c[0], 0.21);
+
+  // High-SD Verbal distribution must be smooth without artificial dip at 12-13 between peaks at 10 and 15
+  const vCal = E.calibrate3PL('verbal', 11.0, 5.0, 10);
+  const naCal = E.calibrate3PL('na', 10.6, 5.0, 10);
+  const p1 = E.computePart1Exact(vCal, naCal, 0.65);
+  const pmf = p1.verbalAllPmf;
+
+  // Check there is no aliasing trough at 12-13 below both 10 and 15
+  const minMid = Math.min(pmf[12], pmf[13]);
+  const minFlank = Math.min(pmf[10], pmf[15]);
+  assert.ok(
+    minMid >= minFlank,
+    `Expected no artificial dip at 12-13 (${pmf[12].toFixed(4)}, ${pmf[13].toFixed(4)}) below peaks at 10 (${pmf[10].toFixed(4)}) and 15 (${pmf[15].toFixed(4)})`
+  );
+  // Also verify smooth unimodality/concavity across 10..15 (no local valley at 11..14)
+  for (let s = 11; s <= 14; s++) {
+    assert.ok(
+      !(pmf[s] < pmf[s - 1] && pmf[s] < pmf[s + 1]),
+      `Artificial local dip detected at score ${s}: [${pmf[s - 1].toFixed(5)}, ${pmf[s].toFixed(5)}, ${pmf[s + 1].toFixed(5)}]`
+    );
+  }
+
+  // Verify solveMeansForPassRate agrees with computePart1Exact.pJointPass within 0.003 at vSd=5.0, naSd=5.0
+  const highSdState: EnginePreset = {
+    ...E.PRESETS.baseline,
+    vMean: 11.0,
+    vSd: 5.0,
+    naMean: 10.6,
+    naSd: 5.0
+  };
+  for (const target of [0.35, 0.45, 0.55]) {
+    const solved = E.solveMeansForPassRate(highSdState, target);
+    const vSolved = E.calibrate3PL('verbal', solved.vMean, highSdState.vSd, 10);
+    const naSolved = E.calibrate3PL('na', solved.naMean, highSdState.naSd, 10);
+    const exact = E.computePart1Exact(vSolved, naSolved, highSdState.rhoVN);
+    assert.ok(
+      Math.abs(exact.pJointPass - target) < 0.003,
+      `Solver mismatch at SD=5.0 for target=${target}: exact=${exact.pJointPass.toFixed(5)}, solved=${solved.achievedPassRate.toFixed(5)}`
+    );
+    assert.ok(
+      Math.abs(exact.pJointPass - solved.achievedPassRate) < 0.003,
+      `evalPairFast vs computePart1Exact mismatch at SD=5.0: exact=${exact.pJointPass.toFixed(5)}, fast=${solved.achievedPassRate.toFixed(5)}`
+    );
+  }
 });
