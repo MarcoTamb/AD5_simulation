@@ -538,6 +538,9 @@
 
     /* Part 2 Cards Layout (flat columns separated by dividers, no card-in-card) */
     .part2-top-attrition {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
       padding-bottom: 18px;
       margin-bottom: 20px;
       border-bottom: 1px solid var(--border);
@@ -727,6 +730,17 @@
       background: #CBD5E1;
     }
 
+    .swatch-noshow {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(217, 119, 6, 0.34),
+        rgba(217, 119, 6, 0.34) 2px,
+        rgba(217, 119, 6, 0.10) 2px,
+        rgba(217, 119, 6, 0.10) 4px
+      );
+      border: 1px solid #D97706;
+    }
+
     .swatch-personal {
       width: 14px;
       height: 2px;
@@ -821,6 +835,80 @@
       color: #FFFFFF;
     }
 
+    /* Slider Label & Table Column Info Tooltips */
+    .has-info-tip {
+      cursor: help;
+      text-decoration: underline dotted rgba(100, 116, 139, 0.50);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      transition: color 0.12s ease, text-decoration-color 0.12s ease;
+    }
+
+    .has-info-tip:hover,
+    .has-info-tip:focus-visible {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+      outline: none;
+    }
+
+    .info-tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 60;
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      font-size: 12px;
+      line-height: 1.5;
+      width: min(355px, calc(100vw - 24px));
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+    }
+
+    .info-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .it-title {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .it-sec {
+      margin-top: 6px;
+      color: #E2E8F0;
+    }
+
+    .it-sec:first-of-type {
+      margin-top: 0;
+    }
+
+    .it-sec strong {
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    .it-reasonable {
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.30);
+      color: #CBD5E1;
+    }
+
+    .it-reasonable strong {
+      color: #93C5FD;
+      font-weight: 600;
+    }
+
     /* Segmented Toggle */
     .segmented {
       display: inline-flex;
@@ -864,7 +952,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 13.5px;
-      min-width: 720px;
+      min-width: 820px;
     }
 
     table.odds-table th {
@@ -1269,6 +1357,19 @@
       color: var(--text);
     }
 
+    .doc-content a,
+    .disclaimer-box a {
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .doc-content a:hover,
+    .disclaimer-box a:hover {
+      color: var(--accent-hover);
+    }
+
     footer {
       max-width: 1240px;
       margin: 0 auto;
@@ -1351,6 +1452,7 @@
         font-size: 20px;
       }
       .slider-grid-p1,
+      .part2-top-attrition,
       .corr-grid,
       .score-compare-grid {
         grid-template-columns: 1fr;
@@ -1407,16 +1509,17 @@
       <div class="presets-stack">
         <div class="presets-row" role="group" aria-label="Part 1 Scenario presets">
           <span class="presets-label">Part 1 Scenarios:</span>
-          <button type="button" class="preset-btn active" data-preset="baseline" title="Resets Part 1 &amp; Part 2 to baseline: ~42.7% joint pass (equal ~60% Verbal &amp; Num+Abs pass rates) with 15% Part 2 attrition">Baseline (JPP, same weighting)</button>
-          <button type="button" class="preset-btn" data-preset="jppVerbalEasier" title="Part 1 only: ~42.2% joint pass with easier Verbal (~71% pass) and tougher Num+Abs (~51% pass)">JPP rate &amp; Verbal easier</button>
-          <button type="button" class="preset-btn" data-preset="jppNaEasier" title="Part 1 only: ~42.3% joint pass with tougher Verbal (~51% pass, Verbal bottleneck) and easier Num+Abs (~71% pass)">JPP rate &amp; NA easier (Verbal Bottleneck)</button>
-          <button type="button" class="preset-btn" data-preset="lowPassRate" title="Part 1 only: ~32.9% joint pass rate (equal ~51% Verbal &amp; Num+Abs pass rates, ρ = 0.62)">Low pass rate</button>
+          <button type="button" class="preset-btn active" data-preset="baseline" title="Resets Part 1 &amp; Part 2 to baseline: ~42.4% joint pass (equal ~60% Verbal &amp; Num+Abs pass rates, σ = 3.4) with 32% Part 2 attrition (ρ = −0.36)">Baseline (JPP, same weighting)</button>
+          <button type="button" class="preset-btn" data-preset="jppVerbalEasier" title="Part 1 only: ~42.6% joint pass with easier Verbal (~71% pass) and tougher Num+Abs (~52% pass)">JPP rate &amp; Verbal easier</button>
+          <button type="button" class="preset-btn" data-preset="jppNaEasier" title="Part 1 only: ~42.2% joint pass with tougher Verbal (~51% pass) and easier Num+Abs (~71% pass)">JPP rate &amp; NA easier</button>
+          <button type="button" class="preset-btn" data-preset="lowPassRate" title="Part 1 only: ~33.0% joint pass rate (equal ~51% Verbal &amp; Num+Abs pass rates, ρ = 0.62)">Low pass rate</button>
+          <button type="button" class="preset-btn" data-preset="highPassRate" title="Part 1 only: ~59.6% joint pass rate (equal ~74% Verbal &amp; Num+Abs pass rates, σ = 3.4)">High pass rate</button>
         </div>
         <div class="presets-row" role="group" aria-label="Part 2 Scenario presets">
           <span class="presets-label">Part 2 Scenarios:</span>
-          <button type="button" class="preset-btn active" data-preset="part2Baseline" title="Part 2 only: 15% attrition, EUK 19.0 (SD 4.8), Digital 27.0 (SD 5.5), EUFTE 5.5 (SD 1.5)">Part 2 Baseline</button>
-          <button type="button" class="preset-btn" data-preset="ceilingCrunch" title="Part 2 only: higher Part 2 scores (EUK 21.0, Digital 29.5, SD 5.5, EUFTE 6.0) compressing top cutoffs">Ceiling Crunch</button>
-          <button type="button" class="preset-btn" data-preset="harshFatigue" title="Part 2 only: 25% attrition and tougher Part 2 scoring (EUK 15.5, Digital 25.0, EUFTE 5.2)">Harsh Calibration</button>
+          <button type="button" class="preset-btn active" data-preset="part2Baseline" title="Part 2 only: 32% attrition (ρ = −0.36), EUK 17.5 (SD 5.0), Digital 25.8 (SD 6.5), EUFTE 5.5 (SD 1.5)">Part 2 Baseline</button>
+          <button type="button" class="preset-btn" data-preset="ceilingCrunch" title="Part 2 only: higher Part 2 scores (EUK 19.3, Digital 28.2, SD 6.5, EUFTE 6.0) compressing top cutoffs">Ceiling Crunch</button>
+          <button type="button" class="preset-btn" data-preset="harshFatigue" title="Part 2 only: 41% attrition (ρ = −0.36) and tougher Part 2 scoring (EUK 14.3, Digital 23.9, EUFTE 5.2)">Harsh Calibration</button>
         </div>
       </div>
     </section>
@@ -1484,9 +1587,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slNAMean" class="control-label">Num+Abs Mean (μ<sub>NA</sub>)</label>
-            <span class="control-val" id="valNAMean">10.60 / 20</span>
+            <span class="control-val" id="valNAMean">10.50 / 20</span>
           </div>
-          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.6" />
+          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.5" />
           <div class="control-meta">
             <span>Pass mark &ge; 10/20 combined (Eliminatory only)</span>
             <span class="reliability-inline" id="relNA">α<sub>NA</sub> = —</span>
@@ -1496,9 +1599,9 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slNASd" class="control-label">Num+Abs SD (σ<sub>NA</sub>)</label>
-            <span class="control-val" id="valNASd">3.60</span>
+            <span class="control-val" id="valNASd">3.40</span>
           </div>
-          <input type="range" id="slNASd" min="2.0" max="5.0" step="0.05" value="3.6" />
+          <input type="range" id="slNASd" min="2.0" max="5.0" step="0.05" value="3.4" />
           <div class="control-meta">
             <span id="clampNASd" class="clamp-note"></span>
             <span class="reliability-inline" id="irtParamsNA">a = —, b̄ = —</span>
@@ -1508,7 +1611,7 @@
         <div class="control-block slider-span-2">
           <div class="control-header">
             <label for="slPassRate" class="control-label">Joint Part 1 Pass Rate (P<sub>pass</sub> — Bidirectional Sync)</label>
-            <span class="control-val highlight" id="valPassRate">42.7% · 32,111 passers</span>
+            <span class="control-val highlight" id="valPassRate">42.4% · 31,916 passers</span>
           </div>
           <input type="range" id="slPassRate" class="accent-slider" min="3.0" max="100.0" step="0.5" value="42.5" />
           <div class="control-meta">
@@ -1559,11 +1662,12 @@
 
       <div class="chart-section-block">
         <div class="chart-header">
-          <h3 class="chart-title">Part 1 Verbal Score Distribution (0–20): All 75,274 Sitters vs. Part 1 Passers</h3>
+          <h3 class="chart-title">Part 1 Verbal Score Distribution (0–20): Sitters, Passers &amp; Part 2 No-Show Rate</h3>
           <div class="chart-legend-row" aria-label="Part 1 chart legend">
             <span class="legend-item"><span class="swatch swatch-sitters"></span>All Sitters</span>
-            <span class="legend-item"><span class="swatch swatch-green"></span>Above-Baseline Contenders</span>
-            <span class="legend-item"><span class="swatch swatch-below"></span>Below-Baseline Passers</span>
+            <span class="legend-item"><span class="swatch swatch-green"></span>Part 2 Sitters (Contenders)</span>
+            <span class="legend-item"><span class="swatch swatch-below"></span>Part 2 Sitters (Below Baseline)</span>
+            <span class="legend-item"><span class="swatch swatch-noshow"></span>Part 2 No-Shows</span>
             <span class="legend-item"><span class="swatch swatch-elim"></span>Eliminated (0–9)</span>
           </div>
         </div>
@@ -1589,11 +1693,22 @@
         <div class="control-block">
           <div class="control-header">
             <label for="slAttrition" class="control-label">Part 2 No-Show / Attrition Rate</label>
-            <span class="control-val highlight" id="valAttrition">15% · 27,295 active Part 2 sitters</span>
+            <span class="control-val highlight" id="valAttrition">32% · 21,896 active Part 2 sitters</span>
           </div>
-          <input type="range" id="slAttrition" class="accent-slider" min="0" max="40" step="1" value="15" />
+          <input type="range" id="slAttrition" class="accent-slider" min="0" max="60" step="1" value="32" />
           <div class="control-meta">
-            <span>Share of Part 1 passers who do not sit Part 2 (modeled uniformly across Part 1 passers; see Methodology caveats).</span>
+            <span>Overall share of Part 1 passers who do not sit Part 2.</span>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-header">
+            <label for="slRhoNoShowV" class="control-label">No-Show ↔ Part 1 Verbal Correlation (ρ<sub>NS,V</sub>)</label>
+            <span class="control-val" id="valRhoNoShowV">-0.36</span>
+          </div>
+          <input type="range" id="slRhoNoShowV" min="0.00" max="0.80" step="0.01" value="0.36" />
+          <div class="control-meta">
+            <span id="metaRhoNoShowV">10/20: 50.1% no-show → 20/20: 4.8% no-show (0.00 = uniform)</span>
           </div>
         </div>
       </div>
@@ -1607,16 +1722,16 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slEukMean" class="control-label">Mean (μ<sub>EUK</sub>)</label>
-              <span class="control-val" id="valEukMean">19.00 / 30</span>
+              <span class="control-val" id="valEukMean">17.50 / 30</span>
             </div>
-            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="19.0" />
+            <input type="range" id="slEukMean" min="10.0" max="25.0" step="0.1" value="17.5" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slEukSd" class="control-label">SD (σ<sub>EUK</sub>)</label>
-              <span class="control-val" id="valEukSd">4.80</span>
+              <span class="control-val" id="valEukSd">5.00</span>
             </div>
-            <input type="range" id="slEukSd" min="2.5" max="10.0" step="0.1" value="4.8" />
+            <input type="range" id="slEukSd" min="2.5" max="10.0" step="0.1" value="5.0" />
             <div class="control-meta">
               <span id="clampEukSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsEUK">a = —, b̄ = —</span>
@@ -1642,16 +1757,16 @@
           <div class="control-block">
             <div class="control-header">
               <label for="slDigMean" class="control-label">Mean (μ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigMean">27.00 / 40</span>
+              <span class="control-val" id="valDigMean">25.80 / 40</span>
             </div>
-            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="27.0" />
+            <input type="range" id="slDigMean" min="15.0" max="36.0" step="0.1" value="25.8" />
           </div>
           <div class="control-block">
             <div class="control-header">
               <label for="slDigSd" class="control-label">SD (σ<sub>Dig</sub>)</label>
-              <span class="control-val" id="valDigSd">5.50</span>
+              <span class="control-val" id="valDigSd">6.50</span>
             </div>
-            <input type="range" id="slDigSd" min="2.5" max="8.0" step="0.1" value="5.5" />
+            <input type="range" id="slDigSd" min="2.5" max="10.0" step="0.1" value="6.5" />
             <div class="control-meta">
               <span id="clampDigSd" class="clamp-note"></span>
               <span class="reliability-inline" id="irtParamsDig">a = —, b̄ = —</span>
@@ -1771,12 +1886,13 @@
         <table class="odds-table" aria-label="Reserve list odds and Part 2 targets by Verbal score">
           <thead>
             <tr>
-              <th>Verbal Score</th>
-              <th>Est. Part 1 Passers</th>
-              <th>P(Num+Abs &ge; 10 | V)</th>
-              <th>Conditional RL Odds</th>
-              <th>Overall Odds (Pre-NA)</th>
-              <th id="thMinTarget">Min. EUK Target (at 85th pct Dig &amp; 7.0 EUFTE)</th>
+              <th data-tip="colVerbal" tabindex="0">Verbal Score</th>
+              <th data-tip="colPassers" tabindex="0">Est. Part 1 Passers</th>
+              <th data-tip="colPNA" tabindex="0">P(Num+Abs &ge; 10 | V)</th>
+              <th data-tip="colCondOdds" tabindex="0">Sitters Conditional RL Odds</th>
+              <th data-tip="colUncorrOdds" tabindex="0">Sitters RL Odds (No P1 Corr)</th>
+              <th data-tip="colEstRL" tabindex="0">Est. in Reserve List</th>
+              <th id="thMinTarget" data-tip="colMinTarget" tabindex="0">Min. EUK Target (at 85th pct Dig &amp; 7.0 EUFTE)</th>
             </tr>
           </thead>
           <tbody id="oddsTableBody"></tbody>
@@ -1926,7 +2042,7 @@
       </div>
 
       <div class="docs-list">
-        <details class="doc-item" open>
+        <details class="doc-item">
           <summary>1. 3-Parameter Logistic (3PL) Item Response Theory &amp; Poisson-Binomial Scoring</summary>
           <div class="doc-content">
             <p>Each multiple-choice test (Verbal 20 Qs, Num+Abs 20 Qs, EU Knowledge 30 Qs, Digital Skills 40 Qs) is modeled using the 3-Parameter Logistic (3PL) IRT model rather than a naive Normal or Beta-Binomial approximation. For a candidate with standardized latent ability θ<sub>k</sub> ~ N(0, 1), the probability of answering item <em>i</em> correctly is:</p>
@@ -1949,7 +2065,7 @@
           <summary>3. Latent vs. Observed Correlation Attenuation, Range Restriction &amp; Zero-Flicker CRN</summary>
           <div class="doc-content">
             <p>Observed test scores contain measurement error, so observed correlations are strictly lower than underlying latent correlations following Spearman's attenuation relation (r<sub>obs</sub> ≈ ρ<sub>θ</sub> · √(α<sub>1</sub> · α<sub>2</sub>)). For example, a latent Part 1 correlation of ρ<sub>VN</sub><sup>θ</sup> = 0.60 typically translates to an observed score correlation of r<sub>VN</sub><sup>obs</sup> ≈ 0.42–0.47. Part 1 pass rates and Verbal distributions are solved deterministically via 21×21 bivariate Gauss-Hermite quadrature—capturing upward range restriction (selection on Num+Abs ≥ 10 shifts the Verbal mean up and compresses Verbal SD among passers).</p>
-            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>), assuming conditional independence between Num+Abs and Part 2 given Verbal (ρ<sub>NA,P2</sub> = ρ<sub>VN</sub> · ρ<sub>V,P2</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Before mapping Part 2 latent traits to observed scores, θ<sub>EUK</sub>, θ<sub>Dig</sub>, and θ<sub>EUFTE</sub> are standardized on the Part 1 survivor pool so that the Part 2 sliders directly govern the unselected Part 2 sitter distribution (while preserving cross-test correlations and organic upward selection among the Top 2,235). Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws sampled rejection-free from the exact Part 1 survivor distribution, plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
+            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>), assuming conditional independence between Num+Abs and Part 2 given Verbal (ρ<sub>NA,P2</sub> = ρ<sub>VN</sub> · ρ<sub>V,P2</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Verbal-correlated Part 2 attrition is modeled via a latent probit liability L = ρ<sub>NS,V</sub>·Z<sub>V</sub> + √(1 − ρ<sub>NS,V</sub><sup>2</sup>)·ε calibrated via exact bisection so the passer-weighted average no-show rate equals the overall attrition slider, while reweighting the 40,000 rejection-free CRN Part 2 sitter draws by (1 − p<sub>noShow</sub>(v)) so selective low-Verbal dropouts shift the active Part 2 pool upward. Before mapping Part 2 latent traits to observed scores, θ<sub>EUK</sub>, θ<sub>Dig</sub>, and θ<sub>EUFTE</sub> are standardized on the active Part 2 sitter pool so that the Part 2 sliders directly govern the unselected Part 2 sitter distribution (while preserving cross-test correlations and organic upward selection among the Top 2,235). Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
           </div>
         </details>
 
@@ -1957,17 +2073,25 @@
           <summary>4. Known Real-World Phenomena NOT Captured by the Model (Honest Caveats)</summary>
           <div class="doc-content">
             <ul>
-              <li><strong>Non-random Part 2 attrition:</strong> The simulator applies the no-show rate uniformly across all Part 1 passers. In reality, because Part 1 scores are released before Part 2, candidates scoring 10–14/20 in Verbal are far more likely to drop out than 17–20/20 scorers. Consequently, real-world no-shows soften the Top 1,490 cutoff much less than uniform attrition implies.</li>
+              <li><strong>No-show functional form &amp; non-Verbal dropout drivers:</strong> Selective Part 2 attrition is modeled as a smooth probit function of Part 1 Verbal score (ρ<sub>NS,V</sub>). Real-world dropout behavior may also show sharp psychological cliff effects around perceived contender cutoffs or depend on preparation level independent of Verbal score.</li>
               <li><strong>Bimodal EU Knowledge preparation:</strong> Knowing one's Part 1 Verbal score before Part 2 creates a motivation split: high-Verbal contenders aggressively drill the published EUK source list, while low-Verbal passers invest less study time. This can produce heavier upper tails or bimodal EUK scores than a single unimodal normal latent trait.</li>
               <li><strong>Language-pair heterogeneity (L1 vs. L2):</strong> Verbal Reasoning is taken in Language 1, whereas EUK, Digital Skills, and EUFTE are taken in Language 2. Differences in L2 fluency introduce extra variance across candidates that is independent of L1 Verbal ability.</li>
               <li><strong>Eligibility checks &amp; tie-breaking:</strong> Administrative disqualifications (diploma, citizenship, language declarations) and EPSO's exact tie-handling rule at ranks 2,235 and 1,490 are omitted from the simulation.</li>
             </ul>
           </div>
         </details>
+
+        <details class="doc-item">
+          <summary>5. Part 1 Pass-Rate Benchmark (JPP Source &amp; Alternative Targets)</summary>
+          <div class="doc-content">
+            <p>The baseline Part 1 Joint Pass Rate (~42.5%) used in the JPP presets is anchored to historical EPSO testing statistics reported in <a href="https://unionsyndicale.eu/wp-content/uploads/2023/10/Reply-to-the-Common-Front-14.07.2023-D7543288.pdf" target="_blank" rel="noopener noreferrer">EPSO's Reply to the Common Front (14 July 2023, D7543288, PDF via Union Syndicale)</a>.</p>
+            <p>Because the same document reports pass rates across multiple historical competition benchmarks, you can also consult it to test alternative—including more generous—Part 1 pass-rate targets directly via the <strong>Target Part 1 Joint Pass Rate</strong> slider in Section 1.</p>
+          </div>
+        </details>
       </div>
 
       <div class="disclaimer-box">
-        <strong>Data &amp; Statistical Disclaimer:</strong> EPSO has not published official AD5 2026 score distributions, pass rates, item parameters, or competition cutoffs (only the official applicant count of 174,382, Part 1 sitter count of 75,274, essay-marking multiplier of 1.5×, reserve list target of 1,490, and test weightings are fixed competition facts). All probabilities, ranks, and cutoffs displayed by this simulator are statistical estimates strictly conditioned on your chosen parameters and psychometric assumptions.
+        <strong>Data &amp; Statistical Disclaimer:</strong> EPSO has not published official AD5 2026 score distributions, pass rates, item parameters, or competition cutoffs (only the official applicant count of 174,382, Part 1 sitter count of 75,274, essay-marking multiplier of 1.5×, reserve list target of 1,490, and test weightings are fixed competition facts). Historical JPP pass-rate reference: <a href="https://unionsyndicale.eu/wp-content/uploads/2023/10/Reply-to-the-Common-Front-14.07.2023-D7543288.pdf" target="_blank" rel="noopener noreferrer">Reply to the Common Front (14.07.2023, Union Syndicale PDF)</a>. All probabilities, ranks, and cutoffs displayed by this simulator are statistical estimates strictly conditioned on your chosen parameters and psychometric assumptions.
       </div>
     </section>
   </main>
@@ -1976,6 +2100,8 @@
     <span>EPSO AD5 2026 Competition Simulator · 3PL IRT + Poisson-Binomial + Correlated CRN Engine</span>
     <span>Runs 100% client-side · Zero external dependencies</span>
   </footer>
+
+  <div id="uiInfoTooltip" class="info-tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script id="irt-engine">
   (function (root) {
@@ -2013,7 +2139,7 @@
 
     const PART1_KEYS = Object.freeze(['vMean', 'vSd', 'naMean', 'naSd', 'rhoVN']);
     const PART2_KEYS = Object.freeze([
-      'attrition',
+      'attrition', 'rhoNoShowV',
       'eukMean', 'eukSd',
       'digMean', 'digSd',
       'essayMean', 'essaySd',
@@ -2022,14 +2148,15 @@
 
     const DEFAULT_PART1 = Object.freeze({
       vMean: 10.5, vSd: 3.4,
-      naMean: 10.6, naSd: 3.6,
+      naMean: 10.5, naSd: 3.4,
       rhoVN: 0.65
     });
 
     const DEFAULT_PART2 = Object.freeze({
-      attrition: 15,
-      eukMean: 19.0, eukSd: 4.8,
-      digMean: 27.0, digSd: 5.5,
+      attrition: 32,
+      rhoNoShowV: -0.36,
+      eukMean: 17.5, eukSd: 5.0,
+      digMean: 25.8, digSd: 6.5,
       essayMean: 5.5, essaySd: 1.5,
       rhoEukDig: 0.45, rhoEukEssay: 0.42, rhoDigEssay: 0.28, rhoVP2: 0.45
     });
@@ -2044,13 +2171,17 @@
         scope: 'part1'
       }, DEFAULT_PART1, { vMean: 11.5, naMean: 9.8 }, DEFAULT_PART2)),
       jppNaEasier: Object.freeze(Object.assign({
-        name: 'JPP rate & NA easier (Verbal Bottleneck)',
+        name: 'JPP rate & NA easier',
         scope: 'part1'
-      }, DEFAULT_PART1, { vMean: 9.8, naMean: 11.6 }, DEFAULT_PART2)),
+      }, DEFAULT_PART1, { vMean: 9.8, naMean: 11.5 }, DEFAULT_PART2)),
       lowPassRate: Object.freeze(Object.assign({
         name: 'Low pass rate',
         scope: 'part1'
       }, DEFAULT_PART1, { vMean: 9.8, naMean: 9.8, rhoVN: 0.62 }, DEFAULT_PART2)),
+      highPassRate: Object.freeze(Object.assign({
+        name: 'High pass rate',
+        scope: 'part1'
+      }, DEFAULT_PART1, { vMean: 11.8, naMean: 11.8 }, DEFAULT_PART2)),
       part2Baseline: Object.freeze(Object.assign({
         name: 'Part 2 Baseline',
         scope: 'part2'
@@ -2059,13 +2190,13 @@
         name: 'Ceiling Crunch',
         scope: 'part2'
       }, DEFAULT_PART1, DEFAULT_PART2, {
-        eukMean: 21.0, digMean: 29.5, digSd: 5.5, essayMean: 6.0
+        eukMean: 19.3, digMean: 28.2, digSd: 6.5, essayMean: 6.0
       })),
       harshFatigue: Object.freeze(Object.assign({
         name: 'Harsh Calibration',
         scope: 'part2'
       }, DEFAULT_PART1, DEFAULT_PART2, {
-        attrition: 25, eukMean: 15.5, digMean: 25.0, essayMean: 5.2
+        attrition: 41, eukMean: 14.3, digMean: 23.9, essayMean: 5.2
       }))
     });
 
@@ -2652,6 +2783,99 @@
       return lo;
     }
 
+    function computeNoShowByVerbal(verbalPassPmf, pJointPass, passVMean, passVSd, attritionFrac, rhoNoShowV) {
+      const noShowByV = new Float64Array(21);
+      const attendByV = new Float64Array(21);
+      const qBar = Math.min(0.99, Math.max(0.0, attritionFrac));
+      const rho = Math.min(0.95, Math.max(-0.95, Number.isFinite(rhoNoShowV) ? rhoNoShowV : 0));
+
+      if (qBar <= 1e-12) {
+        for (let v = 10; v <= 20; v++) {
+          noShowByV[v] = 0;
+          attendByV[v] = 1;
+        }
+        return { noShowByV, attendByV, obsCorrNoShowV: 0 };
+      }
+
+      if (Math.abs(rho) < 1e-6 || passVSd < 1e-6 || pJointPass <= 1e-12) {
+        for (let v = 10; v <= 20; v++) {
+          noShowByV[v] = qBar;
+          attendByV[v] = 1 - qBar;
+        }
+        return { noShowByV, attendByV, obsCorrNoShowV: 0 };
+      }
+
+      const passWeights = new Float64Array(11);
+      const zV = new Float64Array(11);
+      for (let i = 0; i < 11; i++) {
+        passWeights[i] = verbalPassPmf[10 + i] / pJointPass;
+        zV[i] = (10 + i - passVMean) / passVSd;
+      }
+
+      const denom = Math.sqrt(Math.max(1e-6, 1.0 - rho * rho));
+      let lo = -14.0;
+      let hi = 14.0;
+      for (let iter = 0; iter < 60; iter++) {
+        const mid = 0.5 * (lo + hi);
+        let avgQ = 0;
+        for (let i = 0; i < 11; i++) {
+          avgQ += passWeights[i] * normCdf((rho * zV[i] - mid) / denom);
+        }
+        if (avgQ > qBar) lo = mid;
+        else hi = mid;
+      }
+      const tau = 0.5 * (lo + hi);
+
+      let cov = 0;
+      let actualQ = 0;
+      for (let i = 0; i < 11; i++) {
+        const q = normCdf((rho * zV[i] - tau) / denom);
+        noShowByV[10 + i] = q;
+        attendByV[10 + i] = 1.0 - q;
+        actualQ += passWeights[i] * q;
+        cov += passWeights[i] * (10 + i - passVMean) * q;
+      }
+      const varQ = actualQ * (1.0 - actualQ);
+      const obsCorrNoShowV = (passVSd > 1e-6 && varQ > 1e-12) ? cov / (passVSd * Math.sqrt(varQ)) : 0;
+
+      return { noShowByV, attendByV, obsCorrNoShowV };
+    }
+
+    function interpAttendPassProb(table, theta, attendByV) {
+      const { idx, frac } = gridPosition(theta);
+      const st = table.stride;
+      const base0 = idx * st;
+      const base1 = (idx + 1) * st;
+      const omf = 1 - frac;
+      const pmf = table.pmf;
+      let sum = 0;
+      for (let v = 10; v <= 20; v++) {
+        sum += (pmf[base0 + v] * omf + pmf[base1 + v] * frac) * attendByV[v];
+      }
+      return sum;
+    }
+
+    function sampleVerbalGivenAttend(table, theta, attendByV, u) {
+      const { idx, frac } = gridPosition(theta);
+      const st = table.stride;
+      const base0 = idx * st;
+      const base1 = (idx + 1) * st;
+      const omf = 1 - frac;
+      const pmf = table.pmf;
+      let total = 0;
+      for (let v = 10; v <= 20; v++) {
+        total += (pmf[base0 + v] * omf + pmf[base1 + v] * frac) * attendByV[v];
+      }
+      if (total <= 1e-15) return sampleVerbalGivenPass(table, theta, u);
+      const target = u * total;
+      let cum = 0;
+      for (let v = 10; v <= 20; v++) {
+        cum += (pmf[base0 + v] * omf + pmf[base1 + v] * frac) * attendByV[v];
+        if (cum >= target) return v;
+      }
+      return 20;
+    }
+
     // =========================================================================
     // 4. EUFTE Essay Latent Rater-Error Calibration (r_E = 0.70, 0-10 in 0.5)
     // =========================================================================
@@ -3088,10 +3312,28 @@
       const part1 = computePart1Exact(vCal, naCal, params.rhoVN);
 
       const estPart1Passers = part1.estPassers;
-      const attritionFrac = Math.min(0.40, Math.max(0.0, params.attrition / 100));
+      const attritionFrac = Math.min(0.60, Math.max(0.0, params.attrition / 100));
+      const rhoNoShowV = Number.isFinite(params.rhoNoShowV) ? params.rhoNoShowV : 0;
+      const { noShowByV, attendByV, obsCorrNoShowV } = computeNoShowByVerbal(
+        part1.verbalPassPmf,
+        part1.pJointPass,
+        part1.passVMean,
+        part1.passVSd,
+        attritionFrac,
+        rhoNoShowV
+      );
       const estPart2Sitters = estPart1Passers * (1.0 - attritionFrac);
       const baselinePasserOdds = estPart1Passers > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart1Passers) : 1.0;
       const baselinePart2Odds = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart2Sitters) : 1.0;
+
+      let part2VWeightSum = 0;
+      let part2VMeanNum = 0;
+      for (let v = 10; v <= 20; v++) {
+        const w = part1.verbalPassPmf[v] * attendByV[v];
+        part2VWeightSum += w;
+        part2VMeanNum += w * v;
+      }
+      const part2SitterVMean = part2VWeightSum > 1e-12 ? part2VMeanNum / part2VWeightSum : part1.passVMean;
 
       // 3. Construct 5x5 Latent Correlation Matrix & Cholesky
       // Order: [0: V, 1: NA, 2: EUK, 3: Dig, 4: Essay]
@@ -3138,7 +3380,7 @@
           for (let j = 0; j < SAMP_Z1_N; j++) z1CondCdf[base + j] = (j + 1) / SAMP_Z1_N;
         }
 
-        const wV = SAMP_V_PDF[i] * interpPassProb(vCal.table, thV) * pNAPassAtVGrid[i];
+        const wV = SAMP_V_PDF[i] * interpAttendPassProb(vCal.table, thV, attendByV) * pNAPassAtVGrid[i];
         margSum += wV;
         margThVCdf[i] = margSum;
       }
@@ -3148,7 +3390,7 @@
         margThVCdf[SAMP_V_N - 1] = 1.0;
       }
 
-      // 5. Simulate 40,000 fixed CRN draws from the Part 2 sitter pool
+      // 5. Simulate 40,000 fixed CRN draws from the active Part 2 sitter pool
       const MAIN_N = CRN.main.N;
       const m = CRN.main;
       const sqrtR = Math.sqrt(CONSTANTS.ESSAY_RELIABILITY);
@@ -3156,7 +3398,7 @@
       const essayMu = essayCal.muStar;
       const essaySd = essayCal.sdStar;
 
-      // Pass 1: Draw correlated latent Part 2 traits among Part 1 passers & compute survivor moments
+      // Pass 1: Draw correlated latent Part 2 traits among Part 2 sitters & compute pool moments
       let sumThEuk = 0, sumThEuk2 = 0;
       let sumThDig = 0, sumThDig2 = 0;
       let sumThEss = 0, sumThEss2 = 0;
@@ -3166,7 +3408,7 @@
         const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
         const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, m.uZ1[k]);
 
-        mainVScores[k] = sampleVerbalGivenPass(vCal.table, thV, m.uVScore[k]);
+        mainVScores[k] = sampleVerbalGivenAttend(vCal.table, thV, attendByV, m.uVScore[k]);
         const z2 = m.z2[k];
         const z3 = m.z3[k];
         const z4 = m.z4[k];
@@ -3451,10 +3693,38 @@
 
         const condRlOdds = rlPassWeight / cN;
         const condGateOdds = gatePassWeight / cN;
+
+        // Uncorrelated Sitters RL Odds: evaluate fixed Verbal score v against the same
+        // competition cutoffs assuming Part 2 scores (EUK, Dig, EUFTE) are drawn independently
+        // from the active Part 2 sitter pool (zero Part 1 <-> Part 2 correlation).
+        let uncorrPassWeight = 0;
+        for (let k = 0; k < MAIN_N; k++) {
+          if (!mainEligibleMask[k]) continue;
+          const essScore = mainEssayScores[k];
+          if (essScore < CONSTANTS.ESSAY_PASS) continue;
+          const eukScore = mainEukScores[k];
+          const digScore = mainDigScores[k];
+          const pScore = calcPrelimScore(v, eukScore, digScore);
+          let gateProb = 0;
+          if (pScore > prelimCutoff + 1e-9) gateProb = 1.0;
+          else if (Math.abs(pScore - prelimCutoff) <= 1e-9) gateProb = tieKeepFrac;
+          if (gateProb <= 0) continue;
+          const fScore = calcFinalScore(v, eukScore, digScore, essScore);
+          if (fScore > finalCutoff + 1e-9) {
+            uncorrPassWeight += gateProb;
+          } else if (Math.abs(fScore - finalCutoff) <= 1e-9) {
+            uncorrPassWeight += gateProb * 0.5;
+          }
+        }
+        const uncorrRlOdds = uncorrPassWeight / MAIN_N;
+
         const estPassersAtV = CONSTANTS.N_SIT * part1.verbalPassPmf[v];
         const shareOfPassers = estPart1Passers > 0 ? estPassersAtV / estPart1Passers : 0;
         const pNAGivenV = part1.condNAPassGivenV[v];
-        const overallOddsPreNA = condRlOdds * pNAGivenV * (1.0 - attritionFrac);
+        const noShowRate = noShowByV[v];
+        const estPart2SittersAtV = estPassersAtV * attendByV[v];
+        const estInReserveList = estPart2SittersAtV * condRlOdds;
+        const shareOfReserveList = CONSTANTS.N_RL > 0 ? estInReserveList / CONSTANTS.N_RL : 0;
 
         // Min EUK Target assuming benchmark Digital Skills (85th pct) & 7.0/10 EUFTE
         const essayBench = 7.0;
@@ -3470,10 +3740,14 @@
           estSitters: CONSTANTS.N_SIT * part1.verbalAllPmf[v],
           estPassers: estPassersAtV,
           shareOfPassers,
+          noShowRate,
+          estPart2Sitters: estPart2SittersAtV,
           pNAGivenV,
           condGateOdds,
           condRlOdds,
-          overallOddsPreNA,
+          uncorrRlOdds,
+          estInReserveList,
+          shareOfReserveList,
           reqEuk,
           reqEukPrelim,
           reqEukFinal,
@@ -3495,10 +3769,15 @@
       const verbalChartBars = [];
       for (let s = 0; s <= 20; s++) {
         const bd = s >= 10 ? verbalBreakdown[s - 10] : null;
+        const passersAtS = s >= 10 ? CONSTANTS.N_SIT * part1.verbalPassPmf[s] : 0;
+        const nsRate = s >= 10 ? noShowByV[s] : 0;
         verbalChartBars.push({
           score: s,
           sitters: CONSTANTS.N_SIT * part1.verbalAllPmf[s],
-          passers: s >= 10 ? CONSTANTS.N_SIT * part1.verbalPassPmf[s] : 0,
+          passers: passersAtS,
+          noShowRate: nsRate,
+          part2Sitters: passersAtS * (1.0 - nsRate),
+          noShows: passersAtS * nsRate,
           pNAGivenV: part1.condNAPassGivenV[s],
           condRlOdds: bd ? bd.condRlOdds : 0,
           zone: s < 10 ? 'eliminated' : (s >= greenThresholdV ? 'green' : 'below')
@@ -3605,6 +3884,9 @@
         params: Object.assign({}, params),
         calibrations: { vCal, naCal, eukCal, digCal, essayCal },
         part1,
+        noShowByV,
+        obsCorrNoShowV,
+        part2SitterVMean,
         part2PoolStats,
         part2SubCharts,
         estPart1Passers,
@@ -3648,6 +3930,7 @@
       essayMoments,
       calibrateEssay,
       computePart1Exact,
+      computeNoShowByVerbal,
       solveMeansForPassRate,
       ensurePsdAndCholesky,
       runSimulation
@@ -3702,6 +3985,7 @@
       $('slNASd').value = state.naSd;
       $('slRhoVN').value = state.rhoVN;
       $('slAttrition').value = state.attrition;
+      $('slRhoNoShowV').value = Math.abs(state.rhoNoShowV);
       $('slEukMean').value = state.eukMean;
       $('slEukSd').value = state.eukSd;
       $('slDigMean').value = state.digMean;
@@ -3758,7 +4042,7 @@
       $('kpiPart1Passers').textContent = fmtInt(sim.estPart1Passers);
       $('kpiPart1PassRate').textContent = `${fmtPct(sim.part1.pJointPass, 1)} of 75,274 sitters`;
       $('kpiPart2Sitters').textContent = fmtInt(sim.estPart2Sitters);
-      $('kpiAttritionNote').textContent = `${state.attrition}% Part 2 no-show rate`;
+      $('kpiAttritionNote').textContent = `${state.attrition}% no-show (${fmtPct(sim.noShowByV[20], 1)} at 20/20)`;
       $('kpiBaselineOdds').textContent = fmtPct(sim.baselinePasserOdds, 2);
       $('kpiBaselineRatio').textContent = `1,490 / ${fmtInt(sim.estPart1Passers)} passers`;
       $('kpiPrelimCutoff').textContent = sim.prelimCutoff.toFixed(2);
@@ -3810,6 +4094,14 @@
 
       // Part 2 Readouts
       $('valAttrition').textContent = `${state.attrition}% · ${fmtInt(sim.estPart2Sitters)} active Part 2 sitters`;
+      const rhoNoShowLabel = Math.abs(state.rhoNoShowV) < 1e-6 ? '0.00' : state.rhoNoShowV.toFixed(2);
+      $('valRhoNoShowV').textContent = rhoNoShowLabel;
+      $('slRhoNoShowV').setAttribute('aria-valuetext', rhoNoShowLabel);
+      $('metaRhoNoShowV').textContent = state.attrition === 0
+        ? 'No Part 2 attrition (0.0% across all Verbal scores)'
+        : (Math.abs(state.rhoNoShowV) < 1e-6
+            ? `Uniform ${state.attrition}.0% no-show across Verbal 10–20`
+            : `10/20: ${fmtPct(sim.noShowByV[10], 1)} no-show → 20/20: ${fmtPct(sim.noShowByV[20], 1)} no-show (0.00 = uniform)`);
       $('valEukMean').textContent = `${state.eukMean.toFixed(2)} / 30`;
       $('valEukSd').textContent = `${state.eukSd.toFixed(2)}`;
       $('relEUK').textContent = `α = ${eukCal.reliability.toFixed(2)}`;
@@ -3857,7 +4149,7 @@
     }
 
     // =========================================================================
-    // Odds & Targets Table (Verbal 13 to 20)
+    // Odds & Targets Table (Verbal 10 to 20)
     // =========================================================================
     function renderOddsTable(sim) {
       $('thMinTarget').textContent = `Min. EUK Target (at ${sim.digBench85}/40 Dig [85th pct] & 7.0 EUFTE)`;
@@ -3866,7 +4158,6 @@
 
       for (let i = 0; i < sim.verbalBreakdown.length; i++) {
         const r = sim.verbalBreakdown[i];
-        if (r.v < 13) continue;
         const inGreen = r.v >= sim.greenThresholdV;
         const isSelected = r.v === personal.v;
         const rowClass = [
@@ -3879,7 +4170,7 @@
           targetHtml = `<span class="mono" style="color:var(--crimson);font-weight:600">&gt; 30/30</span> <span class="sub-dim">(Need Dig &gt; ${sim.digBench85} or higher EUFTE)</span>`;
         } else {
           targetHtml = `<span class="mono" style="font-weight:700">${r.reqEuk}/30</span>` +
-            (r.prelimGateBinds ? `<span class="gate-flag">Top 2,235 gate binds</span>` : '');
+            (r.prelimGateBinds ? `<span class="gate-flag" title="A 7.0/10 essay would allow a lower EUK score for the Final Top 1,490 cutoff, but this EUK score is required just to reach the Top 2,235 Preliminary ranking and have your essay marked.">Set by Top 2,235 essay gate</span>` : '');
         }
 
         rows.push(`
@@ -3894,7 +4185,11 @@
               <span class="${inGreen ? 'odds-strong' : 'odds-normal'}">${fmtOdds(r.condRlOdds)}</span>
               <span class="sub-dim">${fmtOneIn(r.condRlOdds)}</span>
             </td>
-            <td class="mono">${fmtOdds(r.overallOddsPreNA)}</td>
+            <td>
+              <span class="odds-normal">${fmtOdds(r.uncorrRlOdds)}</span>
+              <span class="sub-dim">${fmtOneIn(r.uncorrRlOdds)}</span>
+            </td>
+            <td class="mono">${fmtInt(r.estInReserveList)} <span class="sub-dim">(${fmtPct(r.shareOfReserveList, 1)})</span></td>
             <td class="target-note">${targetHtml}</td>
           </tr>
         `);
@@ -4066,21 +4361,55 @@
         ctx.fillStyle = b.zone === 'eliminated'
           ? (isHovered ? 'rgba(148, 163, 184, 0.52)' : 'rgba(203, 213, 225, 0.55)')
           : (isHovered ? 'rgba(148, 163, 184, 0.42)' : 'rgba(148, 163, 184, 0.25)');
-        ctx.strokeStyle = b.zone === 'eliminated' ? '#94A3B8' : '#94A3B8';
+        ctx.strokeStyle = '#94A3B8';
         ctx.lineWidth = isHovered ? 1.5 : 1;
         ctx.fillRect(cx - outerW / 2, sitY, outerW, sitH);
         ctx.strokeRect(cx - outerW / 2 + 0.5, sitY + 0.5, outerW - 1, Math.max(0, sitH - 1));
 
-        // Foreground solid bar: Part 1 Passers (scores 10..20)
+        // Foreground stacked bar for Part 1 Passers (scores 10..20):
+        // Bottom solid = active Part 2 Sitters; Top hatched amber cap = Part 2 No-Shows
         if (b.score >= 10 && b.passers > 0) {
           const passH = (b.passers / yMax) * plotH;
           const passY = pad.top + plotH - passH;
-          if (b.zone === 'green') {
-            ctx.fillStyle = isHovered ? '#047857' : '#059669';
-          } else {
-            ctx.fillStyle = isHovered ? '#475569' : '#64748B';
+          const p2SitH = (b.part2Sitters / yMax) * plotH;
+          const p2SitY = pad.top + plotH - p2SitH;
+          const noShowH = Math.max(0, passH - p2SitH);
+          const barLeft = cx - innerW / 2;
+
+          if (p2SitH > 0) {
+            if (b.zone === 'green') {
+              ctx.fillStyle = isHovered ? '#047857' : '#059669';
+            } else {
+              ctx.fillStyle = isHovered ? '#475569' : '#64748B';
+            }
+            ctx.fillRect(barLeft, p2SitY, innerW, p2SitH);
           }
-          ctx.fillRect(cx - innerW / 2, passY, innerW, passH);
+
+          if (noShowH > 0.5) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(barLeft, passY, innerW, noShowH);
+            ctx.clip();
+
+            ctx.fillStyle = isHovered ? 'rgba(217, 119, 6, 0.30)' : 'rgba(217, 119, 6, 0.18)';
+            ctx.fillRect(barLeft, passY, innerW, noShowH);
+
+            // Crisp diagonal hatch inside the No-Show portion
+            ctx.strokeStyle = isHovered ? 'rgba(180, 83, 9, 0.55)' : 'rgba(217, 119, 6, 0.42)';
+            ctx.lineWidth = 1;
+            const span = innerW + noShowH;
+            ctx.beginPath();
+            for (let d = -noShowH; d < span; d += 5) {
+              ctx.moveTo(barLeft + d, passY);
+              ctx.lineTo(barLeft + d - noShowH, passY + noShowH);
+            }
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.strokeStyle = isHovered ? '#B45309' : 'rgba(217, 119, 6, 0.72)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(barLeft + 0.5, passY + 0.5, Math.max(0, innerW - 1), Math.max(0, noShowH - 0.5));
+          }
         }
 
         // X-axis tick label
@@ -4193,10 +4522,12 @@
         </div>
         <div class="tt-row"><span class="tt-key">Est. Total Sitters</span><span class="tt-val">${fmtInt(b.sitters)}</span></div>
         <div class="tt-row"><span class="tt-key">Est. Part 1 Passers</span><span class="tt-val">${fmtInt(b.passers)}</span></div>
+        ${b.score >= 10 ? `<div class="tt-row"><span class="tt-key">Part 2 No-Show Rate</span><span class="tt-val">${fmtPct(b.noShowRate, 1)}</span></div>` : ''}
+        ${b.score >= 10 ? `<div class="tt-row"><span class="tt-key">Est. Part 2 Sitters</span><span class="tt-val">${fmtInt(b.part2Sitters)}</span></div>` : ''}
         <div class="tt-row"><span class="tt-key">Percentile (Sitters, &lt;${b.score})</span><span class="tt-val">${fmtPct(pctBelowSitters, 1)}</span></div>
         ${b.score >= 10 ? `<div class="tt-row"><span class="tt-key">Percentile (Passers, &lt;${b.score})</span><span class="tt-val">${fmtPct(pctBelowPassers, 1)}</span></div>` : ''}
         <div class="tt-row"><span class="tt-key">P(Num+Abs ≥ 10 | V)</span><span class="tt-val">${fmtPct(b.pNAGivenV, 1)}</span></div>
-        <div class="tt-row"><span class="tt-key">Cond. RL Odds</span><span class="tt-val">${b.score >= 10 ? fmtOdds(b.condRlOdds) : '0% (Fail)'}</span></div>
+        <div class="tt-row"><span class="tt-key">Sitters Cond. RL Odds</span><span class="tt-val">${b.score >= 10 ? fmtOdds(b.condRlOdds) : '0% (Fail)'}</span></div>
       `;
       tt.classList.add('visible');
       tt.setAttribute('aria-hidden', 'false');
@@ -4704,6 +5035,13 @@
     bindStateSlider('slNASd', 'naSd');
     bindStateSlider('slRhoVN', 'rhoVN');
     bindStateSlider('slAttrition', 'attrition', true);
+    $('slRhoNoShowV').addEventListener('input', e => {
+      const mag = parseFloat(e.target.value);
+      state.rhoNoShowV = mag === 0 ? 0 : -mag;
+      activePart2Preset = null;
+      syncPresetButtons();
+      scheduleUpdate();
+    });
     bindStateSlider('slEukMean', 'eukMean');
     bindStateSlider('slEukSd', 'eukSd');
     bindStateSlider('slDigMean', 'digMean');
@@ -4875,7 +5213,253 @@
       }, 60);
     });
 
+    // =========================================================================
+    // Plain-Language Hover Tooltips (All Sliders & Section 3 Table Columns)
+    // =========================================================================
+    const TOOLTIP_DOCS = Object.freeze({
+      // Part 1 sliders
+      slVMean: {
+        title: 'Verbal Mean (μ_V)',
+        what: 'Average Verbal Reasoning score (out of 20) across all 75,274 Part 1 sitters.',
+        influences: 'The Verbal pass rate (≥ 10/20), total Part 1 passers, how many candidates crowd the top Verbal scores (16–20), and therefore how high Part 2 cutoffs climb.'
+      },
+      slVSd: {
+        title: 'Verbal Standard Deviation (σ_V)',
+        what: 'How widely Verbal Reasoning scores are spread around the mean across all 75,274 Part 1 sitters.',
+        influences: 'The size of the top-scoring tail (16–20/20). A higher SD creates far more 18–20/20 scorers, pushing Part 2 cutoffs up and concentrating Reserve List seats at the top.',
+        reasonable: '3.0 – 3.8 (baseline 3.4). On a 20-item 4-option MCQ with ~22% guessing, pure random noise alone creates SD ≈ 2.0, while realistic cognitive tests with reliability α ≈ 0.65–0.78 sit around 3.2–3.8; above 4.5 implies an unusually polarized pool.'
+      },
+      slNAMean: {
+        title: 'Num+Abs Mean (μ_NA)',
+        what: 'Average combined Numerical (10 Qs) + Abstract (10 Qs) score (out of 20) across all 75,274 Part 1 sitters.',
+        influences: 'The Num+Abs pass rate (≥ 10/20) and total Part 1 passers. Because Num+Abs is pass/fail only (not ranked), lowering it shrinks the Part 2 pool while also filtering slightly toward stronger Verbal scorers via correlation.'
+      },
+      slNASd: {
+        title: 'Num+Abs Standard Deviation (σ_NA)',
+        what: 'How widely combined Numerical + Abstract scores are spread around the mean across all Part 1 sitters.',
+        influences: 'The share of sitters clearing ≥ 10/20 (especially when the mean is near 10) and how strongly passing Num+Abs selects for higher Verbal ability.',
+        reasonable: '3.0 – 4.0 (baseline 3.4). On a 20-item combined Numerical + Abstract MCQ test, realistic cognitive spread with reliability α ≈ 0.65–0.78 sits around 3.0–4.0 (matching Verbal at 3.4 in the baseline); below 2.8 is unusually compressed, while above 4.6 implies extreme polarization.'
+      },
+      slPassRate: {
+        title: 'Joint Part 1 Pass Rate (P_pass)',
+        what: 'Percentage of all 75,274 Part 1 sitters who pass both Verbal (≥ 10/20) and Num+Abs (≥ 10/20). Dragging this shifts both Part 1 means equally to hit your target.',
+        influences: 'Total Part 1 passers, active Part 2 sitters, baseline odds (1,490 / passers), and how fiercely candidates compete for the Top 2,235 and Top 1,490 cutoffs.'
+      },
+      slRhoVN: {
+        title: 'Latent Correlation: Verbal ↔ Num+Abs (ρ_VN)',
+        what: 'Underlying correlation between true Verbal reasoning ability and Numerical+Abstract ability (before 20-question MCQ measurement error attenuates observed scores).',
+        influences: 'Total joint Part 1 passers (higher correlation means the same people pass both tests) and P(Num+Abs ≥ 10 | V), which shifts Part 1 passers toward higher Verbal scores.',
+        reasonable: '0.55 – 0.72 (baseline 0.65). Observed reasoning subtests typically correlate around r ≈ 0.40–0.55; correcting for 20-item MCQ reliability (α ≈ 0.70) yields latent ρ ≈ 0.55–0.72. Below 0.35 treats them as nearly unrelated; above 0.80 treats them as almost the same test.'
+      },
+
+      // Part 2 attrition & correlation sliders
+      slAttrition: {
+        title: 'Part 2 No-Show / Attrition Rate',
+        what: 'Overall percentage of Part 1 passers who do not sit Part 2 (due to low Verbal scores, work/travel conflicts, technical glitches, or taking another offer).',
+        influences: 'Active Part 2 sitters, the Top 2,235 and Top 1,490 cutoffs, and Reserve List odds. Higher attrition softens cutoffs—though much less when dropouts come mostly from low Verbal scores.'
+      },
+      slRhoNoShowV: {
+        title: 'No-Show ↔ Part 1 Verbal Correlation (ρ_NS,V)',
+        what: 'Latent correlation between a Part 1 passer’s Verbal score and their likelihood of skipping Part 2, calibrated so the overall average always matches the No-Show Rate slider.',
+        influences: 'How steeply no-show rates drop from 10/20 to 20/20, the average Verbal score of active Part 2 sitters, and how high Part 2 cutoffs remain despite attrition.',
+        reasonable: '−0.25 to −0.45 (baseline −0.36). Because Part 1 scores are known before Part 2, 10–13/20 passers drop out far more often (~45–55%) than 18–20/20 contenders (~5–12% from unavoidable conflicts or technical issues). 0.00 assumes random uniform dropouts; beyond −0.60 implies near-zero dropouts at the top.'
+      },
+
+      // Part 2 test sliders
+      slEukMean: {
+        title: 'EU Knowledge Mean (μ_EUK)',
+        what: 'Average EU Knowledge score (out of 30, pass ≥ 15) across all active Part 2 sitters (taken in Language 2).',
+        influences: 'Part 2 MCQ pass rate, Preliminary (30% weight) and Final (25% weight) cutoffs, and how high an EUK score is needed to offset a lower Verbal score.'
+      },
+      slEukSd: {
+        title: 'EU Knowledge Standard Deviation (σ_EUK)',
+        what: 'How widely EU Knowledge scores are spread across all active Part 2 sitters.',
+        influences: 'The thickness of the 24–30/30 upper tail. A wider SD raises Top 2,235 and Top 1,490 cutoffs and increases how much EUK separates contenders.',
+        reasonable: '4.5 – 6.0 (baseline 5.0). Because EUK is a study-dependent knowledge test in L2 drawn from published sources, preparation varies widely between casual and dedicated candidates (α ≈ 0.72–0.82). Below 3.5 implies uniform study effort; above 7.0 implies an extreme bimodal split.'
+      },
+      slDigMean: {
+        title: 'Digital Skills Mean (μ_Dig)',
+        what: 'Average Digital Skills score (out of 40, pass ≥ 20) across all active Part 2 sitters (40 questions in 30 minutes, Language 2).',
+        influences: 'Part 2 MCQ pass rate, the 85th-percentile Digital Skills benchmark in the Section 3 table, and both Preliminary (30% weight) and Final (25% weight) cutoffs.'
+      },
+      slDigSd: {
+        title: 'Digital Skills Standard Deviation (σ_Dig)',
+        what: 'How widely Digital Skills scores (out of 40) are spread across all active Part 2 sitters.',
+        influences: 'How many candidates score 33–40/40, the 85th-percentile benchmark, and how strongly Digital Skills moves candidates across the Top 2,235 and Top 1,490 cutoffs.',
+        reasonable: '5.0 – 7.0 (baseline 6.5). On a 40-item speeded test covering tools, data, and security in L2, raw-point spread is naturally wider than on 20–30 item tests (α ≈ 0.75–0.85). Below 4.0 tightly compresses scores; above 8.0 implies an extreme gap between novices and specialists.'
+      },
+      slEssayMean: {
+        title: 'EUFTE Essay Pool Mean (μ_E)',
+        what: 'Average EUFTE written essay score (0–10 in 0.5 steps, pass ≥ 5.0) across the full unselected Part 2 sitter pool—before Top 2,235 selection lifts the marked average.',
+        influences: 'The essay pass rate among the Top 2,235 marked candidates and the Final Top 1,490 cutoff (15% Final weight; does not affect the Top 2,235 Preliminary gate).'
+      },
+      slEssaySd: {
+        title: 'EUFTE Essay Pool Standard Deviation (σ_E)',
+        what: 'Spread of EUFTE essay scores across the unselected Part 2 sitter pool (combining true writing skill with inter-rater error at reliability r_E = 0.70).',
+        influences: 'How much a strong essay (7.5–9.0/10) can swing Final rankings among the Top 2,235 marked candidates, and how many marked candidates fail the 5.0/10 pass mark.',
+        reasonable: '1.2 – 1.8 (baseline 1.5). Structured rubric-graded essays on a 0–10 scale typically cluster between 4.0 and 7.5 with SD around 1.3–1.7. Below 1.0 implies very tight central grading where essays barely change ranks; above 2.2 implies unusually wide use of the extremes.'
+      },
+
+      // Part 2 latent correlation sliders
+      slRhoEukDig: {
+        title: 'EU Knowledge ↔ Digital Skills (ρ_EUK,Dig)',
+        what: 'Latent correlation between EU Knowledge and Digital Skills abilities among Part 2 sitters.',
+        influences: 'How often the same candidates score high on both Part 2 MCQs simultaneously—higher correlation raises both Top 2,235 and Top 1,490 cutoffs because strong scores stack together.',
+        reasonable: '0.30 – 0.55 (baseline 0.45). Both are L2 MCQ tests influenced by general diligence, test-taking speed, and L2 comprehension, but cover separate knowledge domains. Below 0.20 treats them as nearly independent; above 0.65 implies almost identical rankings on both.'
+      },
+      slRhoEukEssay: {
+        title: 'EU Knowledge ↔ EUFTE Essay (ρ_EUK,E)',
+        what: 'Latent correlation between EU Knowledge and EUFTE essay writing ability among Part 2 sitters.',
+        influences: 'How much higher the Top 2,235 marked essay average rises above the full-pool mean, and how much the Final Top 1,490 cutoff climbs.',
+        reasonable: '0.35 – 0.55 (baseline 0.42). Both reward EU policy literacy, institutional knowledge, and L2 fluency—so moderate positive correlation is expected—though essay drafting and structure are distinct enough to keep it below ~0.60.'
+      },
+      slRhoDigEssay: {
+        title: 'Digital Skills ↔ EUFTE Essay (ρ_Dig,E)',
+        what: 'Latent correlation between Digital Skills and EUFTE essay writing ability among Part 2 sitters.',
+        influences: 'Secondary upward selection on marked essay scores among candidates who reach the Top 2,235 via strong Digital Skills, modestly affecting the Final Top 1,490 cutoff.',
+        reasonable: '0.15 – 0.40 (baseline 0.28). Typically the weakest Part 2 pair because technical/digital proficiency and formal policy drafting overlap mainly through general analytical skill and L2 reading speed.'
+      },
+      slRhoVP2: {
+        title: 'Verbal ↔ Part 2 Latent Coupling (ρ_V,P2)',
+        what: 'Latent correlation between Part 1 Verbal Reasoning ability (Language 1) and all three Part 2 tests (Language 2).',
+        influences: 'Both Part 2 cutoffs (higher coupling means top Verbal scorers also excel in Part 2, pushing cutoffs higher) and the gap between Sitters Conditional RL Odds and Sitters RL Odds (No P1 Corr).',
+        reasonable: '0.30 – 0.55 (baseline 0.45). General cognitive ability and study discipline connect Part 1 and Part 2, but switching to Language 2 plus heavy Part 2-specific preparation keeps coupling moderate. Below 0.20 treats Part 1 as nearly uninformative for Part 2; above 0.65 lets top Verbal scorers dominate Part 2 almost automatically.'
+      },
+
+      // Section 3 Table columns
+      colVerbal: {
+        title: 'Verbal Score (10–20)',
+        what: 'Part 1 Verbal Reasoning score (10/20 to 20/20, the passing range). Click any row to load that score into the Personal Score Tester.',
+        influences: 'Worth 40% of the Preliminary score (2.0 pts per question) and 35% of the Final score (1.75 pts per question). Green rows beat the average Part 2 sitter’s baseline odds.'
+      },
+      colPassers: {
+        title: 'Est. Part 1 Passers',
+        what: 'Estimated number of sitters (out of 75,274) who earn this exact Verbal score and also pass Numerical+Abstract (≥ 10/20), plus their share of all Part 1 passers.',
+        influences: 'Shows how crowded each Verbal score band is—larger counts at 16–20/20 mean stiffer competition for the 1,490 Reserve List seats.'
+      },
+      colPNA: {
+        title: 'P(Num+Abs ≥ 10 | V)',
+        what: 'Probability that a Part 1 sitter with this Verbal score also clears the Numerical+Abstract pass mark (≥ 10/20).',
+        influences: 'Controls what fraction of sitters at each Verbal score survive Part 1. Rises with Verbal whenever ρ_VN > 0.'
+      },
+      colCondOdds: {
+        title: 'Sitters Conditional RL Odds',
+        what: 'Estimated probability that a candidate with this Verbal score who passes Part 1 and sits Part 2 finishes in the Top 1,490 Reserve List—including Part 1 ↔ Part 2 correlation (ρ_V,P2).',
+        influences: 'Captures both the direct points from your Verbal score and the statistical link between higher Verbal ability and stronger Part 2 scores. Drives Est. in Reserve List and the green contender zone.'
+      },
+      colUncorrOdds: {
+        title: 'Sitters RL Odds (No P1 Corr)',
+        what: 'Estimated probability of clearing the exact same simulated cutoffs if your Part 2 scores (EUK, Digital Skills, EUFTE) have zero correlation with your Part 1 Verbal score.',
+        influences: 'Isolates the pure mathematical head start or handicap of your Verbal points alone—useful if you view your Part 2 preparation as independent of your Part 1 performance.'
+      },
+      colEstRL: {
+        title: 'Est. in Reserve List',
+        what: 'Projected number of the 1,490 Reserve List winners coming from this Verbal score band (and their % of the Reserve List): Part 1 Passers × (1 − No-Show Rate at V) × Sitters Conditional RL Odds.',
+        influences: 'Shows the expected Verbal-score breakdown of the final 1,490 Reserve List (all rows sum to ~1,490).'
+      },
+      colMinTarget: {
+        title: 'Min. EUK Target',
+        what: 'Minimum integer EU Knowledge score (out of 30) needed at this Verbal score to clear both the Top 2,235 Preliminary gate and Top 1,490 Final cutoff, assuming an 85th-percentile Digital Skills score and a 7.0/10 EUFTE essay.',
+        influences: 'Provides a concrete Part 2 target. When flagged “Set by Top 2,235 essay gate”, qualifying to have your essay marked requires a higher EUK score than the Final Top 1,490 cutoff itself.'
+      },
+
+      // Personal Score Tester sliders
+      psVerbal: {
+        title: 'Personal Verbal Reasoning (10–20)',
+        what: 'Your Part 1 Verbal Reasoning score to evaluate against the simulated Top 2,235 and Top 1,490 cutoffs.',
+        influences: 'Adds 2.00 points per question (up to 40/100) to your Preliminary score and 1.75 points per question (up to 35/100) to your Final score.'
+      },
+      psEuk: {
+        title: 'Personal EU Knowledge (0–30)',
+        what: 'Your Part 2 EU Knowledge score to evaluate (must be ≥ 15/30 to remain eligible).',
+        influences: 'Adds 1.00 point per question (up to 30/100) to your Preliminary score and 0.833 points per question (up to 25/100) to your Final score.'
+      },
+      psDig: {
+        title: 'Personal Digital Skills (0–40)',
+        what: 'Your Part 2 Digital Skills score to evaluate (must be ≥ 20/40 to remain eligible).',
+        influences: 'Adds 0.75 points per question (up to 30/100) to your Preliminary score and 0.625 points per question (up to 25/100) to your Final score.'
+      },
+      psEssay: {
+        title: 'Personal EUFTE Essay (0.0–10.0)',
+        what: 'Your Part 2 EUFTE essay score to evaluate (0.0–10.0 in 0.5 steps; must be ≥ 5.0 to pass).',
+        influences: 'Adds 1.50 points per mark (up to 15/100) to your Final score—but is only marked if your Preliminary score finishes in the Top 2,235.'
+      }
+    });
+
+    const infoTipEl = $('uiInfoTooltip');
+    let activeTipAnchor = null;
+
+    function showInfoTooltip(anchor, key) {
+      const doc = TOOLTIP_DOCS[key];
+      if (!doc || !infoTipEl) return;
+      activeTipAnchor = anchor;
+      infoTipEl.innerHTML =
+        `<div class="it-title">${doc.title}</div>` +
+        `<div class="it-sec"><strong>What it is:</strong> ${doc.what}</div>` +
+        `<div class="it-sec"><strong>Influences:</strong> ${doc.influences}</div>` +
+        (doc.reasonable ? `<div class="it-reasonable"><strong>Reasonable values:</strong> ${doc.reasonable}</div>` : '');
+
+      infoTipEl.classList.add('visible');
+      infoTipEl.setAttribute('aria-hidden', 'false');
+
+      const rect = anchor.getBoundingClientRect();
+      const ttRect = infoTipEl.getBoundingClientRect();
+      const ttW = ttRect.width || 330;
+      const ttH = ttRect.height || 130;
+      const margin = 12;
+
+      let left = rect.left + rect.width / 2 - ttW / 2;
+      if (left + ttW > window.innerWidth - margin) left = window.innerWidth - ttW - margin;
+      if (left < margin) left = margin;
+
+      let top = rect.top - ttH - 10;
+      if (top < margin) top = rect.bottom + 10;
+      if (top + ttH > window.innerHeight - margin) {
+        top = Math.max(margin, window.innerHeight - ttH - margin);
+      }
+
+      infoTipEl.style.left = `${Math.round(left)}px`;
+      infoTipEl.style.top = `${Math.round(top)}px`;
+    }
+
+    function hideInfoTooltip() {
+      activeTipAnchor = null;
+      if (!infoTipEl) return;
+      infoTipEl.classList.remove('visible');
+      infoTipEl.setAttribute('aria-hidden', 'true');
+    }
+
+    function initInfoTooltips() {
+      const targets = [];
+      document.querySelectorAll('label.control-label[for]').forEach(el => {
+        const key = el.getAttribute('for');
+        if (TOOLTIP_DOCS[key]) targets.push([el, key]);
+      });
+      document.querySelectorAll('th[data-tip]').forEach(el => {
+        const key = el.dataset.tip;
+        if (TOOLTIP_DOCS[key]) targets.push([el, key]);
+      });
+
+      targets.forEach(([el, key]) => {
+        el.classList.add('has-info-tip');
+        el.addEventListener('mouseenter', () => showInfoTooltip(el, key));
+        el.addEventListener('mouseleave', () => {
+          if (activeTipAnchor === el) hideInfoTooltip();
+        });
+        el.addEventListener('focus', () => showInfoTooltip(el, key));
+        el.addEventListener('blur', () => {
+          if (activeTipAnchor === el) hideInfoTooltip();
+        });
+      });
+
+      window.addEventListener('scroll', hideInfoTooltip, { passive: true });
+      window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') hideInfoTooltip();
+      });
+    }
+
     // Initial render
+    initInfoTooltips();
     syncControlsFromState();
     syncPresetButtons();
     syncPersonalInputs();

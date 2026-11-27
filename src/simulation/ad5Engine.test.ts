@@ -13,6 +13,7 @@ interface EnginePreset {
   naSd: number;
   rhoVN: number;
   attrition: number;
+  rhoNoShowV: number;
   eukMean: number;
   eukSd: number;
   digMean: number;
@@ -70,14 +71,32 @@ interface SimulationResult {
     verbalAllPmf: Float64Array;
     verbalPassPmf: Float64Array;
   };
+  noShowByV: Float64Array;
+  obsCorrNoShowV: number;
+  part2SitterVMean: number;
   verbalBreakdown: Array<{
     v: number;
     estPassers: number;
+    noShowRate: number;
+    estPart2Sitters: number;
     pNAGivenV: number;
     condRlOdds: number;
-    overallOddsPreNA: number;
+    uncorrRlOdds: number;
+    estInReserveList: number;
+    shareOfReserveList: number;
     reqEuk: number;
     prelimGateBinds: boolean;
+  }>;
+  verbalChartBars: Array<{
+    score: number;
+    sitters: number;
+    passers: number;
+    noShowRate: number;
+    part2Sitters: number;
+    noShows: number;
+    pNAGivenV: number;
+    condRlOdds: number;
+    zone: string;
   }>;
   evaluatePersonalScore: (v: number, euk: number, dig: number, essay: number) => {
     passEuk: boolean;
@@ -188,7 +207,8 @@ test('3PL IRT calibration matches target mean/SD and clamps infeasible SDs clean
 });
 
 test('Baseline simulation produces realistic ~42.5% Part 1 pass rate, attenuated r_obs, exact PSD matrix, and monotonic RL odds', () => {
-  assert.equal(E.PRESETS.baseline.attrition, 15);
+  assert.equal(E.PRESETS.baseline.attrition, 32);
+  assert.equal(E.PRESETS.baseline.rhoNoShowV, -0.36);
   assert.equal(E.PRESETS.baseline.scope, 'all');
   const sim = E.runSimulation(E.PRESETS.baseline);
 
@@ -228,25 +248,35 @@ test('Baseline simulation produces realistic ~42.5% Part 1 pass rate, attenuated
 
 test('All Part 1 and Part 2 presets hit calibrated pass-rate regimes, scopes, PSD compliance, and cutoff ordering', () => {
   assert.deepEqual([...E.PART1_KEYS], ['vMean', 'vSd', 'naMean', 'naSd', 'rhoVN']);
-  assert.equal(E.PART2_KEYS.length, 11);
+  assert.equal(E.PART2_KEYS.length, 12);
 
   const baseSim = E.runSimulation(E.PRESETS.baseline);
   const vEasierSim = E.runSimulation(E.PRESETS.jppVerbalEasier);
   const naEasierSim = E.runSimulation(E.PRESETS.jppNaEasier);
   const lowPassSim = E.runSimulation(E.PRESETS.lowPassRate);
+  const highPassSim = E.runSimulation(E.PRESETS.highPassRate);
   const p2BaseSim = E.runSimulation(E.PRESETS.part2Baseline);
   const ceilingSim = E.runSimulation(E.PRESETS.ceilingCrunch);
   const harshSim = E.runSimulation(E.PRESETS.harshFatigue);
+
+  // Part 1 symmetry & baseline defaults
+  assert.equal(E.PRESETS.baseline.vMean, 10.5);
+  assert.equal(E.PRESETS.baseline.naMean, 10.5);
+  assert.equal(E.PRESETS.jppNaEasier.name, 'JPP rate & NA easier');
+  for (const p of [E.PRESETS.baseline, E.PRESETS.jppVerbalEasier, E.PRESETS.jppNaEasier, E.PRESETS.lowPassRate, E.PRESETS.highPassRate]) {
+    assert.equal(p.vSd, p.naSd, `Expected equal Verbal and Num+Abs SD in ${p.name}`);
+  }
 
   // Scopes & natural PSD
   assert.equal(E.PRESETS.jppVerbalEasier.scope, 'part1');
   assert.equal(E.PRESETS.jppNaEasier.scope, 'part1');
   assert.equal(E.PRESETS.lowPassRate.scope, 'part1');
+  assert.equal(E.PRESETS.highPassRate.scope, 'part1');
   assert.equal(E.PRESETS.part2Baseline.scope, 'part2');
   assert.equal(E.PRESETS.ceilingCrunch.scope, 'part2');
   assert.equal(E.PRESETS.harshFatigue.scope, 'part2');
 
-  for (const s of [baseSim, vEasierSim, naEasierSim, lowPassSim, p2BaseSim, ceilingSim, harshSim]) {
+  for (const s of [baseSim, vEasierSim, naEasierSim, lowPassSim, highPassSim, p2BaseSim, ceilingSim, harshSim]) {
     assert.equal(s.matrixAdjusted, false);
   }
 
@@ -268,10 +298,14 @@ test('All Part 1 and Part 2 presets hit calibrated pass-rate regimes, scopes, PS
     `jppNaEasier marginal separation too small: V=${naEasierSim.part1.pVerbalPass}, NA=${naEasierSim.part1.pNAPass}`
   );
 
-  // Low pass rate within 33.0% +/- 1.0%
+  // Low pass rate within 33.0% +/- 1.0% and High pass rate within 60.0% +/- 1.0%
   assert.ok(
     Math.abs(lowPassSim.part1.pJointPass - 0.33) <= 0.01,
     `Expected ~33.0% low pass rate, got ${(lowPassSim.part1.pJointPass * 100).toFixed(2)}%`
+  );
+  assert.ok(
+    Math.abs(highPassSim.part1.pJointPass - 0.60) <= 0.01,
+    `Expected ~60.0% high pass rate, got ${(highPassSim.part1.pJointPass * 100).toFixed(2)}%`
   );
 
   // Part 2 baseline matches full baseline cutoffs
@@ -289,7 +323,7 @@ test('Bidirectional Joint Pass Rate solver shifts both means equally and clamps 
   const base = E.PRESETS.baseline;
   const solved35 = E.solveMeansForPassRate(base, 0.35);
   assert.ok(Math.abs(solved35.achievedPassRate - 0.35) < 0.005);
-  // Equal shift preserves (vMean - naMean) = 0.10
+  // Equal shift preserves (vMean - naMean) = 0.00
   assert.ok(Math.abs(solved35.vMean - solved35.naMean - (base.vMean - base.naMean)) < 0.03);
   assert.equal(solved35.clampNote, '');
 
@@ -406,14 +440,17 @@ test('High-SD Part 1 quadrature eliminates aliasing at vMean=11.0, vSd=5.0 and s
   // Verify updated slider bounds, Part 2 defaults, scenarios, and Digital Skills guessing floor
   assert.equal(E.CONSTANTS.V_MEAN_MIN, 6.5);
   assert.equal(E.CONSTANTS.NA_MEAN_MIN, 6.5);
-  assert.equal(E.PRESETS.baseline.eukMean, 19.0);
-  assert.equal(E.PRESETS.baseline.digMean, 27.0);
-  assert.equal(E.PRESETS.baseline.digSd, 5.5);
-  assert.equal(E.PRESETS.ceilingCrunch.eukMean, 21.0);
-  assert.equal(E.PRESETS.ceilingCrunch.digMean, 29.5);
-  assert.equal(E.PRESETS.ceilingCrunch.digSd, 5.5);
+  assert.equal(E.PRESETS.baseline.eukMean, 17.5);
+  assert.equal(E.PRESETS.baseline.eukSd, 5.0);
+  assert.equal(E.PRESETS.baseline.digMean, 25.8);
+  assert.equal(E.PRESETS.baseline.digSd, 6.5);
+  assert.equal(E.PRESETS.ceilingCrunch.eukMean, 19.3);
+  assert.equal(E.PRESETS.ceilingCrunch.digMean, 28.2);
+  assert.equal(E.PRESETS.ceilingCrunch.digSd, 6.5);
   assert.equal(E.PRESETS.harshFatigue.name, 'Harsh Calibration');
-  assert.equal(E.PRESETS.harshFatigue.digMean, 25.0);
+  assert.equal(E.PRESETS.harshFatigue.attrition, 41);
+  assert.equal(E.PRESETS.harshFatigue.eukMean, 14.3);
+  assert.equal(E.PRESETS.harshFatigue.digMean, 23.9);
   assert.equal(E.TEST_SPECS.dig.c[0], 0.21);
 
   // High-SD Verbal distribution must be smooth without artificial dip at 12-13 between peaks at 10 and 15
@@ -519,4 +556,115 @@ test('Part 2 subtest distributions and Personal Score Tester percentiles are exa
   assert.ok(lowEv.percentiles.eukPart2 < midEv.percentiles.eukPart2 && midEv.percentiles.eukPart2 < highEv.percentiles.eukPart2);
   assert.ok(lowEv.percentiles.digPart2 < midEv.percentiles.digPart2 && midEv.percentiles.digPart2 < highEv.percentiles.digPart2);
   assert.ok(lowEv.percentiles.essayPart2 < midEv.percentiles.essayPart2 && midEv.percentiles.essayPart2 < highEv.percentiles.essayPart2);
+
+  // Est. in Reserve List per Verbal score matches Part 2 sitters * condRlOdds and sums near 1,490
+  let totalEstRl = 0;
+  for (const row of sim.verbalBreakdown) {
+    const expected = row.estPassers * (1 - row.noShowRate) * row.condRlOdds;
+    assert.ok(Math.abs(row.estInReserveList - expected) < 1e-9);
+    assert.ok(Math.abs(row.estPart2Sitters - row.estPassers * (1 - row.noShowRate)) < 1e-9);
+    assert.ok(Math.abs(row.shareOfReserveList - row.estInReserveList / E.CONSTANTS.N_RL) < 1e-12);
+    totalEstRl += row.estInReserveList;
+  }
+  assert.ok(
+    Math.abs(totalEstRl - E.CONSTANTS.N_RL) < 75,
+    `Sum of estInReserveList (${totalEstRl.toFixed(1)}) drifted too far from N_RL (${E.CONSTANTS.N_RL})`
+  );
+});
+
+test('Verbal-correlated Part 2 no-show hits 32% overall with rho=-0.36 by default, and reduces cutoff softening vs uniform attrition', () => {
+  const baseSim = E.runSimulation(E.PRESETS.baseline);
+  const uniformSim = E.runSimulation({ ...E.PRESETS.baseline, rhoNoShowV: 0 });
+
+  // Baseline: 32% overall no-show with rho=-0.36 yields ~4.8% no-show at Verbal 20/20
+  assert.ok(
+    Math.abs(baseSim.noShowByV[20] - 0.048) < 0.005,
+    `Expected ~4.8% no-show at V=20, got ${(baseSim.noShowByV[20] * 100).toFixed(2)}%`
+  );
+
+  // Passer-weighted average no-show must equal 32.0% exactly
+  let weightedNoShow = 0;
+  let totalPassers = 0;
+  for (const row of baseSim.verbalBreakdown) {
+    weightedNoShow += row.estPassers * row.noShowRate;
+    totalPassers += row.estPassers;
+  }
+  assert.ok(Math.abs(weightedNoShow / totalPassers - 0.32) < 1e-9);
+
+  // Strictly decreasing no-show from V=10 to V=20 when rhoNoShowV < 0
+  for (let v = 11; v <= 20; v++) {
+    assert.ok(
+      baseSim.noShowByV[v] < baseSim.noShowByV[v - 1],
+      `Expected noShowByV[${v}] (${baseSim.noShowByV[v]}) < noShowByV[${v - 1}] (${baseSim.noShowByV[v - 1]})`
+    );
+  }
+
+  // Uniform limit when rhoNoShowV === 0
+  for (let v = 10; v <= 20; v++) {
+    assert.ok(Math.abs(uniformSim.noShowByV[v] - 0.32) < 1e-12);
+  }
+
+  // Selective low-Verbal dropouts lift active Part 2 sitter Verbal mean and keep Part 2 cutoffs higher than uniform 32% attrition
+  assert.ok(baseSim.part2SitterVMean > uniformSim.part2SitterVMean + 0.4);
+  assert.ok(
+    baseSim.prelimCutoff > uniformSim.prelimCutoff + 0.4,
+    `Expected selective no-show prelimCutoff (${baseSim.prelimCutoff}) > uniform (${uniformSim.prelimCutoff})`
+  );
+  assert.ok(
+    baseSim.finalCutoff > uniformSim.finalCutoff + 0.3,
+    `Expected selective no-show finalCutoff (${baseSim.finalCutoff}) > uniform (${uniformSim.finalCutoff})`
+  );
+
+  // Part 1 chart bars carry consistent part2Sitters + noShows === passers
+  for (const bar of baseSim.verbalChartBars) {
+    if (bar.score >= 10) {
+      assert.ok(Math.abs(bar.part2Sitters + bar.noShows - bar.passers) < 1e-9);
+      assert.ok(Math.abs(bar.noShowRate - baseSim.noShowByV[bar.score]) < 1e-12);
+    } else {
+      assert.equal(bar.noShowRate, 0);
+      assert.equal(bar.part2Sitters, 0);
+      assert.equal(bar.noShows, 0);
+    }
+  }
+});
+
+test('Uncorrelated Sitters RL Odds covers Verbal 10..20, is monotonic, and converges to condRlOdds when rhoVP2=0', () => {
+  const baseSim = E.runSimulation(E.PRESETS.baseline);
+  const zeroCorrSim = E.runSimulation({ ...E.PRESETS.baseline, rhoVP2: 0 });
+
+  assert.equal(baseSim.verbalBreakdown.length, 11);
+  assert.equal(baseSim.verbalBreakdown[0].v, 10);
+  assert.equal(baseSim.verbalBreakdown[10].v, 20);
+
+  // Strictly non-decreasing across Verbal 10..20
+  for (let i = 1; i < baseSim.verbalBreakdown.length; i++) {
+    assert.ok(
+      baseSim.verbalBreakdown[i].uncorrRlOdds >= baseSim.verbalBreakdown[i - 1].uncorrRlOdds,
+      `uncorrRlOdds decreased at v=${baseSim.verbalBreakdown[i].v}`
+    );
+  }
+
+  // With positive rhoVP2=0.45: uncorrelated odds exceed correlated odds at low V (10..12) and trail at high V (16..20)
+  for (const row of baseSim.verbalBreakdown) {
+    if (row.v <= 12) {
+      assert.ok(
+        row.uncorrRlOdds >= row.condRlOdds,
+        `Expected uncorrRlOdds (${row.uncorrRlOdds}) >= condRlOdds (${row.condRlOdds}) at v=${row.v}`
+      );
+    }
+    if (row.v >= 16) {
+      assert.ok(
+        row.uncorrRlOdds < row.condRlOdds,
+        `Expected uncorrRlOdds (${row.uncorrRlOdds}) < condRlOdds (${row.condRlOdds}) at v=${row.v}`
+      );
+    }
+  }
+
+  // When rhoVP2 === 0, uncorrRlOdds matches condRlOdds within Monte Carlo tolerance
+  for (const row of zeroCorrSim.verbalBreakdown) {
+    assert.ok(
+      Math.abs(row.uncorrRlOdds - row.condRlOdds) < 0.02,
+      `At rhoVP2=0, uncorrRlOdds (${row.uncorrRlOdds}) diverged from condRlOdds (${row.condRlOdds}) at v=${row.v}`
+    );
+  }
 });
