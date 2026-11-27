@@ -158,6 +158,15 @@ interface AD5EngineApi {
     wasAdjusted: boolean;
     minEig: number;
   };
+  encodeScenarioParams: (params: EnginePreset) => string;
+  buildShareUrl: (baseHref: string, params: EnginePreset) => string;
+  decodeScenarioParams: (queryString: string) => {
+    params: EnginePreset;
+    hasOverrides: boolean;
+    activePart1Preset: string | null;
+    activePart2Preset: string | null;
+  };
+  formatScenarioSummary: (params: EnginePreset, sim: SimulationResult, shareUrl?: string) => string;
   runSimulation: (params: EnginePreset) => SimulationResult;
 }
 
@@ -668,3 +677,94 @@ test('Uncorrelated Sitters RL Odds covers Verbal 10..20, is monotonic, and conve
     );
   }
 });
+
+test('Compact scenario URL encoding, safe decoding/clamping, and plain-text summary formatting work end-to-end', () => {
+  // Baseline produces an empty compact query string
+  assert.equal(E.encodeScenarioParams(E.PRESETS.baseline), '');
+
+  // Custom scenario round-trips cleanly and stays compact (only non-default keys)
+  const custom: EnginePreset = {
+    ...E.PRESETS.baseline,
+    vMean: 11.8,
+    naMean: 11.8,
+    attrition: 40,
+    rhoNoShowV: -0.5,
+    eukMean: 19.3,
+    digMean: 28.2,
+    essayMean: 6.0,
+    rhoVP2: 0.35
+  };
+  const qs = E.encodeScenarioParams(custom);
+  const qsKeys = qs.split('&').map((p) => p.split('=')[0]);
+  assert.ok(qs.includes('vm=11.8') && qs.includes('at=40') && qs.includes('rns=-0.5') && qs.includes('rvp=0.35'));
+  assert.ok(!qsKeys.includes('vs'), 'Default vSd should be omitted from compact URL');
+  assert.ok(!qsKeys.includes('ns'), 'Default naSd should be omitted from compact URL');
+
+  const decoded = E.decodeScenarioParams(`?${qs}`);
+  assert.equal(decoded.hasOverrides, true);
+  assert.equal(decoded.params.vMean, 11.8);
+  assert.equal(decoded.params.naMean, 11.8);
+  assert.equal(decoded.params.attrition, 40);
+  assert.equal(decoded.params.rhoNoShowV, -0.5);
+  assert.equal(decoded.params.eukMean, 19.3);
+  assert.equal(decoded.params.digMean, 28.2);
+  assert.equal(decoded.params.essayMean, 6.0);
+  assert.equal(decoded.params.rhoVP2, 0.35);
+  assert.equal(decoded.activePart1Preset, 'highPassRate');
+  assert.equal(decoded.activePart2Preset, null);
+
+  // Out-of-range and invalid parameters are safely clamped or ignored
+  const unsafe = E.decodeScenarioParams('?vm=999&at=-20&rns=0.5&rvp=notanumber&unknown=123');
+  assert.equal(unsafe.hasOverrides, true);
+  assert.equal(unsafe.params.vMean, 16.0);
+  assert.equal(unsafe.params.attrition, 0);
+  assert.equal(unsafe.params.rhoNoShowV, 0);
+  assert.equal(unsafe.params.rhoVP2, E.PRESETS.baseline.rhoVP2);
+
+  // Plain-text summary includes means, SDs, correlations, cutoffs, and link (no NaN)
+  const sim = E.runSimulation(custom);
+  const ghUrl = E.buildShareUrl('https://marcotamb.github.io/AD5_simulation', custom);
+  assert.equal(ghUrl, `https://marcotamb.github.io/AD5_simulation/?${qs}`);
+  assert.equal(
+    E.buildShareUrl('https://marcotamb.github.io/AD5_simulation/index.html#part2', custom),
+    `https://marcotamb.github.io/AD5_simulation/?${qs}`
+  );
+  assert.equal(
+    E.buildShareUrl('https://ais-dev-example.europe-west2.run.app/', custom),
+    `https://marcotamb.github.io/AD5_simulation/?${qs}`
+  );
+  assert.equal(
+    E.buildShareUrl('http://localhost:3000/', custom),
+    `https://marcotamb.github.io/AD5_simulation/?${qs}`
+  );
+  assert.equal(
+    E.buildShareUrl('file:///Users/me/AD5_simulation/index.html', custom),
+    `https://marcotamb.github.io/AD5_simulation/?${qs}`
+  );
+  assert.equal(
+    E.buildShareUrl('https://otheruser.github.io/AD5_simulation', custom),
+    `https://otheruser.github.io/AD5_simulation/?${qs}`
+  );
+
+  // Hash-only and full GitHub Pages URLs decode cleanly, while plain anchors are ignored
+  const fromHash = E.decodeScenarioParams('https://example.github.io/ad5-sim/#vm=11.8&at=40');
+  assert.equal(fromHash.hasOverrides, true);
+  assert.equal(fromHash.params.vMean, 11.8);
+  assert.equal(fromHash.params.attrition, 40);
+  const fromHashQ = E.decodeScenarioParams('#?vm=11.8&rns=-0.5');
+  assert.equal(fromHashQ.hasOverrides, true);
+  assert.equal(fromHashQ.params.rhoNoShowV, -0.5);
+  const plainAnchor = E.decodeScenarioParams('#part2');
+  assert.equal(plainAnchor.hasOverrides, false);
+
+  const summary = E.formatScenarioSummary(custom, sim, ghUrl);
+  assert.ok(!summary.includes('NaN'), `Unexpected NaN in summary:\n${summary}`);
+  assert.ok(summary.includes('Part 1 (Reasoning):'));
+  assert.ok(summary.includes('Part 2 (Ranking):'));
+  assert.ok(summary.includes('Part 2 Correlations:'));
+  assert.ok(summary.includes('ρ(V,NA)=0.65'));
+  assert.ok(summary.includes('ρ(NS,V)=-0.50'));
+  assert.ok(summary.includes('ρ(V,P2)=0.35'));
+  assert.ok(summary.includes(`Link: ${ghUrl}`));
+});
+

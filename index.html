@@ -115,6 +115,37 @@
       outline: none;
     }
 
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-share {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 13px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-share:hover {
+      background: #1D4ED8;
+      border-color: #1D4ED8;
+    }
+
     .btn-reset {
       appearance: none;
       border: 1px solid var(--border-strong);
@@ -136,9 +167,11 @@
       border-color: var(--text-muted);
     }
 
+    .btn-share:focus-visible,
     .btn-reset:focus-visible,
     button:focus-visible,
     input:focus-visible,
+    textarea:focus-visible,
     summary:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
@@ -1475,6 +1508,191 @@
         padding: 8px 6px;
         font-size: 12px;
       }
+      .btn-share,
+      .btn-reset {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .share-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    /* Share Scenario Modal */
+    .share-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+
+    .share-backdrop.open {
+      display: flex;
+    }
+
+    .share-modal {
+      width: 100%;
+      max-width: 580px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+    }
+
+    .share-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-subtle);
+    }
+
+    .share-modal-title {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text);
+    }
+
+    .share-close-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 20px;
+      line-height: 1;
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .share-close-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .share-modal-body {
+      padding: 18px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .share-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .share-block-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .share-block-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .share-block-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .share-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .share-input,
+    .share-textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--surface-subtle);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 9px 11px;
+    }
+
+    .share-textarea {
+      resize: vertical;
+      min-height: 136px;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .btn-copy {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 9px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      background: var(--surface-subtle);
+      border-color: var(--text-muted);
+    }
+
+    .btn-copy.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #FFFFFF;
+    }
+
+    .btn-copy.primary:hover {
+      background: #1D4ED8;
+      border-color: #1D4ED8;
+    }
+
+    .btn-copy.copied {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #FFFFFF;
+    }
+
+    .share-summary-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 2px;
+      flex-wrap: wrap;
+    }
+
+    .share-foot-note {
+      font-size: 12px;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -1488,7 +1706,13 @@
         <a href="#results">Odds &amp; Tester</a>
         <a href="#methodology">Methodology</a>
       </nav>
-      <button type="button" id="btnResetBaseline" class="btn-reset">Reset Baseline</button>
+      <div class="topbar-actions">
+        <button type="button" id="btnShareScenario" class="btn-share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          <span>Share Scenario</span>
+        </button>
+        <button type="button" id="btnResetBaseline" class="btn-reset">Reset Baseline</button>
+      </div>
     </div>
   </header>
 
@@ -2102,6 +2326,39 @@
   </footer>
 
   <div id="uiInfoTooltip" class="info-tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <div id="shareModalBackdrop" class="share-backdrop" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle" aria-hidden="true">
+    <div class="share-modal">
+      <div class="share-modal-header">
+        <h3 id="shareModalTitle" class="share-modal-title">Share Current Scenario</h3>
+        <button type="button" id="btnCloseShareModal" class="share-close-btn" aria-label="Close share dialog">&times;</button>
+      </div>
+      <div class="share-modal-body">
+        <div class="share-block">
+          <div class="share-block-head">
+            <label for="shareUrlInput" class="share-block-label">Compact Scenario Link</label>
+            <span id="shareUrlHint" class="share-block-hint">Encodes only non-default parameters</span>
+          </div>
+          <div class="share-row">
+            <input type="text" id="shareUrlInput" class="share-input" readonly spellcheck="false" />
+            <button type="button" id="btnCopyShareUrl" class="btn-copy primary">Copy Link</button>
+          </div>
+        </div>
+
+        <div class="share-block">
+          <div class="share-block-head">
+            <label for="shareSummaryInput" class="share-block-label">Shareable Text Summary</label>
+            <span class="share-block-hint">Means, SDs, correlations &amp; simulated cutoffs</span>
+          </div>
+          <textarea id="shareSummaryInput" class="share-textarea" readonly spellcheck="false" rows="6"></textarea>
+          <div class="share-summary-actions">
+            <span class="share-foot-note">Opening the link restores these exact simulation parameters automatically.</span>
+            <button type="button" id="btnCopyShareSummary" class="btn-copy">Copy Summary</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script id="irt-engine">
   (function (root) {
@@ -3916,12 +4173,230 @@
       };
     }
 
+    // =========================================================================
+    // 10. Compact URL Sharing & Plain-Text Scenario Summary
+    // =========================================================================
+    const SHARE_PARAM_SCHEMA = Object.freeze([
+      { key: 'vMean', code: 'vm', min: 6.5, max: 16.0, decimals: 2 },
+      { key: 'vSd', code: 'vs', min: 2.0, max: 5.0, decimals: 2 },
+      { key: 'naMean', code: 'nm', min: 6.5, max: 16.0, decimals: 2 },
+      { key: 'naSd', code: 'ns', min: 2.0, max: 5.0, decimals: 2 },
+      { key: 'rhoVN', code: 'rvn', min: 0.0, max: 0.90, decimals: 2 },
+      { key: 'attrition', code: 'at', min: 0, max: 60, decimals: 0 },
+      { key: 'rhoNoShowV', code: 'rns', min: -0.80, max: 0.0, decimals: 2 },
+      { key: 'eukMean', code: 'em', min: 10.0, max: 25.0, decimals: 1 },
+      { key: 'eukSd', code: 'es', min: 2.5, max: 10.0, decimals: 1 },
+      { key: 'digMean', code: 'dm', min: 15.0, max: 36.0, decimals: 1 },
+      { key: 'digSd', code: 'ds', min: 2.5, max: 10.0, decimals: 1 },
+      { key: 'essayMean', code: 'fm', min: 4.0, max: 8.0, decimals: 2 },
+      { key: 'essaySd', code: 'fs', min: 0.6, max: 3.5, decimals: 2 },
+      { key: 'rhoEukDig', code: 'red', min: 0.0, max: 0.85, decimals: 2 },
+      { key: 'rhoEukEssay', code: 'ref', min: 0.0, max: 0.85, decimals: 2 },
+      { key: 'rhoDigEssay', code: 'rdf', min: 0.0, max: 0.85, decimals: 2 },
+      { key: 'rhoVP2', code: 'rvp', min: 0.0, max: 0.75, decimals: 2 }
+    ]);
+
+    function fmtCompactNum(val, decimals) {
+      const n = Number(val);
+      if (!Number.isFinite(n)) return '0';
+      const rounded = Number(n.toFixed(decimals));
+      return String(Object.is(rounded, -0) ? 0 : rounded);
+    }
+
+    function encodeScenarioParams(params) {
+      const base = PRESETS.baseline;
+      const parts = [];
+      for (let i = 0; i < SHARE_PARAM_SCHEMA.length; i++) {
+        const spec = SHARE_PARAM_SCHEMA[i];
+        const raw = Number(params[spec.key]);
+        if (!Number.isFinite(raw)) continue;
+        const clamped = Math.min(spec.max, Math.max(spec.min, raw));
+        const valStr = fmtCompactNum(clamped, spec.decimals);
+        const baseStr = fmtCompactNum(base[spec.key], spec.decimals);
+        if (valStr !== baseStr) {
+          parts.push(`${spec.code}=${encodeURIComponent(valStr)}`);
+        }
+      }
+      return parts.join('&');
+    }
+
+    function matchActivePresets(params) {
+      const approxEq = (a, b) => Math.abs(Number(a) - Number(b)) < 1e-4;
+      let matchedP1 = null;
+      const p1Candidates = ['baseline', 'jppVerbalEasier', 'jppNaEasier', 'lowPassRate', 'highPassRate'];
+      for (let i = 0; i < p1Candidates.length; i++) {
+        const key = p1Candidates[i];
+        const preset = PRESETS[key];
+        if (PART1_KEYS.every(k => approxEq(params[k], preset[k]))) {
+          matchedP1 = key;
+          break;
+        }
+      }
+
+      let matchedP2 = null;
+      const p2Candidates = ['part2Baseline', 'ceilingCrunch', 'harshFatigue'];
+      for (let i = 0; i < p2Candidates.length; i++) {
+        const key = p2Candidates[i];
+        const preset = PRESETS[key];
+        if (PART2_KEYS.every(k => approxEq(params[k], preset[k]))) {
+          matchedP2 = key;
+          break;
+        }
+      }
+      return { activePart1Preset: matchedP1, activePart2Preset: matchedP2 };
+    }
+
+    const CANONICAL_SHARE_URL = 'https://marcotamb.github.io/AD5_simulation/';
+
+    function normalizeBaseShareUrl(baseHref) {
+      let clean = String(baseHref || '').split(/[?#]/)[0].trim();
+      if (!clean || /^file:\/\//i.test(clean)) return CANONICAL_SHARE_URL;
+      if (/^https?:\/\//i.test(clean)) {
+        const hostMatch = clean.match(/^https?:\/\/([^/:?#]+)/i);
+        const host = hostMatch ? hostMatch[1].toLowerCase() : '';
+        if (
+          !host ||
+          host === 'localhost' ||
+          host === '127.0.0.1' ||
+          host === '0.0.0.0' ||
+          host === '[::1]' ||
+          host.endsWith('.run.app')
+        ) {
+          return CANONICAL_SHARE_URL;
+        }
+        clean = clean.replace(/\/index\.html?$/i, '/');
+        const protoEnd = clean.indexOf('://') + 3;
+        const slashIdx = clean.indexOf('/', protoEnd);
+        if (slashIdx === -1) {
+          clean += '/';
+        } else {
+          const path = clean.slice(slashIdx);
+          const lastSeg = path.slice(path.lastIndexOf('/') + 1);
+          if (lastSeg && !lastSeg.includes('.')) {
+            clean += '/';
+          }
+        }
+        return clean;
+      }
+      return CANONICAL_SHARE_URL;
+    }
+
+    function buildShareUrl(baseHref, params) {
+      const baseUrl = normalizeBaseShareUrl(baseHref);
+      const qs = encodeScenarioParams(params);
+      if (!baseUrl) return qs ? `?${qs}` : '';
+      return qs ? `${baseUrl}?${qs}` : baseUrl;
+    }
+
+    function safeDecode(str) {
+      try {
+        return decodeURIComponent(str);
+      } catch (_err) {
+        return str;
+      }
+    }
+
+    function extractParamSegments(rawInput) {
+      const segments = [];
+      if (typeof rawInput !== 'string') return segments;
+      const trimmed = rawInput.trim();
+      if (!trimmed) return segments;
+
+      const hashIdx = trimmed.indexOf('#');
+      const beforeHash = hashIdx === -1 ? trimmed : trimmed.slice(0, hashIdx);
+      const afterHash = hashIdx === -1 ? '' : trimmed.slice(hashIdx + 1);
+
+      const qIdx = beforeHash.indexOf('?');
+      if (qIdx !== -1) {
+        segments.push(beforeHash.slice(qIdx + 1));
+      } else if (hashIdx === -1 && beforeHash.includes('=')) {
+        segments.push(beforeHash);
+      }
+
+      if (afterHash) {
+        const hqIdx = afterHash.indexOf('?');
+        if (hqIdx !== -1) {
+          segments.push(afterHash.slice(hqIdx + 1));
+        } else if (afterHash.includes('=')) {
+          segments.push(afterHash);
+        }
+      }
+      return segments;
+    }
+
+    function decodeScenarioParams(queryString) {
+      const params = Object.assign({}, PRESETS.baseline);
+      let hasOverrides = false;
+      const segments = extractParamSegments(queryString);
+      if (segments.length > 0) {
+        const byCode = {};
+        for (let i = 0; i < SHARE_PARAM_SCHEMA.length; i++) {
+          byCode[SHARE_PARAM_SCHEMA[i].code] = SHARE_PARAM_SCHEMA[i];
+        }
+
+        for (let s = 0; s < segments.length; s++) {
+          const pairs = segments[s].split('&');
+          for (let i = 0; i < pairs.length; i++) {
+            const pair = pairs[i];
+            if (!pair) continue;
+            const eq = pair.indexOf('=');
+            if (eq === -1) continue;
+            const code = safeDecode(pair.slice(0, eq).trim());
+            const spec = byCode[code];
+            if (!spec) continue;
+            const rawVal = Number(safeDecode(pair.slice(eq + 1).trim()));
+            if (!Number.isFinite(rawVal)) continue;
+            const clamped = Math.min(spec.max, Math.max(spec.min, rawVal));
+            const rounded = Number(clamped.toFixed(spec.decimals));
+            params[spec.key] = Object.is(rounded, -0) ? 0 : rounded;
+            hasOverrides = true;
+          }
+        }
+      }
+      const matched = matchActivePresets(params);
+      return {
+        params,
+        hasOverrides,
+        activePart1Preset: matched.activePart1Preset,
+        activePart2Preset: matched.activePart2Preset
+      };
+    }
+
+    function formatScenarioSummary(params, sim, shareUrl) {
+      const fmtI = n => Math.round(n).toLocaleString('en-US');
+      const matched = matchActivePresets(params);
+      const p1Name = matched.activePart1Preset ? PRESETS[matched.activePart1Preset].name : 'Custom Part 1';
+      const p2Name = matched.activePart2Preset ? PRESETS[matched.activePart2Preset].name : 'Custom Part 2';
+      const lines = [
+        `EPSO AD5 2026 Simulator Scenario (${p1Name} | ${p2Name})`
+      ];
+      if (sim && sim.part1) {
+        lines.push(
+          `Outcomes: Part 1 Pass ${(sim.part1.pJointPass * 100).toFixed(1)}% (${fmtI(sim.estPart1Passers)} passers) | Part 2 Sitters: ${fmtI(sim.estPart2Sitters)} | Top 2,235 Prelim: ${sim.prelimCutoff.toFixed(2)}/100 | Top 1,490 Final: ${sim.finalCutoff.toFixed(2)}/100`
+        );
+      }
+      lines.push(
+        `Part 1 (Reasoning): Verbal μ=${params.vMean.toFixed(2)}, σ=${params.vSd.toFixed(2)} | Num+Abs μ=${params.naMean.toFixed(2)}, σ=${params.naSd.toFixed(2)} | ρ(V,NA)=${params.rhoVN.toFixed(2)}`
+      );
+      lines.push(
+        `Part 2 (Ranking): No-Show=${Math.round(params.attrition)}% (ρ(NS,V)=${params.rhoNoShowV.toFixed(2)}) | EUK μ=${params.eukMean.toFixed(1)}, σ=${params.eukSd.toFixed(1)} | Digital μ=${params.digMean.toFixed(1)}, σ=${params.digSd.toFixed(1)} | EUFTE μ=${params.essayMean.toFixed(2)}, σ=${params.essaySd.toFixed(2)}`
+      );
+      lines.push(
+        `Part 2 Correlations: ρ(EUK,Dig)=${params.rhoEukDig.toFixed(2)} | ρ(EUK,E)=${params.rhoEukEssay.toFixed(2)} | ρ(Dig,E)=${params.rhoDigEssay.toFixed(2)} | ρ(V,P2)=${params.rhoVP2.toFixed(2)}`
+      );
+      if (shareUrl) {
+        lines.push(`Link: ${shareUrl}`);
+      }
+      return lines.join('\n');
+    }
+
     root.AD5Engine = {
       CONSTANTS,
       PART1_KEYS,
       PART2_KEYS,
       PRESETS,
       TEST_SPECS,
+      SHARE_PARAM_SCHEMA,
       calcPrelimScore,
       calcFinalScore,
       normInv,
@@ -3933,6 +4408,10 @@
       computeNoShowByVerbal,
       solveMeansForPassRate,
       ensurePsdAndCholesky,
+      encodeScenarioParams,
+      buildShareUrl,
+      decodeScenarioParams,
+      formatScenarioSummary,
       runSimulation
     };
   })(typeof window !== 'undefined' ? window : globalThis);
@@ -5093,7 +5572,18 @@
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
     });
-    $('btnResetBaseline').addEventListener('click', () => applyPreset('baseline'));
+    $('btnResetBaseline').addEventListener('click', () => {
+      applyPreset('baseline');
+      try {
+        const hasScenarioHash = window.location.hash && window.location.hash.includes('=');
+        if (window.location.search || hasScenarioHash) {
+          const cleanHash = hasScenarioHash ? '' : window.location.hash;
+          window.history.replaceState(null, '', window.location.pathname + cleanHash);
+        }
+      } catch (_err) {
+        // Ignore history restriction in sandboxed frames
+      }
+    });
 
     // Odds Table row click -> load Verbal into Personal Score Tester
     function selectVerbalFromTable(v) {
@@ -5458,7 +5948,131 @@
       });
     }
 
+    // =========================================================================
+    // Share Scenario Modal, Compact URL & Clipboard Copy
+    // =========================================================================
+    const shareBackdrop = $('shareModalBackdrop');
+    const shareUrlInput = $('shareUrlInput');
+    const shareUrlHint = $('shareUrlHint');
+    const shareSummaryInput = $('shareSummaryInput');
+    const btnShareScenario = $('btnShareScenario');
+    const btnCloseShareModal = $('btnCloseShareModal');
+    const btnCopyShareUrl = $('btnCopyShareUrl');
+    const btnCopyShareSummary = $('btnCopyShareSummary');
+
+    function buildCurrentShareUrl() {
+      const qs = E.encodeScenarioParams(state);
+      const url = E.buildShareUrl(window.location.href, state);
+      return { url, qs };
+    }
+
+    function openShareModal() {
+      hideInfoTooltip();
+      const { url, qs } = buildCurrentShareUrl();
+      shareUrlInput.value = url;
+      const diffCount = qs ? qs.split('&').length : 0;
+      shareUrlHint.textContent = diffCount === 0
+        ? 'Matches Baseline defaults'
+        : `${diffCount} custom parameter${diffCount === 1 ? '' : 's'} encoded`;
+      shareSummaryInput.value = E.formatScenarioSummary(state, lastSim, url);
+
+      shareBackdrop.classList.add('open');
+      shareBackdrop.setAttribute('aria-hidden', 'false');
+      btnCopyShareUrl.focus();
+    }
+
+    function closeShareModal() {
+      if (!shareBackdrop.classList.contains('open')) return;
+      shareBackdrop.classList.remove('open');
+      shareBackdrop.setAttribute('aria-hidden', 'true');
+      btnShareScenario.focus();
+    }
+
+    function copyTextWithFeedback(text, btn, defaultLabel) {
+      const showCopied = () => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        clearTimeout(btn._copyTimer);
+        btn._copyTimer = setTimeout(() => {
+          btn.textContent = defaultLabel;
+          btn.classList.remove('copied');
+        }, 1800);
+      };
+
+      const fallbackCopy = () => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showCopied();
+        } catch (_err) {
+          // User can copy manually from the selected field
+        }
+        document.body.removeChild(ta);
+      };
+
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(showCopied, fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    btnShareScenario.addEventListener('click', openShareModal);
+    btnCloseShareModal.addEventListener('click', closeShareModal);
+    shareBackdrop.addEventListener('click', e => {
+      if (e.target === shareBackdrop) closeShareModal();
+    });
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && shareBackdrop.classList.contains('open')) {
+        closeShareModal();
+      }
+    });
+    shareUrlInput.addEventListener('click', () => shareUrlInput.select());
+    shareSummaryInput.addEventListener('click', () => shareSummaryInput.select());
+    btnCopyShareUrl.addEventListener('click', () => {
+      copyTextWithFeedback(shareUrlInput.value, btnCopyShareUrl, 'Copy Link');
+    });
+    btnCopyShareSummary.addEventListener('click', () => {
+      copyTextWithFeedback(shareSummaryInput.value, btnCopyShareSummary, 'Copy Summary');
+    });
+
+    function hydrateStateFromUrl() {
+      const combined = `${window.location.search || ''}${window.location.hash || ''}`;
+      if (!combined) return false;
+      const decoded = E.decodeScenarioParams(combined);
+      if (!decoded.hasOverrides) return false;
+      E.PART1_KEYS.forEach(k => { state[k] = decoded.params[k]; });
+      E.PART2_KEYS.forEach(k => { state[k] = decoded.params[k]; });
+      activePart1Preset = decoded.activePart1Preset;
+      activePart2Preset = decoded.activePart2Preset;
+      passRateClampNote = '';
+      return true;
+    }
+
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash && window.location.hash.includes('=')) {
+        const decoded = E.decodeScenarioParams(window.location.hash);
+        if (decoded.hasOverrides) {
+          E.PART1_KEYS.forEach(k => { state[k] = decoded.params[k]; });
+          E.PART2_KEYS.forEach(k => { state[k] = decoded.params[k]; });
+          activePart1Preset = decoded.activePart1Preset;
+          activePart2Preset = decoded.activePart2Preset;
+          passRateClampNote = '';
+          syncControlsFromState();
+          syncPresetButtons();
+          scheduleUpdate();
+        }
+      }
+    });
+
     // Initial render
+    hydrateStateFromUrl();
     initInfoTooltips();
     syncControlsFromState();
     syncPresetButtons();
