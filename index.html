@@ -142,8 +142,8 @@
     }
 
     .btn-share:hover {
-      background: #1D4ED8;
-      border-color: #1D4ED8;
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
     }
 
     .btn-reset {
@@ -1601,7 +1601,7 @@
       line-height: 1;
       width: 30px;
       height: 30px;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -1699,8 +1699,8 @@
     }
 
     .btn-copy.primary:hover {
-      background: #1D4ED8;
-      border-color: #1D4ED8;
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
     }
 
     .btn-copy.copied {
@@ -1817,7 +1817,7 @@
             <label for="slVMean" class="control-label">Verbal Mean (μ<sub>V</sub>)</label>
             <span class="control-val" id="valVMean">10.50 / 20</span>
           </div>
-          <input type="range" id="slVMean" min="6.5" max="16.0" step="0.1" value="10.5" />
+          <input type="range" id="slVMean" min="6.5" max="16.0" step="0.01" value="10.5" />
           <div class="control-meta">
             <span>Pass mark &ge; 10/20 (40% Prelim, 35% Final)</span>
             <span class="reliability-inline" id="relVerbal">α<sub>V</sub> = —</span>
@@ -1841,7 +1841,7 @@
             <label for="slNAMean" class="control-label">Num+Abs Mean (μ<sub>NA</sub>)</label>
             <span class="control-val" id="valNAMean">10.50 / 20</span>
           </div>
-          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.1" value="10.5" />
+          <input type="range" id="slNAMean" min="6.5" max="16.0" step="0.01" value="10.5" />
           <div class="control-meta">
             <span>Pass mark &ge; 10/20 combined (Eliminatory only)</span>
             <span class="reliability-inline" id="relNA">α<sub>NA</sub> = —</span>
@@ -2063,6 +2063,7 @@
             </div>
             <input type="range" id="slEssaySd" min="0.6" max="3.5" step="0.05" value="1.5" />
             <div class="control-meta">
+              <span id="clampEssaySd" class="clamp-note"></span>
               <span class="reliability-inline" id="markedEssayMean">Top 2,235 marked mean: —</span>
             </div>
           </div>
@@ -2092,7 +2093,7 @@
       </div>
 
       <details class="accordion" id="accPart2">
-        <summary>Part 2 Advanced: Latent Correlations &amp; Verbal Coupling (5×5 Matrix)</summary>
+        <summary>Part 2 Advanced: Latent Correlations &amp; Verbal Coupling (4×4 Part 2 Sitter Matrix)</summary>
         <div class="accordion-body">
           <div class="corr-grid">
             <div class="control-block">
@@ -2129,7 +2130,7 @@
           </div>
 
           <div class="psd-status">
-            <span id="psdStatusText">5×5 latent correlation matrix: Positive-definite (exact)</span>
+            <span id="psdStatusText">4×4 Part 2 sitter latent correlation matrix: Positive-definite (exact)</span>
             <span class="mono" id="p2PassStats">Part 2 MCQ Passers (EUK &ge; 15 &amp; Dig &ge; 20): —</span>
           </div>
         </div>
@@ -2325,8 +2326,8 @@
         <details class="doc-item">
           <summary>3. Latent vs. Observed Correlation Attenuation, Range Restriction &amp; Zero-Flicker CRN</summary>
           <div class="doc-content">
-            <p>Observed test scores contain measurement error, so observed correlations are strictly lower than underlying latent correlations following Spearman's attenuation relation (r<sub>obs</sub> ≈ ρ<sub>θ</sub> · √(α<sub>1</sub> · α<sub>2</sub>)). For example, a latent Part 1 correlation of ρ<sub>VN</sub><sup>θ</sup> = 0.60 typically translates to an observed score correlation of r<sub>VN</sub><sup>obs</sup> ≈ 0.42–0.47. Part 1 pass rates and Verbal distributions are solved deterministically via 21×21 bivariate Gauss-Hermite quadrature—capturing upward range restriction (selection on Num+Abs ≥ 10 shifts the Verbal mean up and compresses Verbal SD among passers).</p>
-            <p>Part 2 cutoffs and histograms use a 5×5 latent correlation matrix Σ<sub>θ</sub> across (θ<sub>V</sub>, θ<sub>NA</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>), assuming conditional independence between Num+Abs and Part 2 given Verbal (ρ<sub>NA,P2</sub> = ρ<sub>VN</sub> · ρ<sub>V,P2</sub>). If slider combinations produce a non-positive-definite matrix, the engine automatically projects Σ<sub>θ</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Verbal-correlated Part 2 attrition is modeled via a latent probit liability L = ρ<sub>NS,V</sub>·Z<sub>V</sub> + √(1 − ρ<sub>NS,V</sub><sup>2</sup>)·ε calibrated via exact bisection so the passer-weighted average no-show rate equals the overall attrition slider, while reweighting the 40,000 rejection-free CRN Part 2 sitter draws by (1 − p<sub>noShow</sub>(v)) so selective low-Verbal dropouts shift the active Part 2 pool upward. Before mapping Part 2 latent traits to observed scores, θ<sub>EUK</sub>, θ<sub>Dig</sub>, and θ<sub>EUFTE</sub> are standardized on the active Part 2 sitter pool so that the Part 2 sliders directly govern the unselected Part 2 sitter distribution (while preserving cross-test correlations and organic upward selection among the Top 2,235). Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10).</p>
+            <p>Observed test scores contain measurement error, so observed correlations are strictly lower than underlying latent correlations following Spearman's attenuation relation (r<sub>obs</sub> ≈ ρ<sub>θ</sub> · √(α<sub>1</sub> · α<sub>2</sub>)). For example, a latent Part 1 correlation of ρ<sub>VN</sub><sup>θ</sup> = 0.60 typically translates to an observed score correlation of r<sub>VN</sub><sup>obs</sup> ≈ 0.42–0.47. Part 1 pass rates and Verbal distributions are solved deterministically via a <strong>101 × 61 bivariate midpoint grid</strong> (<code>computePart1Exact</code>), while the bidirectional Joint Pass Rate slider uses a matching <strong>61 × 61 solver grid</strong> (<code>solveMeansForPassRate</code>)—capturing upward range restriction (selection on Num+Abs ≥ 10 shifts the Verbal mean up and compresses Verbal SD among passers).</p>
+            <p>Verbal-correlated Part 2 attrition is modeled via a latent probit liability L = ρ<sub>NS,V</sub>·Z<sub>V</sub> + √(1 − ρ<sub>NS,V</sub><sup>2</sup>)·ε calibrated via exact bisection so the passer-weighted average no-show rate equals the overall attrition slider, while sampling the 40,000 rejection-free CRN draws directly from the attendance-weighted active Part 2 sitter distribution so selective low-Verbal dropouts shift the active Part 2 pool upward. Part 2 cutoffs and histograms then operate directly on the active Part 2 sitter pool using a <strong>4×4 active Part 2 sitter correlation matrix</strong> Σ<sub>P2</sub> across (θ̃<sub>V</sub>, θ<sub>EUK</sub>, θ<sub>Dig</sub>, θ<sub>EUFTE</sub>), where θ̃<sub>V</sub> is each sitter's Verbal latent trait standardized to mean 0 and SD 1 on the active Part 2 sitter pool. This decouples Part 1 ρ<sub>VN</sub> from Part 2 PSD projection and ensures Part 2 slider means, SDs, and latent correlations hold directly on the active Part 2 sitter pool without range-restriction attenuation. For parsimony, the 4×4 structure makes two simplifying assumptions: (1) Part 2 latent traits are conditionally independent of Num+Abs given Verbal ability θ<sub>V</sub>, and (2) a single uniform Verbal ↔ Part 2 coupling parameter ρ<sub>V,P2</sub><sup>θ</sup> is shared across EU Knowledge, Digital Skills, and EUFTE. If slider combinations produce a non-positive-definite 4×4 matrix, the engine automatically projects Σ<sub>P2</sub> to the nearest valid correlation matrix via eigenvalue flooring and diagonal rescaling before Cholesky factorization. Simulation variance and slider flicker are eliminated via 40,000 fixed Common Random Numbers (CRN) draws plus 3,000 dedicated CRN draws per integer Verbal score (10–20) using exact Bayesian posterior weights p(θ<sub>V</sub> | X<sub>V</sub> = v, X<sub>NA</sub> &ge; 10) standardized by the same active Part 2 sitter moments.</p>
           </div>
         </details>
 
@@ -2334,7 +2335,7 @@
           <summary>4. Known Real-World Phenomena NOT Captured by the Model (Honest Caveats)</summary>
           <div class="doc-content">
             <ul>
-              <li><strong>No-show functional form &amp; non-Verbal dropout drivers:</strong> Selective Part 2 attrition is modeled as a smooth probit function of Part 1 Verbal score (ρ<sub>NS,V</sub>). Real-world dropout behavior may also show sharp psychological cliff effects around perceived contender cutoffs or depend on preparation level independent of Verbal score.</li>
+              <li><strong>No-show functional form &amp; non-Verbal dropout drivers:</strong> Selective Part 2 attrition is modeled as a smooth probit function that depends only on observed Part 1 Verbal score (ρ<sub>NS,V</sub>), not on Part 2 preparation level or Language 2 confidence. Real-world dropout behavior may show sharp psychological cliff effects around perceived contender cutoffs, and lower-Verbal sitters who still choose to attend may self-select on stronger L2 fluency or Part 2 readiness—weakening the effective Verbal ↔ Part 2 link. If you expect strong self-selection among lower-Verbal sitters, you can approximate it by <strong>lowering the Verbal ↔ Part 2 Latent Coupling (ρ<sub>V,P2</sub><sup>θ</sup>) slider slightly</strong>.</li>
               <li><strong>Bimodal EU Knowledge preparation:</strong> Knowing one's Part 1 Verbal score before Part 2 creates a motivation split: high-Verbal contenders aggressively drill the published EUK source list, while low-Verbal passers invest less study time. This can produce heavier upper tails or bimodal EUK scores than a single unimodal normal latent trait.</li>
               <li><strong>Language-pair heterogeneity (L1 vs. L2):</strong> Verbal Reasoning is taken in Language 1, whereas EUK, Digital Skills, and EUFTE are taken in Language 2. Differences in L2 fluency introduce extra variance across candidates that is independent of L1 Verbal ability.</li>
               <li><strong>Eligibility checks &amp; tie-breaking:</strong> Administrative disqualifications (diploma, citizenship, language declarations) and EPSO's exact tie-handling rule at ranks 2,235 and 1,490 are omitted from the simulation.</li>
@@ -2346,7 +2347,7 @@
           <summary>5. Part 1 Pass-Rate Benchmark (JPP Source &amp; Alternative Targets)</summary>
           <div class="doc-content">
             <p>The baseline Part 1 Joint Pass Rate (~42.5%) used in the JPP presets is anchored to historical EPSO testing statistics reported in <a href="https://unionsyndicale.eu/wp-content/uploads/2023/10/Reply-to-the-Common-Front-14.07.2023-D7543288.pdf" target="_blank" rel="noopener noreferrer">EPSO's Reply to the Common Front (14 July 2023, D7543288, PDF via Union Syndicale)</a>.</p>
-            <p>Because the same document reports pass rates across multiple historical competition benchmarks, you can also consult it to test alternative—including more generous—Part 1 pass-rate targets directly via the <strong>Target Part 1 Joint Pass Rate</strong> slider in Section 1.</p>
+            <p>Because the same document reports pass rates across multiple historical competition benchmarks, you can also consult it to test alternative—including more generous—Part 1 pass-rate targets directly via the <strong>Joint Part 1 Pass Rate</strong> slider in Section 1.</p>
           </div>
         </details>
       </div>
@@ -2635,7 +2636,6 @@
     }
 
     const GH41 = buildGaussHermiteStandardNormal(41);
-    const GH21 = buildGaussHermiteStandardNormal(21);
 
     // 101-point theta grid in [-4.2, +4.2] for Poisson-Binomial DP tables & midpoint quadrature
     const THETA_GRID_N = 101;
@@ -2803,15 +2803,16 @@
       const ghW = GH41.w;
       const qN = GH41.n;
 
-      let lo = -12.0;
-      let hi = 12.0;
+      const bound = Math.max(12.0, 10.0 / Math.max(0.05, Da));
+      let lo = -bound;
+      let hi = bound;
       // Analytical initial guess from average guessing-adjusted proportion
       const avgC = spec.cSum / nItems;
       const pAvg = Math.min(0.99, Math.max(0.01, (targetMean / nItems - avgC) / (1.0 - avgC)));
-      let x = -Math.log(pAvg / (1.0 - pAvg)) / Math.max(0.3, Da);
+      let x = -Math.log(pAvg / (1.0 - pAvg)) / Math.max(1e-4, Da);
       if (x <= lo || x >= hi || !Number.isFinite(x)) x = 0.0;
 
-      for (let iter = 0; iter < 14; iter++) {
+      for (let iter = 0; iter < 24; iter++) {
         let mean = 0;
         let deriv = 0;
         for (let q = 0; q < qN; q++) {
@@ -2926,15 +2927,15 @@
       const bAtMinA = solveBBarForMean(spec, CONSTANTS.A_MIN, clampedMean);
       const momMin = irtMoments(spec, CONSTANTS.A_MIN, bAtMinA);
 
+      const bAtMaxA = solveBBarForMean(spec, CONSTANTS.A_MAX, clampedMean);
+      const momMax = irtMoments(spec, CONSTANTS.A_MAX, bAtMaxA);
+
       if (targetSd <= momMin.obsSd) {
         return {
           spec, a: CONSTANTS.A_MIN, bBar: bAtMinA, moments: momMin,
-          sdMin: momMin.obsSd, sdMax: momMin.obsSd, clampedSd: 'min'
+          sdMin: momMin.obsSd, sdMax: momMax.obsSd, clampedSd: 'min'
         };
       }
-
-      const bAtMaxA = solveBBarForMean(spec, CONSTANTS.A_MAX, clampedMean);
-      const momMax = irtMoments(spec, CONSTANTS.A_MAX, bAtMaxA);
 
       if (targetSd >= momMax.obsSd) {
         return {
@@ -3197,17 +3198,31 @@
 
     function calibrateEssay(targetMean, targetSd) {
       // Calibrate internal (muStar, sdStar) so truncated/discretized pool matches (targetMean, targetSd)
+      const SD_MIN = 0.3;
+      const SD_MAX = 6.5;
       let muStar = targetMean;
       let sdStar = targetSd;
-      for (let iter = 0; iter < 12; iter++) {
+      for (let iter = 0; iter < 24; iter++) {
         const mom = essayMoments(muStar, sdStar);
         const errM = targetMean - mom.mean;
         const ratioS = mom.sd > 1e-4 ? targetSd / mom.sd : 1.0;
         muStar += 0.85 * errM;
-        sdStar = Math.min(6.5, Math.max(0.3, sdStar * Math.pow(ratioS, 0.75)));
+        sdStar = Math.min(SD_MAX, Math.max(SD_MIN, sdStar * Math.pow(ratioS, 0.75)));
         if (Math.abs(errM) < 1e-3 && Math.abs(mom.sd - targetSd) < 2e-3) break;
       }
-      return { muStar, sdStar };
+      const finalMom = essayMoments(muStar, sdStar);
+      let clampedSd = null;
+      if (Math.abs(finalMom.sd - targetSd) > 0.02) {
+        if (sdStar >= SD_MAX - 1e-6 && finalMom.sd < targetSd) clampedSd = 'max';
+        else if (sdStar <= SD_MIN + 1e-6 && finalMom.sd > targetSd) clampedSd = 'min';
+      }
+      return {
+        muStar,
+        sdStar,
+        effectiveMean: finalMom.mean,
+        effectiveSd: finalMom.sd,
+        clampedSd
+      };
     }
 
     // =========================================================================
@@ -3579,11 +3594,9 @@
       return grid[lo] + (frac - 0.5) * step;
     }
 
-    // Reusable buffers for survivor standardization, sorting & histograms
+    // Reusable buffers for active Part 2 sitter simulation, sorting & histograms
     const mainVScores = new Uint8Array(CRN.main.N);
-    const mainThEuk = new Float64Array(CRN.main.N);
-    const mainThDig = new Float64Array(CRN.main.N);
-    const mainThEss = new Float64Array(CRN.main.N);
+    const mainThV = new Float64Array(CRN.main.N);
     const mainPrelimScores = new Float64Array(CRN.main.N);
     const mainFinalScores = new Float64Array(CRN.main.N);
     const mainEligibleMask = new Uint8Array(CRN.main.N);
@@ -3629,51 +3642,21 @@
       }
       const part2SitterVMean = part2VWeightSum > 1e-12 ? part2VMeanNum / part2VWeightSum : part1.passVMean;
 
-      // 3. Construct 5x5 Latent Correlation Matrix & Cholesky
-      // Order: [0: V, 1: NA, 2: EUK, 3: Dig, 4: Essay]
+      // 3. Build exact marginal CDF of theta_V for active Part 2 sitters (using exact Part 1 rhoVN)
       const rVN = params.rhoVN;
-      const rVP2 = params.rhoVP2;
-      const rNAP2 = rVN * rVP2;
-      const rawCorr = [
-        [1.0, rVN, rVP2, rVP2, rVP2],
-        [rVN, 1.0, rNAP2, rNAP2, rNAP2],
-        [rVP2, rNAP2, 1.0, params.rhoEukDig, params.rhoEukEssay],
-        [rVP2, rNAP2, params.rhoEukDig, 1.0, params.rhoDigEssay],
-        [rVP2, rNAP2, params.rhoEukEssay, params.rhoDigEssay, 1.0]
-      ];
-      const { L, wasAdjusted: matrixAdjusted } = ensurePsdAndCholesky(rawCorr);
-
-      // Extract Cholesky entries for fast inner loop
-      const L10 = L[1][0], L11 = L[1][1];
-      const L20 = L[2][0], L21 = L[2][1], L22 = L[2][2];
-      const L30 = L[3][0], L31 = L[3][1], L32 = L[3][2], L33 = L[3][3];
-      const L40 = L[4][0], L41 = L[4][1], L42 = L[4][2], L43 = L[4][3], L44 = L[4][4];
-
-      // 4. Build exact conditional CDF tables for rejection-free Part 1 survivor sampling
-      const z1CondCdf = new Float64Array(SAMP_V_N * SAMP_Z1_N);
+      const sqrt1mRVN2 = Math.sqrt(Math.max(0, 1.0 - rVN * rVN));
       const pNAPassAtVGrid = new Float64Array(SAMP_V_N);
       const margThVCdf = new Float64Array(SAMP_V_N);
 
       let margSum = 0;
       for (let i = 0; i < SAMP_V_N; i++) {
         const thV = SAMP_V_GRID[i];
-        const base = i * SAMP_Z1_N;
         let zSum = 0;
         for (let j = 0; j < SAMP_Z1_N; j++) {
-          const thNA = L10 * thV + L11 * SAMP_Z1_GRID[j];
-          const w = SAMP_Z1_PDF[j] * interpPassProb(naCal.table, thNA);
-          zSum += w;
-          z1CondCdf[base + j] = zSum;
+          const thNA = rVN * thV + sqrt1mRVN2 * SAMP_Z1_GRID[j];
+          zSum += SAMP_Z1_PDF[j] * interpPassProb(naCal.table, thNA);
         }
         pNAPassAtVGrid[i] = zSum * SAMP_Z1_STEP;
-        if (zSum > 1e-15) {
-          const invZ = 1.0 / zSum;
-          for (let j = 0; j < SAMP_Z1_N; j++) z1CondCdf[base + j] *= invZ;
-          z1CondCdf[base + SAMP_Z1_N - 1] = 1.0;
-        } else {
-          for (let j = 0; j < SAMP_Z1_N; j++) z1CondCdf[base + j] = (j + 1) / SAMP_Z1_N;
-        }
-
         const wV = SAMP_V_PDF[i] * interpAttendPassProb(vCal.table, thV, attendByV) * pNAPassAtVGrid[i];
         margSum += wV;
         margThVCdf[i] = margSum;
@@ -3684,6 +3667,22 @@
         margThVCdf[SAMP_V_N - 1] = 1.0;
       }
 
+      // 4. Construct 4x4 active Part 2 sitter latent correlation matrix & Cholesky
+      // Order: [0: thV_std, 1: EUK, 2: Dig, 3: Essay] (decoupled from Part 1 rhoVN)
+      const rVP2 = params.rhoVP2;
+      const rawCorr = [
+        [1.0,  rVP2,               rVP2,               rVP2],
+        [rVP2, 1.0,                params.rhoEukDig,   params.rhoEukEssay],
+        [rVP2, params.rhoEukDig,   1.0,                params.rhoDigEssay],
+        [rVP2, params.rhoEukEssay, params.rhoDigEssay, 1.0]
+      ];
+      const { L, wasAdjusted: matrixAdjusted } = ensurePsdAndCholesky(rawCorr);
+
+      // Extract 4x4 Cholesky entries for fast inner loop
+      const L10 = L[1][0], L11 = L[1][1];
+      const L20 = L[2][0], L21 = L[2][1], L22 = L[2][2];
+      const L30 = L[3][0], L31 = L[3][1], L32 = L[3][2], L33 = L[3][3];
+
       // 5. Simulate 40,000 fixed CRN draws from the active Part 2 sitter pool
       const MAIN_N = CRN.main.N;
       const m = CRN.main;
@@ -3692,47 +3691,22 @@
       const essayMu = essayCal.muStar;
       const essaySd = essayCal.sdStar;
 
-      // Pass 1: Draw correlated latent Part 2 traits among Part 2 sitters & compute pool moments
-      let sumThEuk = 0, sumThEuk2 = 0;
-      let sumThDig = 0, sumThDig2 = 0;
-      let sumThEss = 0, sumThEss2 = 0;
-
+      // Pass 1: Sample active Part 2 sitter theta_V & Verbal score; compute sitter-pool theta_V moments
+      let sumThV = 0;
+      let sumThV2 = 0;
       for (let k = 0; k < MAIN_N; k++) {
         const thV = sampleContinuousFromCdf(margThVCdf, 0, SAMP_V_N, SAMP_V_GRID, m.uThV[k]);
-        const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
-        const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, m.uZ1[k]);
-
+        mainThV[k] = thV;
         mainVScores[k] = sampleVerbalGivenAttend(vCal.table, thV, attendByV, m.uVScore[k]);
-        const z2 = m.z2[k];
-        const z3 = m.z3[k];
-        const z4 = m.z4[k];
-
-        const thEuk = L20 * thV + L21 * z1 + L22 * z2;
-        const thDig = L30 * thV + L31 * z1 + L32 * z2 + L33 * z3;
-        const thEss = L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4;
-
-        mainThEuk[k] = thEuk;
-        mainThDig[k] = thDig;
-        mainThEss[k] = thEss;
-
-        sumThEuk += thEuk; sumThEuk2 += thEuk * thEuk;
-        sumThDig += thDig; sumThDig2 += thDig * thDig;
-        sumThEss += thEss; sumThEss2 += thEss * thEss;
+        sumThV += thV;
+        sumThV2 += thV * thV;
       }
 
-      const survMeanEuk = sumThEuk / MAIN_N;
-      const survSdEuk = Math.sqrt(Math.max(1e-6, sumThEuk2 / MAIN_N - survMeanEuk * survMeanEuk));
-      const invSurvSdEuk = 1.0 / survSdEuk;
+      const survMeanThV = sumThV / MAIN_N;
+      const survSdThV = Math.sqrt(Math.max(1e-6, sumThV2 / MAIN_N - survMeanThV * survMeanThV));
+      const invSurvSdThV = 1.0 / survSdThV;
 
-      const survMeanDig = sumThDig / MAIN_N;
-      const survSdDig = Math.sqrt(Math.max(1e-6, sumThDig2 / MAIN_N - survMeanDig * survMeanDig));
-      const invSurvSdDig = 1.0 / survSdDig;
-
-      const survMeanEss = sumThEss / MAIN_N;
-      const survSdEss = Math.sqrt(Math.max(1e-6, sumThEss2 / MAIN_N - survMeanEss * survMeanEss));
-      const invSurvSdEss = 1.0 / survSdEss;
-
-      // Pass 2: Standardize latent traits on the Part 1 survivor pool before sampling Part 2 scores
+      // Pass 2: Standardize theta_V on active Part 2 sitter pool and generate correlated Part 2 scores
       let eligibleMcqCount = 0;
       const eukFreq = new Int32Array(31);
       const digFreq = new Int32Array(41);
@@ -3743,13 +3717,18 @@
 
       for (let k = 0; k < MAIN_N; k++) {
         const vScore = mainVScores[k];
-        const thEukStd = (mainThEuk[k] - survMeanEuk) * invSurvSdEuk;
-        const thDigStd = (mainThDig[k] - survMeanDig) * invSurvSdDig;
-        const thEssStd = (mainThEss[k] - survMeanEss) * invSurvSdEss;
+        const thVStd = (mainThV[k] - survMeanThV) * invSurvSdThV;
+        const z2 = m.z2[k];
+        const z3 = m.z3[k];
+        const z4 = m.z4[k];
 
-        const eukScore = sampleFromCdfTable(eukCal.table, thEukStd, m.uEuk[k]);
-        const digScore = sampleFromCdfTable(digCal.table, thDigStd, m.uDig[k]);
-        const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEssStd + sqrt1mR * m.zEssayErr[k]));
+        const thEuk = L10 * thVStd + L11 * z2;
+        const thDig = L20 * thVStd + L21 * z2 + L22 * z3;
+        const thEss = L30 * thVStd + L31 * z2 + L32 * z3 + L33 * z4;
+
+        const eukScore = sampleFromCdfTable(eukCal.table, thEuk, m.uEuk[k]);
+        const digScore = sampleFromCdfTable(digCal.table, thDig, m.uDig[k]);
+        const essScore = discretizeEssay(essayMu + essaySd * (sqrtR * thEss + sqrt1mR * m.zEssayErr[k]));
 
         sumEukObs += eukScore; sumEukObs2 += eukScore * eukScore;
         sumDigObs += digScore; sumDigObs2 += digScore * digScore;
@@ -3786,16 +3765,17 @@
         essaySd: Math.sqrt(Math.max(0, sumEssObs2 / MAIN_N - poolEssMean * poolEssMean))
       };
 
-      // Compute 85th percentile Digital Skills score for the Odds table benchmark
-      let digCum = 0;
-      let digBench85 = 34;
+      // Compute 85th percentile Digital Skills score using strictly-below convention:
+      // smallest integer d in 0..40 where share of active Part 2 sitters scoring strictly below d is >= 0.85
+      let digBelow = 0;
+      let digBench85 = 40;
       const target85 = 0.85 * MAIN_N;
       for (let d = 0; d <= 40; d++) {
-        digCum += digFreq[d];
-        if (digCum >= target85) {
+        if (digBelow >= target85) {
           digBench85 = d;
           break;
         }
+        digBelow += digFreq[d];
       }
 
       const prelimEligiblePool = new Float64Array(eligibleMcqCount);
@@ -3814,15 +3794,14 @@
       // Sort eligible preliminary scores ascending natively in C++ (30x faster than JS comparator)
       const sortedPrelimAsc = Float64Array.from(prelimEligiblePool).sort();
       const prelimQualShare = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_PRELIM / estPart2Sitters) : 1.0;
-      const prelimSimQualCount = Math.min(eligibleMcqCount, Math.max(1, Math.round(prelimQualShare * MAIN_N)));
-      const prelimCutoff = eligibleMcqCount === 0
-        ? 100
-        : (prelimSimQualCount >= eligibleMcqCount
-            ? sortedPrelimAsc[0]
-            : sortedPrelimAsc[eligibleMcqCount - prelimSimQualCount]);
+      const rawPrelimSimTarget = Math.round(prelimQualShare * MAIN_N);
+      const prelimUndersubscribed = eligibleMcqCount <= rawPrelimSimTarget;
+      const prelimSimQualCount = Math.min(eligibleMcqCount, Math.max(1, rawPrelimSimTarget));
+      const prelimCutoff = prelimUndersubscribed
+        ? 50.0
+        : sortedPrelimAsc[eligibleMcqCount - prelimSimQualCount];
 
       // Extract Top 2,235 candidates (handling ties smoothly around prelimCutoff)
-      // Count strictly above cutoff + fractional tie at cutoff
       let strictlyAbove = 0;
       let atCutoff = 0;
       for (let i = 0; i < eligibleMcqCount; i++) {
@@ -3831,7 +3810,9 @@
         else if (Math.abs(sc - prelimCutoff) <= 1e-9) atCutoff++;
       }
       const needAtTie = Math.max(0, prelimSimQualCount - strictlyAbove);
-      const tieKeepFrac = atCutoff > 0 ? Math.min(1.0, needAtTie / atCutoff) : 1.0;
+      const tieKeepFrac = prelimUndersubscribed
+        ? 1.0
+        : (atCutoff > 0 ? Math.min(1.0, needAtTie / atCutoff) : 1.0);
 
       const markedFinals = [];
       const eukMarkedFreq = new Int32Array(31);
@@ -3847,7 +3828,7 @@
         const k = prelimEligibleIdx[i];
         const sc = mainPrelimScores[k];
         let inGate = false;
-        if (sc > prelimCutoff + 1e-9) {
+        if (prelimUndersubscribed || sc > prelimCutoff + 1e-9) {
           inGate = true;
         } else if (Math.abs(sc - prelimCutoff) <= 1e-9) {
           tieSeen++;
@@ -3878,12 +3859,25 @@
       const markedEssayPassRate = markedEssayCount > 0 ? markedEssayPassCount / markedEssayCount : 0;
 
       const finalQualShare = estPart2Sitters > 0 ? Math.min(1.0, CONSTANTS.N_RL / estPart2Sitters) : 1.0;
-      const finalSimQualCount = Math.min(markedFinals.length, Math.max(1, Math.round(finalQualShare * MAIN_N)));
-      const finalCutoff = markedFinals.length === 0
-        ? 100
-        : (finalSimQualCount >= markedFinals.length
-            ? markedFinals[markedFinals.length - 1]
-            : markedFinals[finalSimQualCount - 1]);
+      const rawFinalSimTarget = Math.round(finalQualShare * MAIN_N);
+      const finalUndersubscribed = markedFinals.length <= rawFinalSimTarget;
+      const finalSimQualCount = Math.min(markedFinals.length, Math.max(1, rawFinalSimTarget));
+      const finalCutoff = finalUndersubscribed
+        ? 50.0
+        : markedFinals[finalSimQualCount - 1];
+
+      let finalTieKeepFrac = 1.0;
+      if (!finalUndersubscribed && markedFinals.length > 0) {
+        let finalStrictlyAbove = 0;
+        let finalAtCutoff = 0;
+        for (let i = 0; i < markedFinals.length; i++) {
+          const sc = markedFinals[i];
+          if (sc > finalCutoff + 1e-9) finalStrictlyAbove++;
+          else if (Math.abs(sc - finalCutoff) <= 1e-9) finalAtCutoff++;
+        }
+        const finalNeedAtTie = Math.max(0, finalSimQualCount - finalStrictlyAbove);
+        finalTieKeepFrac = finalAtCutoff > 0 ? Math.min(1.0, finalNeedAtTie / finalAtCutoff) : 1.0;
+      }
 
       // 6. Build Histograms for Part 2 Chart (Preliminary 40..100 & Final 40..100, 1-point bins)
       const BIN_MIN = 40;
@@ -3892,6 +3886,7 @@
       const prelimBins = new Float64Array(BIN_COUNT);
       const finalBins = new Float64Array(BIN_COUNT);
       const weightPerMainDraw = estPart2Sitters / MAIN_N;
+      const estMarkedEssayPassers = markedFinals.length * weightPerMainDraw;
 
       for (let i = 0; i < eligibleMcqCount; i++) {
         const sc = prelimEligiblePool[i];
@@ -3960,16 +3955,15 @@
 
         for (let k = 0; k < cN; k++) {
           const thV = sampleContinuousFromCdf(postCdf, 0, SAMP_V_N, SAMP_V_GRID, cBank.uThV[k]);
-          const vGridIdx = Math.min(SAMP_V_N - 1, Math.max(0, Math.round((thV - SAMP_MIN) / SAMP_V_STEP)));
-          const z1 = sampleContinuousFromCdf(z1CondCdf, vGridIdx * SAMP_Z1_N, SAMP_Z1_N, SAMP_Z1_GRID, cBank.uZ1[k]);
+          const thVStd = (thV - survMeanThV) * invSurvSdThV;
 
           const z2 = cBank.z2[k];
           const z3 = cBank.z3[k];
           const z4 = cBank.z4[k];
 
-          const thEuk = (L20 * thV + L21 * z1 + L22 * z2 - survMeanEuk) * invSurvSdEuk;
-          const thDig = (L30 * thV + L31 * z1 + L32 * z2 + L33 * z3 - survMeanDig) * invSurvSdDig;
-          const thEss = (L40 * thV + L41 * z1 + L42 * z2 + L43 * z3 + L44 * z4 - survMeanEss) * invSurvSdEss;
+          const thEuk = L10 * thVStd + L11 * z2;
+          const thDig = L20 * thVStd + L21 * z2 + L22 * z3;
+          const thEss = L30 * thVStd + L31 * z2 + L32 * z3 + L33 * z4;
 
           const eukScore = sampleFromCdfTable(eukCal.table, thEuk, cBank.uEuk[k]);
           if (eukScore < CONSTANTS.EUK_PASS) continue;
@@ -3990,7 +3984,7 @@
           if (fScore > finalCutoff + 1e-9) {
             rlPassWeight += gateProb;
           } else if (Math.abs(fScore - finalCutoff) <= 1e-9) {
-            rlPassWeight += gateProb * 0.5;
+            rlPassWeight += gateProb * finalTieKeepFrac;
           }
         }
 
@@ -4016,7 +4010,7 @@
           if (fScore > finalCutoff + 1e-9) {
             uncorrPassWeight += gateProb;
           } else if (Math.abs(fScore - finalCutoff) <= 1e-9) {
-            uncorrPassWeight += gateProb * 0.5;
+            uncorrPassWeight += gateProb * finalTieKeepFrac;
           }
         }
         const uncorrRlOdds = uncorrPassWeight / MAIN_N;
@@ -4141,7 +4135,7 @@
         } else if (!passEssay) {
           verdict = 'fail';
           verdictLabel = 'Failed EUFTE Minimum (< 5.0/10)';
-        } else if (finalMargin >= 1.0 && prelimMargin >= 0.75) {
+        } else if (finalUndersubscribed || (finalMargin >= 1.0 && prelimMargin >= 0.75)) {
           verdict = 'pass';
           verdictLabel = 'Projected Reserve List Pass';
         } else if (finalMargin >= -0.75) {
@@ -4206,11 +4200,15 @@
         pDigPass,
         estDigPassers,
         estPart2McqPassers,
+        estMarkedEssayPassers,
         baselinePasserOdds,
         baselinePart2Odds,
         matrixAdjusted,
         prelimCutoff,
         finalCutoff,
+        prelimUndersubscribed,
+        finalUndersubscribed,
+        finalTieKeepFrac,
         markedEukMean,
         markedDigMean,
         markedEssayMean,
@@ -4582,12 +4580,16 @@
       $('kpiBaselineOdds').textContent = fmtPct(sim.baselinePasserOdds, 2);
       $('kpiBaselineRatio').textContent = `1,490 / ${fmtInt(sim.estPart1Passers)} passers`;
       $('kpiPrelimCutoff').textContent = sim.prelimCutoff.toFixed(2);
-      $('kpiPrelimSub').textContent = `of ${fmtInt(sim.estPart2McqPassers)} MCQ passers`;
+      $('kpiPrelimSub').textContent = sim.prelimUndersubscribed
+        ? `All ${fmtInt(sim.estPart2McqPassers)} MCQ passers qualify (< 2,235)`
+        : `of ${fmtInt(sim.estPart2McqPassers)} MCQ passers`;
       $('kpiFinalCutoff').textContent = sim.finalCutoff.toFixed(2);
-      $('kpiFinalSub').textContent = `Marked EUFTE avg: ${sim.markedEssayMean.toFixed(2)}/10`;
+      $('kpiFinalSub').textContent = sim.finalUndersubscribed
+        ? `All ${fmtInt(sim.estMarkedEssayPassers)} essay passers qualify (< 1,490)`
+        : `Marked EUFTE avg: ${sim.markedEssayMean.toFixed(2)}/10`;
 
       // Update Part 1 readouts & Joint Pass Rate slider
-      const { vCal, naCal, eukCal, digCal } = sim.calibrations;
+      const { vCal, naCal, eukCal, digCal, essayCal } = sim.calibrations;
       $('valVMean').textContent = `${state.vMean.toFixed(2)} / 20`;
       $('valVSd').textContent = `${state.vSd.toFixed(2)}`;
       $('relVerbal').innerHTML = `α<sub>V</sub> = ${vCal.reliability.toFixed(2)}`;
@@ -4656,6 +4658,9 @@
 
       $('valEssayMean').textContent = `${state.essayMean.toFixed(2)} / 10`;
       $('valEssaySd').textContent = `${state.essaySd.toFixed(2)}`;
+      $('clampEssaySd').textContent = essayCal.clampedSd
+        ? `Clamped to feasible SD (${essayCal.effectiveSd.toFixed(2)})`
+        : '';
       $('markedEssayMean').textContent = `Top 2,235 marked mean: ${sim.markedEssayMean.toFixed(2)} / 10`;
       $('miniStatEuk').textContent = `Marked μ = ${sim.markedEukMean.toFixed(1)}/30`;
       $('miniStatDig').textContent = `Marked μ = ${sim.markedDigMean.toFixed(1)}/40`;
@@ -4670,10 +4675,10 @@
 
       const psdEl = $('psdStatusText');
       if (sim.matrixAdjusted) {
-        psdEl.textContent = '5×5 latent correlation matrix: Auto-projected to nearest valid PSD matrix';
+        psdEl.textContent = '4×4 Part 2 sitter latent correlation matrix: Auto-projected to nearest valid PSD matrix';
         psdEl.className = 'psd-adjusted';
       } else {
-        psdEl.textContent = '5×5 latent correlation matrix: Naturally positive-definite (exact)';
+        psdEl.textContent = '4×4 Part 2 sitter latent correlation matrix: Naturally positive-definite (exact)';
         psdEl.className = '';
       }
       $('p2PassStats').textContent = `Part 2 MCQ Passers (EUK ≥ 15 & Dig ≥ 20): ${fmtInt(sim.estPart2McqPassers)}`;
@@ -4726,9 +4731,9 @@
         }
 
         rows.push(`
-          <tr class="${rowClass}" data-v="${r.v}" tabindex="0" aria-label="Load Verbal ${r.v} out of 20 into Personal Score Tester">
+          <tr class="${rowClass}" data-v="${r.v}">
             <td>
-              <button type="button" class="score-btn" data-v="${r.v}">${r.v}/20</button>
+              <button type="button" class="score-btn" data-v="${r.v}" aria-label="Load Verbal ${r.v} out of 20 into Personal Score Tester">${r.v}/20</button>
               ${inGreen ? '<span class="zone-marker">Above baseline</span>' : ''}
             </td>
             <td class="mono">${fmtInt(r.estPassers)} <span class="sub-dim">(${fmtPct(r.shareOfPassers, 1)})</span></td>
@@ -4770,9 +4775,17 @@
       badge.textContent = ev.verdictLabel;
       badge.className = `verdict-status ${ev.verdict}`;
 
-      $('verdictRankSummary').textContent = ev.clearsPrelimGate
-        ? `Est. Final Rank: #${fmtInt(ev.finalRank)} / 1,490`
-        : `Est. Prelim Rank: #${fmtInt(ev.prelimRank)} / 2,235`;
+      let rankSummary;
+      if (!ev.passEuk || !ev.passDig) {
+        rankSummary = 'Ineligible (Part 2 MCQ < pass mark)';
+      } else if (!ev.clearsPrelimGate) {
+        rankSummary = `Est. Prelim Rank: #${fmtInt(ev.prelimRank)} / 2,235`;
+      } else if (!ev.passEssay) {
+        rankSummary = 'Eliminated (EUFTE < 5.0/10)';
+      } else {
+        rankSummary = `Est. Final Rank: #${fmtInt(ev.finalRank)} / 1,490`;
+      }
+      $('verdictRankSummary').textContent = rankSummary;
 
       const setThresh = (id, ok, text) => {
         const el = $(id);
@@ -4809,7 +4822,7 @@
       $('scFinalRank').textContent = !ev.clearsPrelimGate
         ? 'Not ranked (essay unmarked unless Top 2,235 cleared)'
         : (ev.passEssay
-            ? `Est. Final Rank #${fmtInt(ev.finalRank)} of 2,235 marked`
+            ? `Est. Final Rank #${fmtInt(ev.finalRank)} of ${fmtInt(sim.estMarkedEssayPassers)} passing marked essays`
             : 'Eliminated (EUFTE < 5.0/10)');
     }
 
@@ -5299,6 +5312,7 @@
       const count = bins[bi];
       const rankTop = Math.max(1, Math.round(cumAbove[bi]) + 1);
       const rankBot = Math.max(rankTop, Math.round(cumAbove[bi] + count));
+      const rankRangeStr = count < 0.5 ? '—' : `#${fmtInt(rankTop)} – #${fmtInt(rankBot)}`;
       const pctBelow = totalCount > 0 ? cumBelow[bi] / totalCount : 0;
       const qual = scLo + 0.5 >= cutoff;
 
@@ -5310,7 +5324,7 @@
         </div>
         <div class="tt-row"><span class="tt-key">Est. Candidates in Bin</span><span class="tt-val">${fmtInt(count)}</span></div>
         <div class="tt-row"><span class="tt-key">Percentile (&lt;${scLo})</span><span class="tt-val">${fmtPct(pctBelow, 1)}</span></div>
-        <div class="tt-row"><span class="tt-key">Cumulative Rank Range</span><span class="tt-val">#${fmtInt(rankTop)} – #${fmtInt(rankBot)}</span></div>
+        <div class="tt-row"><span class="tt-key">Cumulative Rank Range</span><span class="tt-val">${rankRangeStr}</span></div>
         <div class="tt-row"><span class="tt-key">Live Cutoff</span><span class="tt-val">${cutoff.toFixed(2)}</span></div>
       `;
       tt.classList.add('visible');
@@ -5674,15 +5688,6 @@
       const tr = e.target.closest('tr[data-v]');
       if (tr) selectVerbalFromTable(parseInt(tr.dataset.v, 10));
     });
-    $('oddsTableBody').addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        const tr = e.target.closest('tr[data-v]');
-        if (tr) {
-          e.preventDefault();
-          selectVerbalFromTable(parseInt(tr.dataset.v, 10));
-        }
-      }
-    });
 
     // Personal Score Tester Inputs
     function bindPersonalPair(rangeId, numId, key, min, max, step) {
@@ -5740,6 +5745,7 @@
     c1.addEventListener('touchmove', e => {
       if (e.touches && e.touches[0]) handlePart1Pointer(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
+    c1.addEventListener('touchcancel', hidePart1Tooltip);
 
     const c2 = $('canvasPart2');
     c2.addEventListener('mousemove', e => handlePart2Pointer(e.clientX, e.clientY));
@@ -5750,6 +5756,7 @@
     c2.addEventListener('touchmove', e => {
       if (e.touches && e.touches[0]) handlePart2Pointer(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
+    c2.addEventListener('touchcancel', hidePart2Tooltip);
 
     ['euk', 'dig', 'essay'].forEach(key => {
       const cm = $(MINI_CHART_META[key].canvasId);
@@ -5761,7 +5768,17 @@
       cm.addEventListener('touchmove', e => {
         if (e.touches && e.touches[0]) handleMiniPointer(key, e.touches[0].clientX, e.touches[0].clientY);
       }, { passive: true });
+      cm.addEventListener('touchcancel', () => hideMiniTooltip(key));
     });
+
+    document.addEventListener('touchstart', e => {
+      const target = e.target;
+      if (target !== c1) hidePart1Tooltip();
+      if (target !== c2) hidePart2Tooltip();
+      ['euk', 'dig', 'essay'].forEach(key => {
+        if (target !== $(MINI_CHART_META[key].canvasId)) hideMiniTooltip(key);
+      });
+    }, { passive: true });
 
     // Responsive Canvas Redraw
     let resizeTimer = null;
@@ -5996,7 +6013,10 @@
       const targets = [];
       document.querySelectorAll('label.control-label[for]').forEach(el => {
         const key = el.getAttribute('for');
-        if (TOOLTIP_DOCS[key]) targets.push([el, key]);
+        if (TOOLTIP_DOCS[key]) {
+          el.setAttribute('tabindex', '0');
+          targets.push([el, key]);
+        }
       });
       document.querySelectorAll('th[data-tip]').forEach(el => {
         const key = el.dataset.tip;

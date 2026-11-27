@@ -45,6 +45,7 @@ interface SimulationResult {
   pDigPass: number;
   estDigPassers: number;
   estPart2McqPassers: number;
+  estMarkedEssayPassers: number;
   baselinePasserOdds: number;
   baselinePart2Odds: number;
   part2PoolStats: {
@@ -63,10 +64,14 @@ interface SimulationResult {
   matrixAdjusted: boolean;
   prelimCutoff: number;
   finalCutoff: number;
+  prelimUndersubscribed: boolean;
+  finalUndersubscribed: boolean;
+  finalTieKeepFrac: number;
   markedEukMean: number;
   markedDigMean: number;
   markedEssayMean: number;
   markedEssayPassRate: number;
+  digBench85: number;
   greenThresholdV: number;
   part1: {
     pVerbalPass: number;
@@ -153,7 +158,16 @@ interface AD5EngineApi {
     condNAPassGivenV: Float64Array;
   };
   essayMoments: (muStar: number, sdStar: number) => { mean: number; sd: number };
-  calibrateEssay: (targetMean: number, targetSd: number) => { muStar: number; sdStar: number };
+  calibrateEssay: (
+    targetMean: number,
+    targetSd: number
+  ) => {
+    muStar: number;
+    sdStar: number;
+    effectiveMean: number;
+    effectiveSd: number;
+    clampedSd: 'min' | 'max' | null;
+  };
   solveMeansForPassRate: (
     state: EnginePreset,
     targetPassRate: number
@@ -793,4 +807,135 @@ test('Compact scenario URL encoding, safe decoding/clamping, and plain-text summ
   assert.ok(summary.includes('ρ(V,P2)=0.35'));
   assert.ok(summary.includes(`Link: ${ghUrl}`));
 });
+
+test('solveBBarForMean handles extreme low-a brackets without false clamping and reports accurate sdMax', () => {
+  // Digital Skills at extreme high mean (36.0) and low SD (2.5)
+  const digExt = E.calibrate3PL('dig', 36.0, 2.5, 20);
+  assert.ok(
+    Math.abs(digExt.effectiveMean - 36.0) < 0.02,
+    `Dig mean drifted at (36.0, 2.5): got ${digExt.effectiveMean}`
+  );
+  assert.ok(
+    Math.abs(digExt.effectiveSd - 2.5) < 0.05,
+    `Dig SD drifted or falsely clamped at (36.0, 2.5): got ${digExt.effectiveSd}, clamped=${digExt.clampedSd}`
+  );
+  assert.equal(digExt.clampedSd, null);
+  assert.ok(digExt.sdMax > digExt.sdMin + 1.0);
+
+  // Verbal at extreme low mean (6.5) and low SD (2.1)
+  const vExt = E.calibrate3PL('verbal', 6.5, 2.1, 10);
+  assert.ok(
+    Math.abs(vExt.effectiveMean - 6.5) < 0.02,
+    `Verbal mean drifted at (6.5, 2.1): got ${vExt.effectiveMean}`
+  );
+  assert.ok(
+    Math.abs(vExt.effectiveSd - 2.1) < 0.05,
+    `Verbal SD drifted or falsely clamped at (6.5, 2.1): got ${vExt.effectiveSd}, clamped=${vExt.clampedSd}`
+  );
+  assert.equal(vExt.clampedSd, null);
+
+  // When SD is intentionally below sdMin, sdMax must still report the true upper bound (not sdMin)
+  const vClampedMin = E.calibrate3PL('verbal', 10.5, 1.0, 10);
+  assert.equal(vClampedMin.clampedSd, 'min');
+  assert.ok(
+    vClampedMin.sdMax > vClampedMin.sdMin + 2.0,
+    `Expected sdMax (${vClampedMin.sdMax}) > sdMin (${vClampedMin.sdMin}) + 2.0`
+  );
+});
+
+test('Undersubscribed competition cutoffs floor cleanly at 50.00 and never eliminate passing candidates', () => {
+  // Low essay mean -> fewer than 1,490 marked essay passers
+  const lowEssaySim = E.runSimulation({ ...E.PRESETS.baseline, essayMean: 4.0, essaySd: 0.8 });
+  assert.equal(lowEssaySim.finalUndersubscribed, true);
+  assert.equal(lowEssaySim.finalCutoff, 50.0);
+  assert.equal(lowEssaySim.finalTieKeepFrac, 1.0);
+  assert.ok(lowEssaySim.estMarkedEssayPassers < E.CONSTANTS.N_RL);
+
+  // Any candidate who clears prelim gate and passes EUFTE >= 5.0 must pass Final cutoff
+  const strongMcqMinEssay = lowEssaySim.evaluatePersonalScore(18, 28, 36, 5.0);
+  assert.equal(strongMcqMinEssay.clearsPrelimGate, true);
+  assert.equal(strongMcqMinEssay.passEssay, true);
+  assert.equal(strongMcqMinEssay.verdict, 'pass');
+
+  // Extreme low Part 2 MCQ means -> fewer than 2,235 MCQ passers
+  const lowMcqSim = E.runSimulation({
+    ...E.PRESETS.baseline,
+    attrition: 60,
+    eukMean: 10.0,
+    eukSd: 2.5,
+    digMean: 15.0,
+    digSd: 2.5
+  });
+  assert.equal(lowMcqSim.prelimUndersubscribed, true);
+  assert.equal(lowMcqSim.prelimCutoff, 50.0);
+  assert.equal(lowMcqSim.finalUndersubscribed, true);
+  assert.equal(lowMcqSim.finalCutoff, 50.0);
+  // Minimum passing scores across all tests (10, 15, 20, 5.0 -> exact 50.00 / 50.00) must pass
+  const minPasser = lowMcqSim.evaluatePersonalScore(10, 15, 20, 5.0);
+  assert.equal(minPasser.prelimScore, 50.0);
+  assert.equal(minPasser.finalScore, 50.0);
+  assert.equal(minPasser.clearsPrelimGate, true);
+  assert.equal(minPasser.verdict, 'pass');
+});
+
+test('calibrateEssay surfaces clamping metadata and digBench85 matches strictly-below >= 85% percentile', () => {
+  const normalEssay = E.calibrateEssay(5.5, 1.5);
+  assert.equal(normalEssay.clampedSd, null);
+  assert.ok(Math.abs(normalEssay.effectiveMean - 5.5) < 0.01);
+  assert.ok(Math.abs(normalEssay.effectiveSd - 1.5) < 0.01);
+
+  // Extreme combination (mean = 8.0, SD = 3.5) cannot be realized on [0, 10] and must report clampedSd === 'max'
+  const clampedEssay = E.calibrateEssay(8.0, 3.5);
+  assert.equal(clampedEssay.clampedSd, 'max');
+  assert.ok(clampedEssay.effectiveSd < 3.48);
+
+  // Strictly-below convention for digBench85: Personal Score Tester must report >= 85% score below
+  for (const presetKey of ['baseline', 'ceilingCrunch', 'harshFatigue']) {
+    const sim = E.runSimulation({ ...E.PRESETS.baseline, ...E.PRESETS[presetKey] });
+    const evAtBench = sim.evaluatePersonalScore(15, 20, sim.digBench85, 7.0);
+    assert.ok(
+      evAtBench.percentiles.digPart2 >= 0.85 - 1e-12,
+      `Preset ${presetKey}: digBench85=${sim.digBench85} had strictly-below pct=${evAtBench.percentiles.digPart2} < 0.85`
+    );
+    if (sim.digBench85 > 0) {
+      const evBelow = sim.evaluatePersonalScore(15, 20, sim.digBench85 - 1, 7.0);
+      assert.ok(
+        evBelow.percentiles.digPart2 < 0.85,
+        `Preset ${presetKey}: digBench85-1=${sim.digBench85 - 1} already reached ${evBelow.percentiles.digPart2} >= 0.85`
+      );
+    }
+  }
+});
+
+test('4x4 Part 2 sitter Cholesky decouples rhoVN from PSD projection and preserves baseline Part 1 pass rate & RL sum', () => {
+  // Non-PSD Part 2 correlation combination must trigger matrixAdjusted without altering Part 1 exact results
+  const nonPsdPart2 = {
+    ...E.PRESETS.baseline,
+    rhoVP2: 0.75,
+    rhoEukDig: 0.0,
+    rhoEukEssay: 0.0,
+    rhoDigEssay: 0.0
+  };
+  const simBase = E.runSimulation(E.PRESETS.baseline);
+  const simNonPsd = E.runSimulation(nonPsdPart2);
+
+  assert.equal(simBase.matrixAdjusted, false);
+  assert.equal(simNonPsd.matrixAdjusted, true);
+  // Part 1 exact results must be completely identical regardless of Part 2 PSD projection
+  assert.equal(simNonPsd.part1.pJointPass, simBase.part1.pJointPass);
+  assert.equal(simNonPsd.part1.obsCorrVN, simBase.part1.obsCorrVN);
+  assert.equal(simNonPsd.estPart1Passers, simBase.estPart1Passers);
+
+  // Baseline Part 1 pass rate ~42.4% and sum(estInReserveList) close to 1,490
+  assert.ok(
+    Math.abs(simBase.part1.pJointPass - 0.424) < 0.01,
+    `Baseline Part 1 pass rate drifted: ${(simBase.part1.pJointPass * 100).toFixed(2)}%`
+  );
+  const rlSum = simBase.verbalBreakdown.reduce((acc, r) => acc + r.estInReserveList, 0);
+  assert.ok(
+    Math.abs(rlSum - E.CONSTANTS.N_RL) < 75,
+    `Baseline sum(estInReserveList)=${rlSum.toFixed(1)} drifted from 1,490`
+  );
+});
+
 
