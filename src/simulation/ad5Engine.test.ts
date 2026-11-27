@@ -40,6 +40,11 @@ interface Calibrated3PL {
 interface SimulationResult {
   estPart1Passers: number;
   estPart2Sitters: number;
+  pEukPass: number;
+  estEukPassers: number;
+  pDigPass: number;
+  estDigPassers: number;
+  estPart2McqPassers: number;
   baselinePasserOdds: number;
   baselinePart2Odds: number;
   part2PoolStats: {
@@ -85,6 +90,7 @@ interface SimulationResult {
     estInReserveList: number;
     shareOfReserveList: number;
     reqEuk: number;
+    reqEukPct: number | null;
     prelimGateBinds: boolean;
   }>;
   verbalChartBars: Array<{
@@ -546,6 +552,15 @@ test('Part 2 subtest distributions and Personal Score Tester percentiles are exa
   assert.ok(sim.markedDigMean > sim.part2PoolStats.digMean + 2.0);
   assert.ok(sim.markedEssayPassRate > 0.5 && sim.markedEssayPassRate <= 1.0);
 
+  // Per-component EUK & Digital Skills pass rates and passer counts match subtest distributions
+  const eukPassSum = euk.filter((b) => b.score >= 15).reduce((acc, b) => acc + b.sitters, 0);
+  const digPassSum = dig.filter((b) => b.score >= 20).reduce((acc, b) => acc + b.sitters, 0);
+  assert.ok(Math.abs(sim.estEukPassers - eukPassSum) < 1e-3);
+  assert.ok(Math.abs(sim.estDigPassers - digPassSum) < 1e-3);
+  assert.ok(Math.abs(sim.pEukPass - sim.estEukPassers / sim.estPart2Sitters) < 1e-9);
+  assert.ok(Math.abs(sim.pDigPass - sim.estDigPassers / sim.estPart2Sitters) < 1e-9);
+  assert.ok(sim.estPart2McqPassers <= Math.min(sim.estEukPassers, sim.estDigPassers) + 1e-6);
+
   // Personal Score Tester percentiles: Verbal vs Part 1 sitters, EUK/Dig/Essay vs Part 2 sitters
   const lowEv = sim.evaluatePersonalScore(10, 0, 0, 0);
   const midEv = sim.evaluatePersonalScore(16, 23, 30, 6.5);
@@ -644,6 +659,17 @@ test('Uncorrelated Sitters RL Odds covers Verbal 10..20, is monotonic, and conve
   assert.equal(baseSim.verbalBreakdown.length, 11);
   assert.equal(baseSim.verbalBreakdown[0].v, 10);
   assert.equal(baseSim.verbalBreakdown[10].v, 20);
+
+  // Verify reqEukPct matches Part 2 sitter EUK percentile (null when > 30/30)
+  for (const row of baseSim.verbalBreakdown) {
+    if (row.reqEuk > 30) {
+      assert.equal(row.reqEukPct, null);
+    } else {
+      assert.ok(row.reqEukPct !== null && row.reqEukPct >= 0 && row.reqEukPct <= 1);
+      const ev = baseSim.evaluatePersonalScore(row.v, row.reqEuk, baseSim.digBench85, 7.0);
+      assert.ok(Math.abs(row.reqEukPct - ev.percentiles.eukPart2) < 1e-12);
+    }
+  }
 
   // Strictly non-decreasing across Verbal 10..20
   for (let i = 1; i < baseSim.verbalBreakdown.length; i++) {

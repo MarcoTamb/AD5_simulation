@@ -655,6 +655,31 @@
       touch-action: pan-y;
     }
 
+    .mini-chart-foot {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border);
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-height: 22px;
+    }
+
+    .mini-chart-foot-val {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .mini-chart-foot.spacer {
+      border-top-color: transparent;
+    }
+
     .mini-canvas-wrap canvas {
       display: block;
       width: 100%;
@@ -1440,6 +1465,9 @@
         padding-bottom: 0;
         border-bottom: none;
       }
+      .mini-chart-foot.spacer {
+        display: none;
+      }
       .tester-grid {
         grid-template-columns: 1fr;
       }
@@ -1970,6 +1998,10 @@
               <canvas id="canvasP2Euk" aria-label="EU Knowledge Part 2 sitter and essay-marked score distribution"></canvas>
               <div id="tooltipP2Euk" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
             </div>
+            <div class="mini-chart-foot">
+              <span>Pass rate (&ge; 15/30)</span>
+              <span class="mini-chart-foot-val" id="miniPassEuk">—</span>
+            </div>
           </div>
         </div>
 
@@ -2005,6 +2037,10 @@
               <canvas id="canvasP2Dig" aria-label="Digital Skills Part 2 sitter and essay-marked score distribution"></canvas>
               <div id="tooltipP2Dig" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
             </div>
+            <div class="mini-chart-foot">
+              <span>Pass rate (&ge; 20/40)</span>
+              <span class="mini-chart-foot-val" id="miniPassDig">—</span>
+            </div>
           </div>
         </div>
 
@@ -2039,6 +2075,7 @@
               <canvas id="canvasP2Essay" aria-label="EUFTE Essay Part 2 sitter and essay-marked score distribution"></canvas>
               <div id="tooltipP2Essay" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
             </div>
+            <div class="mini-chart-foot spacer" aria-hidden="true">&nbsp;</div>
           </div>
         </div>
       </div>
@@ -3868,6 +3905,15 @@
       }
 
       // Build Part 2 Subtest Distributions (All Part 2 Sitters vs. Top 2,235 Essay-Marked)
+      let eukPassDrawCount = 0;
+      for (let s = CONSTANTS.EUK_PASS; s <= 30; s++) eukPassDrawCount += eukFreq[s];
+      let digPassDrawCount = 0;
+      for (let s = CONSTANTS.DIG_PASS; s <= 40; s++) digPassDrawCount += digFreq[s];
+      const pEukPass = eukPassDrawCount / MAIN_N;
+      const pDigPass = digPassDrawCount / MAIN_N;
+      const estEukPassers = pEukPass * estPart2Sitters;
+      const estDigPassers = pDigPass * estPart2Sitters;
+
       const part2SubCharts = {
         euk: Array.from({ length: 31 }, (_, s) => ({
           score: s,
@@ -3991,6 +4037,12 @@
         const reqEukFinal = Math.ceil(reqEukFinalRaw - 1e-9);
         const reqEuk = Math.max(CONSTANTS.EUK_PASS, reqEukPrelim, reqEukFinal);
         const prelimGateBinds = reqEukPrelim > reqEukFinal && reqEukPrelim > CONSTANTS.EUK_PASS;
+        let reqEukPct = null;
+        if (reqEuk <= 30) {
+          let eukBelowReq = 0;
+          for (let s = 0; s < reqEuk; s++) eukBelowReq += eukFreq[s];
+          reqEukPct = eukBelowReq / MAIN_N;
+        }
 
         verbalBreakdown.push({
           v,
@@ -4006,6 +4058,7 @@
           estInReserveList,
           shareOfReserveList,
           reqEuk,
+          reqEukPct,
           reqEukPrelim,
           reqEukFinal,
           prelimGateBinds
@@ -4148,6 +4201,10 @@
         part2SubCharts,
         estPart1Passers,
         estPart2Sitters,
+        pEukPass,
+        estEukPassers,
+        pDigPass,
+        estDigPassers,
         estPart2McqPassers,
         baselinePasserOdds,
         baselinePart2Odds,
@@ -4603,6 +4660,8 @@
       $('miniStatEuk').textContent = `Marked μ = ${sim.markedEukMean.toFixed(1)}/30`;
       $('miniStatDig').textContent = `Marked μ = ${sim.markedDigMean.toFixed(1)}/40`;
       $('miniStatEssay').textContent = `Marked ≥ 5.0: ${fmtPct(sim.markedEssayPassRate, 1)}`;
+      $('miniPassEuk').textContent = `${fmtPct(sim.pEukPass, 1)} · ${fmtInt(sim.estEukPassers)} pass`;
+      $('miniPassDig').textContent = `${fmtPct(sim.pDigPass, 1)} · ${fmtInt(sim.estDigPassers)} pass`;
 
       $('valRhoEukDig').textContent = state.rhoEukDig.toFixed(2);
       $('valRhoEukEssay').textContent = state.rhoEukEssay.toFixed(2);
@@ -4627,6 +4686,19 @@
       drawPart2Chart(sim);
     }
 
+    function fmtOrdinalPct(p) {
+      if (p == null || !Number.isFinite(p)) return '';
+      const val = Math.min(100, Math.max(0, p * 100));
+      if (val >= 99.95) return '>99.9th pct';
+      if (val >= 99) return `${val.toFixed(1)}th pct`;
+      const n = Math.round(val);
+      const mod100 = n % 100;
+      const suffix = (mod100 >= 11 && mod100 <= 13)
+        ? 'th'
+        : (n % 10 === 1 ? 'st' : (n % 10 === 2 ? 'nd' : (n % 10 === 3 ? 'rd' : 'th')));
+      return `${n}${suffix} pct`;
+    }
+
     // =========================================================================
     // Odds & Targets Table (Verbal 10 to 20)
     // =========================================================================
@@ -4648,7 +4720,8 @@
         if (r.reqEuk > 30) {
           targetHtml = `<span class="mono" style="color:var(--crimson);font-weight:600">&gt; 30/30</span> <span class="sub-dim">(Need Dig &gt; ${sim.digBench85} or higher EUFTE)</span>`;
         } else {
-          targetHtml = `<span class="mono" style="font-weight:700">${r.reqEuk}/30</span>` +
+          const pctLabel = r.reqEukPct != null ? ` <span class="sub-dim">(${fmtOrdinalPct(r.reqEukPct)})</span>` : '';
+          targetHtml = `<span class="mono" style="font-weight:700">${r.reqEuk}/30</span>${pctLabel}` +
             (r.prelimGateBinds ? `<span class="gate-flag" title="A 7.0/10 essay would allow a lower EUK score for the Final Top 1,490 cutoff, but this EUK score is required just to reach the Top 2,235 Preliminary ranking and have your essay marked.">Set by Top 2,235 essay gate</span>` : '');
         }
 
@@ -5849,7 +5922,7 @@
       },
       colMinTarget: {
         title: 'Min. EUK Target',
-        what: 'Minimum integer EU Knowledge score (out of 30) needed at this Verbal score to clear both the Top 2,235 Preliminary gate and Top 1,490 Final cutoff, assuming an 85th-percentile Digital Skills score and a 7.0/10 EUFTE essay.',
+        what: 'Minimum integer EU Knowledge score (out of 30) and its Part 2 sitter percentile needed at this Verbal score to clear both the Top 2,235 Preliminary gate and Top 1,490 Final cutoff, assuming an 85th-percentile Digital Skills score and a 7.0/10 EUFTE essay.',
         influences: 'Provides a concrete Part 2 target. When flagged “Set by Top 2,235 essay gate”, qualifying to have your essay marked requires a higher EUK score than the Final Top 1,490 cutoff itself.'
       },
 
