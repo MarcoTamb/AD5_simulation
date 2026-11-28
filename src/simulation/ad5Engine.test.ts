@@ -109,6 +109,15 @@ interface SimulationResult {
     condRlOdds: number;
     zone: string;
   }>;
+  histograms: {
+    binMin: number;
+    binMax: number;
+    binCount: number;
+    prelimBins: Float64Array;
+    prelimFailBins: Float64Array;
+    finalBins: Float64Array;
+    finalFailBins: Float64Array;
+  };
   evaluatePersonalScore: (v: number, euk: number, dig: number, essay: number) => {
     passEuk: boolean;
     passDig: boolean;
@@ -937,5 +946,49 @@ test('4x4 Part 2 sitter Cholesky decouples rhoVN from PSD projection and preserv
     `Baseline sum(estInReserveList)=${rlSum.toFixed(1)} drifted from 1,490`
   );
 });
+
+test('Part 2 score distribution histograms separately track passed (ranked) and failed-pass-mark candidates with exact conservation', () => {
+  const sim = E.runSimulation(E.PRESETS.baseline);
+  const { binMin, binMax, binCount, prelimBins, prelimFailBins, finalBins, finalFailBins } = sim.histograms;
+
+  assert.equal(binMin, 15);
+  assert.equal(binMax, 100);
+  assert.equal(binCount, 85);
+
+  const sum = (arr: Float64Array) => {
+    let s = 0;
+    for (let i = 0; i < arr.length; i++) s += arr[i];
+    return s;
+  };
+
+  const pPassSum = sum(prelimBins);
+  const pFailSum = sum(prelimFailBins);
+  const fPassSum = sum(finalBins);
+  const fFailSum = sum(finalFailBins);
+
+  // Exact conservation on Preliminary stage
+  assert.ok(Math.abs(pPassSum - sim.estPart2McqPassers) < 1e-6);
+  assert.ok(Math.abs(pPassSum + pFailSum - sim.estPart2Sitters) < 1e-6);
+  assert.ok(pFailSum > 1000, 'Expected substantial failed-MCQ count in baseline');
+
+  // Below score 50, zero passed candidates exist, while failed candidates can appear both below and above 50
+  for (let sc = binMin; sc < 50; sc++) {
+    assert.equal(prelimBins[sc - binMin], 0);
+    assert.equal(finalBins[sc - binMin], 0);
+  }
+  let failBelow50 = 0;
+  let failAbove50 = 0;
+  for (let sc = binMin; sc < binMax; sc++) {
+    if (sc < 50) failBelow50 += prelimFailBins[sc - binMin];
+    else failAbove50 += prelimFailBins[sc - binMin];
+  }
+  assert.ok(failBelow50 > 0 && failAbove50 > 0, 'Expected failed-MCQ candidates both below and above 50');
+
+  // Exact conservation on Final stage (Top 2,235 marked essays split into EUFTE >= 5.0 and EUFTE < 5.0)
+  assert.ok(Math.abs(fPassSum - sim.estMarkedEssayPassers) < 1e-6);
+  assert.ok(Math.abs(fPassSum + fFailSum - E.CONSTANTS.N_PRELIM) < 5.0);
+  assert.ok(fFailSum > 0, 'Expected some marked candidates failing EUFTE < 5.0');
+});
+
 
 
