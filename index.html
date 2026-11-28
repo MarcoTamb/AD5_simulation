@@ -146,29 +146,7 @@
       border-color: var(--accent-hover);
     }
 
-    .btn-reset {
-      appearance: none;
-      border: 1px solid var(--border-strong);
-      background: var(--surface);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 7px 14px;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-
-    .btn-reset:hover {
-      background: var(--surface-subtle);
-      border-color: var(--text-muted);
-    }
-
     .btn-share:focus-visible,
-    .btn-reset:focus-visible,
     button:focus-visible,
     input:focus-visible,
     textarea:focus-visible,
@@ -1536,8 +1514,7 @@
         padding: 8px 6px;
         font-size: 12px;
       }
-      .btn-share,
-      .btn-reset {
+      .btn-share {
         padding: 6px 10px;
         font-size: 12px;
       }
@@ -1739,7 +1716,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
           <span>Share Scenario</span>
         </button>
-        <button type="button" id="btnResetBaseline" class="btn-reset">Reset Baseline</button>
       </div>
     </div>
   </header>
@@ -2279,8 +2255,8 @@
         <div class="chart-header">
           <h3 class="chart-title" id="p2ChartTitle">Part 2 Score Distribution — Preliminary Ranking (Top 2,235 Gate)</h3>
           <div class="segmented" role="tablist" aria-label="Part 2 distribution stage">
-            <button type="button" class="seg-btn active" id="btnStagePrelim" role="tab" aria-selected="true">Preliminary Ranking (Top 2,235 Gate)</button>
-            <button type="button" class="seg-btn" id="btnStageFinal" role="tab" aria-selected="false">Final Ranking (Top 1,490 Reserve List)</button>
+            <button type="button" class="seg-btn active" id="btnStagePrelim" role="tab" aria-selected="true">Preliminary Ranking</button>
+            <button type="button" class="seg-btn" id="btnStageFinal" role="tab" aria-selected="false">Final Ranking</button>
           </div>
         </div>
         <div class="chart-legend-row" style="margin-bottom: 10px;">
@@ -5643,6 +5619,15 @@
         activePart1Preset = 'baseline';
         activePart2Preset = 'part2Baseline';
         passRateClampNote = '';
+        try {
+          const hasScenarioHash = window.location.hash && window.location.hash.includes('=');
+          if (window.location.search || hasScenarioHash) {
+            const cleanHash = hasScenarioHash ? '' : window.location.hash;
+            window.history.replaceState(null, '', window.location.pathname + cleanHash);
+          }
+        } catch (_err) {
+          // Ignore history restriction in sandboxed frames
+        }
       } else if (p.scope === 'part1') {
         E.PART1_KEYS.forEach(k => { state[k] = p[k]; });
         activePart1Preset = key;
@@ -5658,18 +5643,6 @@
 
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
-    });
-    $('btnResetBaseline').addEventListener('click', () => {
-      applyPreset('baseline');
-      try {
-        const hasScenarioHash = window.location.hash && window.location.hash.includes('=');
-        if (window.location.search || hasScenarioHash) {
-          const cleanHash = hasScenarioHash ? '' : window.location.hash;
-          window.history.replaceState(null, '', window.location.pathname + cleanHash);
-        }
-      } catch (_err) {
-        // Ignore history restriction in sandboxed frames
-      }
     });
 
     // Odds Table row click -> load Verbal into Personal Score Tester
